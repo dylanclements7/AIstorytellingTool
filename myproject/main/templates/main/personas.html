@@ -7,53 +7,7 @@
     <title>Step 3 - Personas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        .step {
-            text-align: center;
-            margin: 0 15px;
-            color: #6c757d;
-            text-decoration: none;
-        }
-        .step div {
-            width: 50px;
-            height: 50px;
-            line-height: 50px;
-            border-radius: 50%;
-            border: 2px solid #6c757d;
-            margin: 0 auto 5px;
-            font-weight: bold;
-        }
-        .step.active div {
-            background-color: #6c757d;
-            color: white;
-        }
-        .step.completed div {
-            background-color: #198754;
-            border-color: #198754;
-            color: white;
-        }
-        .step.disabled {
-            pointer-events: none;
-            opacity: 0.5;
-        }
-        .carousel-item {
-            min-height: 100px;
-        }
-        .carousel-indicators {
-            position: relative;
-            margin: 0;
-        }
-        .carousel-indicators [data-bs-target] {
-            background-color: #6c757d;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            opacity: 0.5;
-        }
-        .carousel-indicators .active {
-            opacity: 1;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
 </head>
 <body class="bg-light">
 
@@ -92,88 +46,136 @@
             <!-- Carousel -->
             <div id="personasCarousel" class="carousel slide mb-4" data-bs-ride="false">
                 <div class="carousel-inner">
-                    <!-- Location 1 -->
+                    <!-- Persona 1 -->
                     <div class="carousel-item active" data-location="1">
-                        <div class="border rounded p-3 bg-white">
+                        <div class="border rounded p-3 bg-white mb-3">
                             <h6 class="mb-3">Claire</h6>
                             <p class="mb-1"><strong>Age:</strong> 28</p>
                             <p class="mb-1"><strong>Clothing:</strong> Worn leather jacket, jeans, scuffed boots</p>
                             <p class="mb-1"><strong>Skin:</strong> Light olive</p>
                             <p class="mb-3"><strong>Hair:</strong> Curly brown, shoulder-length</p>
                         </div>
+                        
+                        <!-- Form for Persona 1 -->
+                        <form method="post" action="{% url 'personas' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="persona_id" value="1">
+                            
+                            <div class="position-relative mb-3">
+                                <textarea 
+                                    class="form-control" 
+                                    name="feedback" 
+                                    rows="4" 
+                                    placeholder="Do you want to make any changes?"
+                                ></textarea>
+                                <button 
+                                    type="submit" 
+                                    name="action" 
+                                    value="regenerate" 
+                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
+                                    style="font-size: 1.5rem; color: #6c757d;"
+                                >
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
-                    <!-- Location 2 -->
+                    <!-- Persona 2 -->
                     <div class="carousel-item" data-location="2">
-                        <div class="border rounded p-3 bg-white">
+                        <div class="border rounded p-3 bg-white mb-3">
                             <h6 class="mb-3">Marcus</h6>
                             <p class="mb-1"><strong>Age:</strong> 42</p>
                             <p class="mb-1"><strong>Clothing:</strong> Crisp shirt, rolled sleeves, glasses</p>
                             <p class="mb-1"><strong>Skin:</strong> Tan</p>
                             <p class="mb-3"><strong>Hair:</strong> Black, graying at the sides</p>
                         </div>
+                        
+                        <!-- Form for Persona 2 -->
+                        <form method="post" action="{% url 'personas' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="persona_id" value="2">
+                            
+                            <div class="position-relative mb-3">
+                                <textarea 
+                                    class="form-control" 
+                                    name="feedback" 
+                                    rows="4" 
+                                    placeholder="Do you want to make any changes?"
+                                ></textarea>
+                                <button 
+                                    type="submit" 
+                                    name="action" 
+                                    value="regenerate" 
+                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
+                                    style="font-size: 1.5rem; color: #6c757d;"
+                                >
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
-                    <!-- Location 3 -->
+                    <!-- Persona 3 -->
                     <div class="carousel-item" data-location="3">
-                        <div class="border rounded p-3 bg-white">
+                        <div class="border rounded p-3 bg-white mb-3">
                             <h6 class="mb-3">Bob</h6>
                             <p class="mb-1"><strong>Age:</strong> Late 30s</p>
                             <p class="mb-1"><strong>Clothing:</strong> Dark gray windbreaker, blue jeans, and black sneakers.</p>
                             <p class="mb-1"><strong>Skin:</strong> Light skin</p>
                             <p class="mb-3"><strong>Hair:</strong> Short brown hair with slight gray at the temples.</p>
                         </div>
+                        
+                        <!-- Form for Persona 3 -->
+                        <form method="post" action="{% url 'personas' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="persona_id" value="3">
+                            
+                            <div class="position-relative mb-3">
+                                <textarea 
+                                    class="form-control" 
+                                    name="feedback" 
+                                    rows="4" 
+                                    placeholder="Do you want to make any changes?"
+                                ></textarea>
+                                <button 
+                                    type="submit" 
+                                    name="action" 
+                                    value="regenerate" 
+                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
+                                    style="font-size: 1.5rem; color: #6c757d;"
+                                >
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+                
+                <button class="carousel-control-prev" type="button" data-bs-target="#personasCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                </button>
+                <!-- Carousel Indicators -->
                 <div class="carousel-indicators position-relative mt-3" style="position: relative; bottom: 0;">
-                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Location 1"></button>
-                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="1" aria-label="Location 2"></button>
-                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="2" aria-label="Location 3"></button>
+                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Persona 1"></button>
+                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="1" aria-label="Persona 2"></button>
+                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="2" aria-label="Persona 3"></button>
                 </div>
+                <button class="carousel-control-next" type="button" data-bs-target="#personasCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                </button>
             </div>
 
-            <!-- Feedback Form -->
-            <form method="post" action="{% url 'personas' %}" id="locationForm">
-                {% csrf_token %}
-                <input type="hidden" name="location_id" id="locationId" value="1">
-                
-                <div class="position-relative mb-4">
-                    <textarea 
-                        class="form-control" 
-                        name="feedback" 
-                        id="feedbackText"
-                        rows="4" 
-                        placeholder="Do you want to make any changes?"
-                    ></textarea>
-                    <button 
-                        type="submit" 
-                        name="action" 
-                        value="regenerate" 
-                        class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                        style="font-size: 1.5rem; color: #6c757d;"
-                    >
-                        <i class="bi bi-send"></i>
-                    </button>
-                </div>
-                
-                <div class="d-flex justify-content-end">
-                    <button type="submit" name="action" value="next" formaction="{% url 'locations' %}" class="btn btn-primary">Next →</button>
-                </div>
-            </form>
+            <!-- Next Button -->
+            <div class="d-flex justify-content-end">
+                <a href="{% url 'locations' %}" class="btn btn-primary">Next →</a>
+            </div>
 
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Update location ID on slide change
-        const carousel = document.getElementById('personasCarousel');
-        carousel.addEventListener('slide.bs.carousel', function (event) {
-            const locationId = event.relatedTarget.getAttribute('data-location');
-            document.getElementById('locationId').value = locationId;
-            // Clear feedback text when switching locations
-            document.getElementById('feedbackText').value = '';
-        });
-    </script>
 </body>
 </html>

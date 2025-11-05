@@ -1,0 +1,123 @@
+/* Navigation Step Styles */
+.step {
+    text-align: center;
+    margin: 0 15px;
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.step div {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 50%;
+    border: 2px solid #6c757d;
+    margin: 0 auto 5px;
+    font-weight: bold;
+}
+
+.step.active div {
+    background-color: #6c757d;
+    color: white;
+}
+
+.step.completed div {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+.step.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* Carousel Styles */
+.carousel-item {
+    min-height: 300px;
+}
+
+.carousel-indicators {
+    position: relative;
+    margin: 0;
+}
+
+.carousel-indicators [data-bs-target] {
+    background-color: #6c757d;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    opacity: 0.5;
+}
+
+.carousel-indicators .active {
+    opacity: 1;
+}
+
+.carousel-indicators .active {
+    opacity: 1;
+}
+
+.carousel-control-prev-icon, .carousel-control-next-icon{
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    padding: 10px;
+}
+
+.carousel-control-next {
+    right: 20%;
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    height: 80px;
+    width: 80px;
+}
+.carousel-control-prev {
+    left: 20%;
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    height: 80px;
+    width: 80px;
+}
+
+/* Scene-specific Styles */
+.scene-image {
+    width: 100%;
+    height: auto;
+}
+
+.carousel-inner {
+    min-height: 100px;
+}
+
+/* Prompt Badge Styles */
+.prompt-badge {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.prompt-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+body {
+    background-color: #f8f9fa;
+    padding: 40px;
+}
+.video-grid img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    transition: transform 0.2s ease-in-out;
+}
+.video-grid img:hover {
+    transform: scale(1.03);
+    cursor: pointer;
+}
+.caption {
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 500;
+}
