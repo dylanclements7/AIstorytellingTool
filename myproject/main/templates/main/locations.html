@@ -46,19 +46,17 @@
             <!-- Carousel -->
             <div id="locationsCarousel" class="carousel slide mb-4" data-bs-ride="false">
                 <div class="carousel-inner">
-                    <!-- Location 1 -->
-                    <div class="carousel-item active" data-location="1">
-                        <div class="border rounded p-3 bg-white">
-                            <h5 class="mb-3">City Street</h5>
-                            <p class="mb-0">
-                                <strong>Description:</strong> A rainy urban street at night, illuminated by dim yellow streetlights and neon reflections in shallow puddles. Wet asphalt glistens under soft rainfall. A flickering lamppost stands near the curb beside a faded crosswalk. Blurred car headlights and taillights streak across the background. Realistic lighting, cinematic rain effect, detailed reflections, slightly moody atmosphere.
-                            </p>
+                    {% for location in setting_description %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}" data-location="{{ location.id }}">
+                        <div class="border rounded p-3 bg-white mb-3">
+                            <h5 class="mb-3">{{ location.name }}</h5>
+                            <p class="mb-0"><strong>Description:</strong> {{ location.description }}</p>
                         </div>
                         
-                        <!-- Form for Location 1 -->
+                        <!-- Form for this Location -->
                         <form method="post" action="{% url 'locations' %}">
                             {% csrf_token %}
-                            <input type="hidden" name="location_id" value="1">
+                            <input type="hidden" name="location_id" value="{{ location.id }}">
                             
                             <div class="position-relative mb-3">
                                 <textarea 
@@ -79,90 +77,33 @@
                             </div>
                         </form>
                     </div>
-
-                    <!-- Location 2 -->
-                    <div class="carousel-item" data-location="2">
-                        <div class="border rounded p-3 bg-white">
-                            <h5 class="mb-3">Location 2</h5>
-                            <p class="mb-0">
-                                <strong>Description:</strong> A narrow room lined with overflowing bookshelves, the air filled with the smell of paper and coffee.
-                            </p>
+                    {% empty %}
+                    <div class="carousel-item active">
+                        <div class="alert alert-info">
+                            No characters have been generated yet.
                         </div>
-                        
-                        <!-- Form for Location 2 -->
-                        <form method="post" action="{% url 'locations' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="location_id" value="2">
-                            
-                            <div class="position-relative mb-3">
-                                <textarea 
-                                    class="form-control" 
-                                    name="feedback" 
-                                    rows="4" 
-                                    placeholder="Do you want to make any changes?"
-                                ></textarea>
-                                <button 
-                                    type="submit" 
-                                    name="action" 
-                                    value="regenerate" 
-                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                    style="font-size: 1.5rem; color: #6c757d;"
-                                >
-                                    <i class="bi bi-send"></i>
-                                </button>
-                            </div>
-                        </form>
                     </div>
-
-                    <!-- Location 3 -->
-                    <div class="carousel-item" data-location="3">
-                        <div class="border rounded p-3 bg-white">
-                            <h5 class="mb-3">Location 3</h5>
-                            <p class="mb-0">
-                                <strong>Description:</strong> A deserted avenue under flickering streetlights, rain-slicked and eerily quiet.
-                            </p>
-                        </div>
-                        
-                        <!-- Form for Location 3 -->
-                        <form method="post" action="{% url 'locations' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="location_id" value="3">
-                            
-                            <div class="position-relative mb-3">
-                                <textarea 
-                                    class="form-control" 
-                                    name="feedback" 
-                                    rows="4" 
-                                    placeholder="Do you want to make any changes?"
-                                ></textarea>
-                                <button 
-                                    type="submit" 
-                                    name="action" 
-                                    value="regenerate" 
-                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                    style="font-size: 1.5rem; color: #6c757d;"
-                                >
-                                    <i class="bi bi-send"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    {% endfor %}
                 </div>
                 
+                {% if setting_description %}
                 <button class="carousel-control-prev" type="button" data-bs-target="#locationsCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
                 </button>
+                
                 <!-- Carousel Indicators -->
                 <div class="carousel-indicators position-relative mt-3" style="position: relative; bottom: 0;">
-                    <button type="button" data-bs-target="#locationsCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Location 1"></button>
-                    <button type="button" data-bs-target="#locationsCarousel" data-bs-slide-to="1" aria-label="Location 2"></button>
-                    <button type="button" data-bs-target="#locationsCarousel" data-bs-slide-to="2" aria-label="Location 3"></button>
+                    {% for location in setting_description %}
+                    <button type="button" data-bs-target="#locationsCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Location {{ forloop.counter }}"></button>
+                    {% endfor %}
                 </div>
+                
                 <button class="carousel-control-next" type="button" data-bs-target="#locationsCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
                 </button>
+                {% endif %}
             </div>
 
             <!-- Next Button -->

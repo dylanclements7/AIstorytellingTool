@@ -2,7 +2,6 @@ import os
 import json
 import google.generativeai as genai
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
 import logging
 logger = logging.getLogger(__name__)
 
@@ -14,131 +13,26 @@ api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-2.5-flash')
 
-class Story():
-    def __init__self(self):
-        self.storyline = ""
-        self.persona_description = []
-        self.setting_description = []
-        self.scenes = []
-        self.emotional_tones = []
-
-    def validate(self, json):
-        #assign value and if error throw
-        ai_object=json.loads(json_str)
-        try:
-            self.stooryline = ai_object['storyline']
-        except:
-            #throw
-            pass
-
-    def to_json(self):
-        #convert to JSON object
-        return json.dumps(self.__dict__)
-    
-def prompt_gemini(prompt):
-    response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=prompt,
-    config={
-        "response_mime_type": "application/json",
-        "response_json_schema": Recipe.model_json_schema(),
-    },
-    )
-    return response
-
-#do one for openai as well
-
-def updatePersona():
-    #hand a persona that was editied, regenerate whole story with changes
-    return 0
-#do one of these for all possible edits
 
 def storyOverview(idea_text):
     prompt = f"""
-    Based on this story idea, create a <storyline> overview in 6-10 sentences. The overview should include 1-3 main characters, 1-3 settings, and a description of 6 scenes.
-    
-    Based off the storyline, identify the primary <emotional_tones> of the story.
-
-    Story Idea: {idea_text}
-    
-    Return ONLY a JSON object in this exact format with no markdown or labels, just the following JSON:
-
-    {{
-        "storyline": <storyline>,
-        "emotional_tones": ["Tone1", "Tone2"]
-    }}
-    
-    """
-    
-    try:
-        response = model.generate_content(prompt)
-        logger.warning(response.candidates[0].content.parts[0].text.strip())
-        result = json.loads(response.candidates[0].content.parts[0].text.strip())
-        return result
-    except json.JSONDecodeError:
-        # Fallback if JSON parsing fails
-        return {
-            "overview": idea_text,
-            "tone": ["Drama"]
-        }
-    except Exception as e:
-        print(f"Error in storyOverview: {e}")
-        raise
-
-def editOverview(current_overview, feedback):
-    prompt = f"""
-    Based on this story overview and user feedback, edit the 6-10 sentence storyline only making changes described in user feedback and then identify the primary emotional tones of the edited version. 
-
-    Make sure the overview still includes 1-3 main characters, 1-3 settings, and a description of 6 scenes.
-    
-    Current overview: {current_overview}
-
-    Feedback: {feedback}
-    
-    Return ONLY a JSON object in this exact format with no markdown or labels, just the following JSON:
-
-    {{
-        "storyline": <storyline>,
-        "emotional_tones": ["Tone1", "Tone2"]
-    }}
-    
-    """
-    
-    try:
-        response = model.generate_content(prompt)
-        logger.warning(response.candidates[0].content.parts[0].text.strip())
-        result = json.loads(response.candidates[0].content.parts[0].text.strip())
-        return result
-    except json.JSONDecodeError:
-        # Fallback if JSON parsing fails
-        return {
-            "overview": feedback,
-            "tone": ["Drama"]
-        }
-    except Exception as e:
-        print(f"Error in storyOverview: {e}")
-        raise
-
-
-def storyGenerate(draft):
-    prompt = f"""
-    You are a helpful tool to create a vlog-style script based off this Storyline with these emotional tones: {draft}. The vlog should be TikTok style and around 1 minute long."""
+    You are a helpful tool to create a vlog-style script based off this Story Idea: {idea_text}. The vlog should be TikTok style and around 1 minute long."""
     
     prompt+="""
 
     You should use chain-of-thoughts to create a script. 
     
-    (1) storyline should remain the same.
+    (1) Create a <storyline> overview in 6-10 sentences. The overview should include 1-3 personas, 1-3 settings, and a description of 6 scenes.
 
-    (2) Create a <persona_description> of each persona including: name, age, clothing, skin tone, hair. id should be index of character in list.
+    (2) Create a <persona_description> of each persona including: name, age, clothing, skin tone, hair. 
 
-    (3) Create a <setting_description> for each setting. id should be index of setting in list.
+    (3) Create a <setting_description> for each setting. 
 
-    (4) Create 6 scenes, each scene is an <image_prompt> to generate a Gemini AI image for the video. id should be index of scene in list.
+    (4) Create 6 scenes, each scene is an <image_prompt> to generate a Gemini AI image for the video.
 
-    (5) emotional_tones should remain the same.
+    (5) Create the primary <emotional_tones> of the story.
     
-    Return ONLY a JSON object in this exact format with no markdown or labels, just the follwing JSON:
+    Return ONLY a JSON object in this exact format with no markdown or labels, just the JSON:
 
     {{
         "storyline": <storyline>,
@@ -165,29 +59,122 @@ def storyGenerate(draft):
     """
 
     try:
-        #response = model.generate_content(prompt)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={
-                "response_mime_type": "application/json",
-                "response_json_schema": Recipe.model_json_schema(),
-            },
-        )
+        response = model.generate_content(prompt)
         logger.warning(response.candidates[0].content.parts[0].text.strip())
         result = json.loads(response.candidates[0].content.parts[0].text.strip())
         return result
     except json.JSONDecodeError:
         # Fallback if JSON parsing fails
         return {
-            "storyline": draft,
-            "persona_description": [],
-            "setting_description": [],
-            "scenes": [],
-            "emotional_tones": ["Drama"]
+            "overview": idea_text,
+            "tone": ["Drama"]
         }
     except Exception as e:
         print(f"Error in storyOverview: {e}")
+        raise
+
+def editOverview(current_overview, feedback):
+    prompt = f"""
+    Based on this story overview and user feedback, create a 4-5 sentence overview and identify the primary tones. Common tones include: Frustration, Hopeful, Dramatic, Inspirational, Tense, Light-hearted, etc.
+    
+    Current overview: {current_overview}
+
+    Feedback: {feedback}
+    
+    Return ONLY a JSON object in this exact format with no markdown or labels, just the JSON:
+
+    {{
+        "overview": "A 2-3 sentence summary of the story",
+        "tone": ["Tone1", "Tone2"]
+    }}
+    
+    """
+    
+    try:
+        response = model.generate_content(prompt)
+        logger.warning(response.candidates[0].content.parts[0].text.strip())
+        result = json.loads(response.candidates[0].content.parts[0].text.strip())
+        return result
+    except json.JSONDecodeError:
+        # Fallback if JSON parsing fails
+        return {
+            "overview": feedback,
+            "tone": ["Drama"]
+        }
+    except Exception as e:
+        print(f"Error in storyOverview: {e}")
+        raise
+
+
+def storyGenerate(overview, tone):
+    """
+    Generate complete story structure with characters, locations, and scenes.
+    
+    Args:
+        overview (str): Story overview
+        tone (list): List of tone descriptors
+        
+    Returns:
+        dict: Complete story structure with characters, locations, scenes
+    """
+    tone_str = ", ".join(tone)
+    
+    prompt = f"""
+    Create a complete visual story structure based on this overview and tone.
+    
+    Overview: {overview}
+    Tone: {tone_str}
+    
+    Generate 1-3 main characters, 1-3 key locations, and exactly 6 scenes that tell this story visually.
+    
+    Return ONLY a JSON object in this exact format:
+    {{
+        "characters": [
+            {{
+                "id": 1,
+                "name": "Character Name",
+                "age": "Age or age range",
+                "clothing": "Detailed clothing description",
+                "skin": "Skin tone description",
+                "hair": "Hair description"
+            }}
+        ],
+        "locations": [
+            {{
+                "id": 1,
+                "name": "Location Name",
+                "description": "Detailed visual description of the location suitable for image generation"
+            }}
+        ],
+        "scenes": [
+            {{
+                "id": 1,
+                "image_prompt": "Detailed visual description for image generation, including character appearance, location details, lighting, mood, and composition. Be specific and cinematic.",
+                "narration": "The narrative text for this scene, including dialogue if appropriate. This should advance the story.",
+                "image_path": ""
+            }}
+        ]
+    }}
+    
+    Important:
+    - Create exactly 6 scenes that tell a complete story arc
+    - Each image_prompt should be detailed and cinematic (50-100 words)
+    - Include specific visual details: lighting, camera angle, mood, colors
+    - Narration should complement the visual and move the story forward
+    - Characters should be consistent across scenes
+    - Leave image_path as empty string (will be filled later)
+    """
+    
+    try:
+        response = model.generate_content(prompt)
+        result = json.loads(response.text.strip())
+        return result
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error in storyGenerate: {e}")
+        print(f"Response text: {response.text}")
+        raise
+    except Exception as e:
+        print(f"Error in storyGenerate: {e}")
         raise
 
 

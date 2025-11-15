@@ -45,13 +45,14 @@
                 <div class="d-flex align-items-center mb-3">
                     <h6 class="text-secondary mb-0 me-2">Tone:</h6>
                     <div class="d-flex flex-wrap gap-2">
-                        {% for tone in overview.tone %}
+                        {% for tone in draft.emotional_tones %}
                             <span class="badge bg-secondary">{{ tone }}</span>
                         {% endfor %}
                     </div>
                 </div>
                 
-                <h5 class="fw-bold mb-3">The Ride That Never Came</h5>
+                <!--Title?-->
+                <h5 class="fw-bold mb-3"></h5>
                 
                 <div class="p-3 bg-light rounded">
                     <!--<p class="mb-2">
@@ -60,7 +61,7 @@
                         Bob calls support, tweets about the incident, and sits in silence as notifications pour in—some supportive, others cruelly dismissive. A neighbor passing by offers him a lift, and together they navigate the city streets, sharing stories that turn the night from bitter to bittersweet.
                         The story closes with Bob arriving late but welcomed warmly, laughter echoing as he wheels in—wet, tired, but triumphant. The moment is ordinary yet defiant: he got there anyway.
                     </p>-->
-                    <p class="mb-2" name="overview">{{ overview.overview }}</p>
+                    <p class="mb-2" name="overview">{{ draft.storyline }}</p>
             </div>
 
             <!-- Feedback Form -->
@@ -88,7 +89,7 @@
                 </div>
                 
                 <div class="d-flex justify-content-end">
-                    <button type="submit" name="action" value="next" formaction="{% url 'personas' %}" class="btn btn-primary">Next →</button>
+                    <button type="submit" name="action" value="next" class="btn btn-primary">Next →</button>
                 </div>
             </form>
         

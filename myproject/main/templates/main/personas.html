@@ -46,20 +46,20 @@
             <!-- Carousel -->
             <div id="personasCarousel" class="carousel slide mb-4" data-bs-ride="false">
                 <div class="carousel-inner">
-                    <!-- Persona 1 -->
-                    <div class="carousel-item active" data-location="1">
+                    {% for persona in persona_description %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}" data-location="{{ persona.id }}">
                         <div class="border rounded p-3 bg-white mb-3">
-                            <h6 class="mb-3">Claire</h6>
-                            <p class="mb-1"><strong>Age:</strong> 28</p>
-                            <p class="mb-1"><strong>Clothing:</strong> Worn leather jacket, jeans, scuffed boots</p>
-                            <p class="mb-1"><strong>Skin:</strong> Light olive</p>
-                            <p class="mb-3"><strong>Hair:</strong> Curly brown, shoulder-length</p>
+                            <h6 class="mb-3">{{ persona.name }}</h6>
+                            <p class="mb-1"><strong>Age:</strong> {{ persona.age }}</p>
+                            <p class="mb-1"><strong>Clothing:</strong> {{ persona.clothing }}</p>
+                            <p class="mb-1"><strong>Skin:</strong> {{ persona.skin }}</p>
+                            <p class="mb-3"><strong>Hair:</strong> {{ persona.hair }}</p>
                         </div>
                         
-                        <!-- Form for Persona 1 -->
+                        <!-- Form for this Persona -->
                         <form method="post" action="{% url 'personas' %}">
                             {% csrf_token %}
-                            <input type="hidden" name="persona_id" value="1">
+                            <input type="hidden" name="persona_id" value="{{ persona.id }}">
                             
                             <div class="position-relative mb-3">
                                 <textarea 
@@ -80,92 +80,33 @@
                             </div>
                         </form>
                     </div>
-
-                    <!-- Persona 2 -->
-                    <div class="carousel-item" data-location="2">
-                        <div class="border rounded p-3 bg-white mb-3">
-                            <h6 class="mb-3">Marcus</h6>
-                            <p class="mb-1"><strong>Age:</strong> 42</p>
-                            <p class="mb-1"><strong>Clothing:</strong> Crisp shirt, rolled sleeves, glasses</p>
-                            <p class="mb-1"><strong>Skin:</strong> Tan</p>
-                            <p class="mb-3"><strong>Hair:</strong> Black, graying at the sides</p>
+                    {% empty %}
+                    <div class="carousel-item active">
+                        <div class="alert alert-info">
+                            No characters have been generated yet.
                         </div>
-                        
-                        <!-- Form for Persona 2 -->
-                        <form method="post" action="{% url 'personas' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="persona_id" value="2">
-                            
-                            <div class="position-relative mb-3">
-                                <textarea 
-                                    class="form-control" 
-                                    name="feedback" 
-                                    rows="4" 
-                                    placeholder="Do you want to make any changes?"
-                                ></textarea>
-                                <button 
-                                    type="submit" 
-                                    name="action" 
-                                    value="regenerate" 
-                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                    style="font-size: 1.5rem; color: #6c757d;"
-                                >
-                                    <i class="bi bi-send"></i>
-                                </button>
-                            </div>
-                        </form>
                     </div>
-
-                    <!-- Persona 3 -->
-                    <div class="carousel-item" data-location="3">
-                        <div class="border rounded p-3 bg-white mb-3">
-                            <h6 class="mb-3">Bob</h6>
-                            <p class="mb-1"><strong>Age:</strong> Late 30s</p>
-                            <p class="mb-1"><strong>Clothing:</strong> Dark gray windbreaker, blue jeans, and black sneakers.</p>
-                            <p class="mb-1"><strong>Skin:</strong> Light skin</p>
-                            <p class="mb-3"><strong>Hair:</strong> Short brown hair with slight gray at the temples.</p>
-                        </div>
-                        
-                        <!-- Form for Persona 3 -->
-                        <form method="post" action="{% url 'personas' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="persona_id" value="3">
-                            
-                            <div class="position-relative mb-3">
-                                <textarea 
-                                    class="form-control" 
-                                    name="feedback" 
-                                    rows="4" 
-                                    placeholder="Do you want to make any changes?"
-                                ></textarea>
-                                <button 
-                                    type="submit" 
-                                    name="action" 
-                                    value="regenerate" 
-                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                    style="font-size: 1.5rem; color: #6c757d;"
-                                >
-                                    <i class="bi bi-send"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                    {% endfor %}
                 </div>
                 
+                {% if persona_description %}
                 <button class="carousel-control-prev" type="button" data-bs-target="#personasCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
                 </button>
+                
                 <!-- Carousel Indicators -->
                 <div class="carousel-indicators position-relative mt-3" style="position: relative; bottom: 0;">
-                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Persona 1"></button>
-                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="1" aria-label="Persona 2"></button>
-                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="2" aria-label="Persona 3"></button>
+                    {% for persona in persona_description %}
+                    <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Persona {{ forloop.counter }}"></button>
+                    {% endfor %}
                 </div>
+                
                 <button class="carousel-control-next" type="button" data-bs-target="#personasCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
                 </button>
+                {% endif %}
             </div>
 
             <!-- Next Button -->
