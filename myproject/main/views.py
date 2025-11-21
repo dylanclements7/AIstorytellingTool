@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .logic.ai import storyOverview, editOverview, characterGenerate, storyGenerate, locationGenerate, sceneGenerate, narrationGenerate
+from .logic.ai import storyOverview, editOverview, characterGenerate, storyGenerate, locationGenerate
 import logging
 logger = logging.getLogger(__name__)
 def idea(request):
@@ -51,58 +51,108 @@ def draft(request):
             return render(request, 'main/personas.html', {'persona_description': story['persona_description']})
     return redirect("idea")
 
+# def personas(request):
+#     story = request.session.get('story', {})
+    
+#     if request.method == 'POST':
+#         action = request.POST.get('action')
+        
+#         if action == 'regenerate':
+            
+#             persona_id = int(request.POST.get('persona_id'))
+#             feedback = request.POST.get('feedback')
+            
+#             # Regenerate character
+#             updated_character = characterGenerate(story, persona_id, feedback)
+            
+#             # Update in session
+#             for i, char in enumerate(story['persona_description']):
+#                 if char['id'] == persona_id:
+#                     story['persona_description'][i] = updated_character
+#                     break
+            
+#             request.session['story'] = story
+#             request.session.modified = True
+    
+#     return render(request, 'main/personas.html', {
+#         'persona_description': story.get('persona_description', []),
+#     })
+
 def personas(request):
-    story = request.session.get('story', {})
+    story_data = request.session.get('story', {})
     
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == 'regenerate':
+            from main.logic.ai import characterGenerate
             
             persona_id = int(request.POST.get('persona_id'))
             feedback = request.POST.get('feedback')
             
-            # Regenerate character
-            updated_character = characterGenerate(story, persona_id, feedback)
+            # Get ENTIRE regenerated story
+            updated_story = characterGenerate(story_data, persona_id, feedback)
             
-            # Update in session
-            for i, char in enumerate(story['persona_description']):
-                if char['id'] == persona_id:
-                    story['persona_description'][i] = updated_character
-                    break
-            
-            request.session['story'] = story
+            # Replace entire story in session
+            request.session['story'] = updated_story
             request.session.modified = True
+            story_data = updated_story  # Update local variable to reflect changes
+            print("DEBUG updated_story:", updated_story)
     
     return render(request, 'main/personas.html', {
-        'persona_description': story.get('persona_description', []),
+        'persona_description': story_data.get('persona_description', []),
     })
 
+# def locations(request):
+#     story = request.session.get('story', {})
+    
+#     if request.method == 'POST':
+#         action = request.POST.get('action')
+        
+#         if action == 'regenerate':
+            
+#             location_id = int(request.POST.get('location_id'))
+#             feedback = request.POST.get('feedback')
+            
+#             # Regenerate character
+#             updated_character = characterGenerate(story, location_id, feedback)
+            
+#             # Update in session
+#             for i, char in enumerate(story['setting_description']):
+#                 if char['id'] == location_id:
+#                     story['setting_description'][i] = updated_character
+#                     break
+            
+#             request.session['story'] = story
+#             request.session.modified = True
+    
+#     return render(request, 'main/locations.html', {
+#         'setting_description': story.get('setting_description', []),
+#     })
+
 def locations(request):
-    story = request.session.get('story', {})
+    story_data = request.session.get('story', {})
     
     if request.method == 'POST':
         action = request.POST.get('action')
         
         if action == 'regenerate':
+            from main.logic.ai import locationGenerate
             
             location_id = int(request.POST.get('location_id'))
             feedback = request.POST.get('feedback')
             
-            # Regenerate character
-            updated_character = characterGenerate(story, location_id, feedback)
+            # Get ENTIRE regenerated story
+            updated_story = locationGenerate(story_data, location_id, feedback)
             
-            # Update in session
-            for i, char in enumerate(story['setting_description']):
-                if char['id'] == location_id:
-                    story['setting_description'][i] = updated_character
-                    break
-            
-            request.session['story'] = story
+            # Replace entire story in session
+            request.session['story'] = updated_story
             request.session.modified = True
+            print("DEBUG updated_story:", updated_story)
+            story_data = updated_story  # Update local variable to reflect changes
     
     return render(request, 'main/locations.html', {
-        'setting_description': story.get('setting_description', []),
+        'setting_description': story_data.get('setting_description', []),
     })
 
 def scene(request):
@@ -112,19 +162,3 @@ def video(request):
     return render(request, 'main/video.html')
 
 
-#def viewGeneratePersonas(request):
-    #if request.method == 'POST':
-        
-
-#def viewGenerateLocations(request):
-    #if request.method == 'POST':
-        
-
-#def viewGenerateScene(request):
-    #if request.method == 'POST':
-        
-
-
-#def viewStoryGenerate(request):
-    #if request.method == 'POST':
-        
