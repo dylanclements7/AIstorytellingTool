@@ -3,6 +3,7 @@ import json
 import google.generativeai as genai
 from dotenv import load_dotenv
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,8 @@ story_schema = {
                 "type": "object",
                 "properties": {
                     "id": {"type": "integer"},
-                    "image_prompt": {"type": "string"}
+                    "image_prompt": {"type": "string"},
+                    "narration": {"type": "string"}
                 },
                 "required": ["id", "image_prompt"]
             }
@@ -143,7 +145,7 @@ def storyGenerate(draft):
 
     (3) Create a setting_description for each setting (1-3 settings) including: id (starting from 1), name, and detailed description.
 
-    (4) Create exactly 6 scenes. Each scene should have: id (starting from 1) and an image_prompt that describes a detailed visual for AI image generation using the persona and setting descriptions.
+    (4) Create exactly 6 scenes. Each scene should have: id (starting from 1), the narration for the scene, and an image_prompt that describes a detailed visual for AI image generation using the persona and setting descriptions.
 
     (5) Keep the emotional_tones the same.
     """
@@ -159,11 +161,68 @@ def storyGenerate(draft):
         response = model.generate_content(prompt)
         result = json.loads(response.text)
         logger.info(f"storyGenerate result: {result}")
+        result['scenes'] = generate_all_scene_images(result['scenes'])
         return result
     except Exception as e:
         logger.error(f"Error in storyGenerate: {e}")
         raise
 
+def generate_scene_image(image_prompt, scene_id):
+    
+    try:
+        from google import genai as google_genai
+        client = google_genai.Client(api_key=api_key)
+        
+        # Generate image
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=[image_prompt],
+        )
+        
+        # Extract and save image
+        for part in response.parts:
+            if part.inline_data is not None:
+                image = part.as_image()
+                
+                # Create directory if it doesn't exist
+                image_dir = Path("main/static/main/images/generated")
+                image_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Save with scene_id as filename
+                image_path = image_dir / f"scene_{scene_id}.png"
+                image.save(str(image_path))
+                
+                logger.info(f"Generated image for scene {scene_id}")
+                
+                # Return path relative to static folder
+                return f"main/images/generated/scene_{scene_id}.png"
+        
+    except Exception as e:
+        logger.error(f"Error generating image for scene {scene_id}: {e}")
+        # Return placeholder path if generation fails
+        return "main/images/exampleImage.png"
+
+def generate_all_scene_images(scenes):
+    updated_scenes = []
+    
+    for scene in scenes:
+        try:
+            # Generate image for this scene
+            image_path = generate_scene_image(scene['image_prompt'], scene['id'])
+            
+            # Update scene with image path
+            scene['image_path'] = image_path
+            updated_scenes.append(scene)
+            
+            logger.info(f"Generated image for scene {scene['id']}: {image_path}")
+            
+        except Exception as e:
+            logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
+            # Use placeholder if generation fails
+            scene['image_path'] = "main/images/exampleImage.png"
+            updated_scenes.append(scene)
+    
+    return updated_scenes
 
 def characterGenerate(story_data, character_id, feedback):
     current_character = next(

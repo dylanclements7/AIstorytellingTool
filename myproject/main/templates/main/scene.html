@@ -11,7 +11,6 @@
 </head>
 <body class="bg-light">
 
-    <!-- Navbar - Steps 1–3 completed, Step 4 active -->
     <nav class="d-flex justify-content-center py-4 bg-white">
         <div class="step disabled">
             <div>1</div>
@@ -43,32 +42,31 @@
 
         <div class="card shadow-sm mx-auto p-4" style="max-width: 900px;">
 
-            <!-- Carousel -->
             <div id="scenesCarousel" class="carousel slide mb-4" data-bs-ride="false">
               <div class="carousel-inner">
 
-                <!-- Scene 1 -->
-                <div class="carousel-item active" data-location="1">
-                  <h2 class="text-center mb-4">Scene 1</h2>
+                {% for scene in scenes %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-location="{{ scene.id }}">
+                  <h2 class="text-center mb-4">Scene {{ scene.id }}</h2>
                   
                   <!-- Image and Image Prompt Side by Side -->
                   <div class="row g-4 mb-4">
                     <div class="col-md-6">
-                      <img src="{% static 'main/images/exampleImage.png' %}" alt="Scene illustration" class="scene-image">
+                      <img src="{% static scene.image_path %}" alt="Scene {{ scene.id }} illustration" class="scene-image">
                     </div>
                     <div class="col-md-6">
                       <label class="form-label fw-bold text-secondary">Image Prompt</label>
-                      <p><a href="{% url 'personas' %}">Bob</a> waits on the rainy city street, his wheelchair positioned near the curb under a flickering lamppost. Water pools around the wheels, catching reflections of neon lights and passing cars. He checks his phone, watching the Uber timer count down. The air smells of wet asphalt and distant exhaust, wrapping the moment in damp stillness and faint hope.</p>
+                      <p>{{ scene.image_prompt }}</p>
                       
                       <!-- Image Prompt Form -->
                       <form method="post" action="{% url 'scene' %}">
                           {% csrf_token %}
-                          <input type="hidden" name="scene_id" value="1">
+                          <input type="hidden" name="scene_id" value="{{ scene.id }}">
                           
                           <div class="position-relative">
                               <textarea 
                                   class="form-control" 
-                                  name="image_Prompt_feedback" 
+                                  name="image_prompt_feedback" 
                                   rows="3" 
                                   placeholder="Edit Image Prompt..."
                               ></textarea>
@@ -87,14 +85,15 @@
                   </div>
 
                   <!-- Narration Centered Below -->
+                  {% if scene.narration %}
                   <div class="mb-4">
                     <label class="form-label fw-bold text-secondary">Narration</label>
-                    <p>The rain had already been falling for an hour, steady and unbothered. Bob (muttering): "Come on, five minutes... let's hope this one's on time." He adjusts his jacket collar and tucks his phone into his lap. The app glows faintly: Driver arriving in 3 minutes.</p>
+                    <p>{{ scene.narration }}</p>
                     
                     <!-- Narration Form -->
                     <form method="post" action="{% url 'scene' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="1">
+                        <input type="hidden" name="scene_id" value="{{ scene.id }}">
                         
                         <div class="position-relative">
                             <textarea 
@@ -115,357 +114,37 @@
                         </div>
                     </form>
                   </div>
+                  {% endif %}
                 </div>
-
-                <!-- Scene 2 -->
-                <div class="carousel-item" data-location="2">
-                  <h2 class="text-center mb-4">Scene 2</h2>
-                  
-                  <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                      <img src="{% static 'main/images/exampleImage.png' %}" alt="Scene illustration" class="scene-image">
+                {% empty %}
+                <div class="carousel-item active">
+                    <div class="alert alert-info">
+                        No scenes have been generated yet. Please complete the previous steps.
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold text-secondary">Image Prompt</label>
-                      <p><a href="{% url 'personas' %}">Claire</a> waits by the <a href="{% url 'locations' %}">City Street</a></p>
-                      
-                      <form method="post" action="{% url 'scene' %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="scene_id" value="2">
-                          
-                          <div class="position-relative">
-                              <textarea 
-                                  class="form-control" 
-                                  name="image_Prompt_feedback" 
-                                  rows="3" 
-                                  placeholder="Edit Image Prompt..."
-                              ></textarea>
-                              <button 
-                                  type="submit" 
-                                  name="action" 
-                                  value="regenerate_image" 
-                                  class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                  style="font-size: 1.5rem; color: #6c757d;"
-                              >
-                                  <i class="bi bi-send"></i>
-                              </button>
-                          </div>
-                      </form>
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold text-secondary">Narration</label>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                    
-                    <form method="post" action="{% url 'scene' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="2">
-                        
-                        <div class="position-relative">
-                            <textarea 
-                                class="form-control" 
-                                name="narration_feedback" 
-                                rows="3" 
-                                placeholder="Edit Narration..."
-                            ></textarea>
-                            <button 
-                                type="submit" 
-                                name="action" 
-                                value="regenerate_narration" 
-                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                style="font-size: 1.5rem; color: #6c757d;"
-                            >
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-                    </form>
-                  </div>
                 </div>
-
-                <!-- Scene 3 -->
-                <div class="carousel-item" data-location="3">
-                  <h2 class="text-center mb-4">Scene 3</h2>
-                  
-                  <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                      <img src="{% static 'main/images/exampleImage.png' %}" alt="Scene illustration" class="scene-image">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold text-secondary">Image Prompt</label>
-                      <p><a href="{% url 'personas' %}">Billy</a> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                      
-                      <form method="post" action="{% url 'scene' %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="scene_id" value="3">
-                          
-                          <div class="position-relative">
-                              <textarea 
-                                  class="form-control" 
-                                  name="image_Prompt_feedback" 
-                                  rows="3" 
-                                  placeholder="Edit Image Prompt..."
-                              ></textarea>
-                              <button 
-                                  type="submit" 
-                                  name="action" 
-                                  value="regenerate_image" 
-                                  class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                  style="font-size: 1.5rem; color: #6c757d;"
-                              >
-                                  <i class="bi bi-send"></i>
-                              </button>
-                          </div>
-                      </form>
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold text-secondary">Narration</label>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                    
-                    <form method="post" action="{% url 'scene' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="3">
-                        
-                        <div class="position-relative">
-                            <textarea 
-                                class="form-control" 
-                                name="narration_feedback" 
-                                rows="3" 
-                                placeholder="Edit Narration..."
-                            ></textarea>
-                            <button 
-                                type="submit" 
-                                name="action" 
-                                value="regenerate_narration" 
-                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                style="font-size: 1.5rem; color: #6c757d;"
-                            >
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-                    </form>
-                  </div>
-                </div>
-
-                <!-- Scene 4 -->
-                <div class="carousel-item" data-location="4">
-                  <h2 class="text-center mb-4">Scene 4</h2>
-                  
-                  <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                      <img src="{% static 'main/images/exampleImage.png' %}" alt="Scene illustration" class="scene-image">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold text-secondary">Image Prompt</label>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                      
-                      <form method="post" action="{% url 'scene' %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="scene_id" value="4">
-                          
-                          <div class="position-relative">
-                              <textarea 
-                                  class="form-control" 
-                                  name="image_Prompt_feedback" 
-                                  rows="3" 
-                                  placeholder="Edit Image Prompt..."
-                              ></textarea>
-                              <button 
-                                  type="submit" 
-                                  name="action" 
-                                  value="regenerate_image" 
-                                  class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                  style="font-size: 1.5rem; color: #6c757d;"
-                              >
-                                  <i class="bi bi-send"></i>
-                              </button>
-                          </div>
-                      </form>
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold text-secondary">Narration</label>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                    
-                    <form method="post" action="{% url 'scene' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="4">
-                        
-                        <div class="position-relative">
-                            <textarea 
-                                class="form-control" 
-                                name="narration_feedback" 
-                                rows="3" 
-                                placeholder="Edit Narration..."
-                            ></textarea>
-                            <button 
-                                type="submit" 
-                                name="action" 
-                                value="regenerate_narration" 
-                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                style="font-size: 1.5rem; color: #6c757d;"
-                            >
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-                    </form>
-                  </div>
-                </div>
-
-                <!-- Scene 5 -->
-                <div class="carousel-item" data-location="5">
-                  <h2 class="text-center mb-4">Scene 5</h2>
-                  
-                  <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                      <img src="{% static 'main/images/exampleImage.png' %}" alt="Scene illustration" class="scene-image">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold text-secondary">Image Prompt</label>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                      
-                      <form method="post" action="{% url 'scene' %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="scene_id" value="5">
-                          
-                          <div class="position-relative">
-                              <textarea 
-                                  class="form-control" 
-                                  name="image_Prompt_feedback" 
-                                  rows="3" 
-                                  placeholder="Edit Image Prompt..."
-                              ></textarea>
-                              <button 
-                                  type="submit" 
-                                  name="action" 
-                                  value="regenerate_image" 
-                                  class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                  style="font-size: 1.5rem; color: #6c757d;"
-                              >
-                                  <i class="bi bi-send"></i>
-                              </button>
-                          </div>
-                      </form>
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold text-secondary">Narration</label>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                    
-                    <form method="post" action="{% url 'scene' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="5">
-                        
-                        <div class="position-relative">
-                            <textarea 
-                                class="form-control" 
-                                name="narration_feedback" 
-                                rows="3" 
-                                placeholder="Edit Narration..."
-                            ></textarea>
-                            <button 
-                                type="submit" 
-                                name="action" 
-                                value="regenerate_narration" 
-                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                style="font-size: 1.5rem; color: #6c757d;"
-                            >
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-                    </form>
-                  </div>
-                </div>
-
-                <!-- Scene 6 -->
-                <div class="carousel-item" data-location="6">
-                  <h2 class="text-center mb-4">Scene 6</h2>
-                  
-                  <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                      <img src="{% static 'main/images/exampleImage.png' %}" alt="Scene illustration" class="scene-image">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-bold text-secondary">Image Prompt</label>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                      
-                      <form method="post" action="{% url 'scene' %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="scene_id" value="6">
-                          
-                          <div class="position-relative">
-                              <textarea 
-                                  class="form-control" 
-                                  name="image_Prompt_feedback" 
-                                  rows="3" 
-                                  placeholder="Edit Image Prompt..."
-                              ></textarea>
-                              <button 
-                                  type="submit" 
-                                  name="action" 
-                                  value="regenerate_image" 
-                                  class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                  style="font-size: 1.5rem; color: #6c757d;"
-                              >
-                                  <i class="bi bi-send"></i>
-                              </button>
-                          </div>
-                      </form>
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="form-label fw-bold text-secondary">Narration</label>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                    
-                    <form method="post" action="{% url 'scene' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="6">
-                        
-                        <div class="position-relative">
-                            <textarea 
-                                class="form-control" 
-                                name="narration_feedback" 
-                                rows="3" 
-                                placeholder="Edit Narration..."
-                            ></textarea>
-                            <button 
-                                type="submit" 
-                                name="action" 
-                                value="regenerate_narration" 
-                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                style="font-size: 1.5rem; color: #6c757d;"
-                            >
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-                    </form>
-                  </div>
-                </div>
+                {% endfor %}
 
               </div>
 
-              <!-- Carousel indicators -->
+              {% if scenes %}
+              <!-- Carousel Controls -->
               <button class="carousel-control-prev" type="button" data-bs-target="#scenesCarousel" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
               </button>
+              
+              <!-- Carousel Indicators -->
               <div class="carousel-indicators position-relative mt-3">
-                <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
-                <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="1"></button>
-                <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="2"></button>
-                <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="3"></button>
-                <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="4"></button>
-                <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="5"></button>
+                {% for scene in scenes %}
+                <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %}></button>
+                {% endfor %}
               </div>
+              
               <button class="carousel-control-next" type="button" data-bs-target="#scenesCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
               </button>
+              {% endif %}
             </div>
 
             <!-- Next Button -->
@@ -478,6 +157,7 @@
 
         </div>
     </div>
+    <script src="{% static 'main/js/common.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

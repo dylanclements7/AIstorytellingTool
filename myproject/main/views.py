@@ -156,9 +156,15 @@ def locations(request):
     })
 
 def scene(request):
-    return render(request, 'main/scene.html')
+    story_data = request.session.get('story', {})
+    
+    return render(request, 'main/scene.html', {
+        'scenes': story_data.get('scenes', []),
+    })
 
 def video(request):
-    return render(request, 'main/video.html')
-
-
+    story_data = request.session.get('story', {})
+    
+    return render(request, 'main/video.html', {
+        'scenes': story_data.get('scenes', []),
+    })
