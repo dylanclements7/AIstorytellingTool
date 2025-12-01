@@ -15,22 +15,26 @@
             <div>1</div>
             <small>Idea</small>
         </div>
-        <div class="step disabled">
+        <a href="{% url 'draft' %}" class="step completed">
             <div>2</div>
             <small>Draft</small>
-        </div>
-        <div class="step disabled">
+        </a>
+        <a href="{% url 'personas' %}" class="step completed">
             <div>3</div>
             <small>Personas</small>
-        </div>
-        <div class="step disabled">
+        </a>
+        <a href="{% url 'locations' %}" class="step completed">
             <div>4</div>
             <small>Locations</small>
-        </div>
-        <div class="step disabled">
+        </a>
+        <a href="{% url 'scene' %}" class="step completed">
             <div>5</div>
-            <small>Scene</small>
-        </div>
+            <small>Scenes</small>
+        </a>
+        <a href="{% url 'video' %}" class="step completed">
+            <div>6</div>
+            <small>Video</small>
+        </a>
     </nav>
 
     <div class="container mt-5">

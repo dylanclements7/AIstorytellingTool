@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
 </head>
 <body class="bg-light">
-
-    <!-- Navbar - Steps 1-2 highlighted, Step 2 active -->
     <nav class="d-flex justify-content-center py-4 bg-white">
         <a href="{% url 'idea' %}" class="step completed">
             <div>1</div>
@@ -21,18 +19,22 @@
             <div>2</div>
             <small>Draft</small>
         </div>
-        <div class="step disabled">
+        <a href="{% url 'personas' %}" class="step completed">
             <div>3</div>
             <small>Personas</small>
-        </div>
-        <div class="step disabled">
+        </a>
+        <a href="{% url 'locations' %}" class="step completed">
             <div>4</div>
             <small>Locations</small>
-        </div>
-        <div class="step disabled">
+        </a>
+        <a href="{% url 'scene' %}" class="step completed">
             <div>5</div>
-            <small>Scene</small>
-        </div>
+            <small>Scenes</small>
+        </a>
+        <a href="{% url 'video' %}" class="step completed">
+            <div>6</div>
+            <small>Video</small>
+        </a>
     </nav>
 
     <div class="container mt-5">
@@ -84,7 +86,7 @@
                         class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
                         style="font-size: 1.5rem; color: #6c757d;"
                     >
-                        <i class="bi bi-send"></i>
+                        <i class="bi bi-rocket-takeoff"></i>
                     </button>
                 </div>
                 

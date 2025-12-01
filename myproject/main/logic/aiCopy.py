@@ -428,3 +428,4 @@ def narrationGenerate(story_data, scene_id, narration_feedback):
     except Exception as e:
         print(f"Error in narrationGenerate: {e}")
         raise
+

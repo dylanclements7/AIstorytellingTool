@@ -1,8 +1,26 @@
+/* Color Palette */
+:root {
+    --gray-600: #60757d;
+    --gray-300: #dde2e5;
+    --blue-400: #3d8bfd;
+    --blue-300: #86b4f8;
+    --green-400: #279876;
+    --green-600: #146c43;
+    --white: #fff;
+    --black: #000;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Global Background */
+body {
+    background-color: var(--gray-300) !important;
+}
+
 /* Navigation Step Styles */
 .step {
     text-align: center;
     margin: 0 15px;
-    color: #6c757d;
+    color: var(--gray-600);
     text-decoration: none;
 }
 
@@ -11,25 +29,84 @@
     height: 50px;
     line-height: 50px;
     border-radius: 50%;
-    border: 2px solid #6c757d;
+    border: 2px solid var(--gray-600);
     margin: 0 auto 5px;
     font-weight: bold;
+    background-color: var(--white);
 }
 
 .step.active div {
-    background-color: #6c757d;
-    color: white;
+    background-color: var(--gray-600);
+    color: var(--white);
 }
 
 .step.completed div {
-    background-color: #198754;
-    border-color: #198754;
-    color: white;
+    background-color: var(--green-600);
+    border-color: var(--green-600);
+    color: var(--white);
 }
 
 .step.disabled {
     pointer-events: none;
     opacity: 0.5;
+}
+
+/* Cards */
+.card {
+    background-color: var(--white);
+    border: none;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--blue-400);
+    border-color: var(--blue-400);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: var(--blue-300);
+    border-color: var(--blue-300);
+}
+
+.btn-secondary {
+    background-color: var(--gray-600);
+    border-color: var(--gray-600);
+    color: var(--white);
+}
+
+.btn-secondary:hover {
+    background-color: var(--gray-300);
+    border-color: var(--gray-300);
+    color: var(--gray-600);
+}
+
+.btn-success {
+    background-color: var(--green-400);
+    border-color: var(--green-400);
+}
+
+.btn-success:hover {
+    background-color: var(--green-600);
+    border-color: var(--green-600);
+}
+
+/* Badges */
+.badge {
+    background-color: var(--blue-400);
+}
+
+.badge.bg-secondary {
+    background-color: var(--gray-600) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--green-400) !important;
+}
+
+.badge.bg-primary {
+    background-color: var(--blue-400) !important;
 }
 
 /* Carousel Styles */
@@ -43,7 +120,7 @@
 }
 
 .carousel-indicators [data-bs-target] {
-    background-color: #6c757d;
+    background-color: var(--gray-600);
     width: 12px;
     height: 12px;
     border-radius: 50%;
@@ -52,39 +129,40 @@
 
 .carousel-indicators .active {
     opacity: 1;
+    background-color: var(--blue-400);
 }
 
-.carousel-indicators .active {
-    opacity: 1;
-}
-
-.carousel-control-prev-icon, .carousel-control-next-icon{
-    background-color: rgba(0, 0, 0, 0.5);
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: var(--gray-600);
     border-radius: 50%;
     padding: 10px;
 }
 
+.carousel-control-prev,
 .carousel-control-next {
-    right: 20%;
     position: absolute;
-    top: auto;
-    bottom: 0;
-    height: 80px;
-    width: 80px;
+    top: auto !important;
+    bottom: -50px !important;
+    width: 40px !important;
+    height: 40px !important;
 }
+
 .carousel-control-prev {
-    left: 20%;
-    position: absolute;
-    top: auto;
-    bottom: 0;
-    height: 80px;
-    width: 80px;
+    left: 40% !important;
+}
+
+.carousel-control-next {
+    right: 40% !important;
+    left: auto !important;
 }
 
 /* Scene-specific Styles */
 .scene-image {
     width: 100%;
     height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px var(--shadow);
 }
 
 .carousel-inner {
@@ -95,29 +173,85 @@
 .prompt-badge {
     cursor: pointer;
     transition: all 0.2s;
+    background-color: var(--gray-600) !important;
 }
 
 .prompt-badge:hover {
     transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 8px var(--shadow);
+    background-color: var(--blue-400) !important;
 }
 
-body {
-    background-color: #f8f9fa;
-    padding: 40px;
+/* Form Controls */
+.form-control:focus {
+    border-color: var(--blue-400);
+    box-shadow: 0 0 0 0.2rem rgba(61, 139, 253, 0.25);
 }
+
+textarea.form-control {
+    border-color: var(--gray-300);
+}
+
+/* Borders and Backgrounds */
+.border {
+    border-color: var(--gray-300) !important;
+}
+
+.bg-light {
+    background-color: var(--gray-300) !important;
+}
+
+.bg-white {
+    background-color: var(--white) !important;
+}
+
+/* Text Colors */
+.text-secondary {
+    color: var(--gray-600) !important;
+}
+
+.text-muted {
+    color: var(--gray-600) !important;
+    opacity: 0.8;
+}
+
+/* Links */
+a {
+    color: var(--blue-400);
+}
+
+a:hover {
+    color: var(--blue-300);
+}
+
+/* Navbar Background */
+nav.bg-white {
+    background-color: var(--white) !important;
+    box-shadow: 0 2px 4px var(--shadow);
+}
+
+/* Video Grid */
 .video-grid img {
     width: 100%;
     height: auto;
-    border-radius: 10px;
-    transition: transform 0.2s ease-in-out;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px var(--shadow);
+    transition: transform 0.2s;
 }
+
 .video-grid img:hover {
-    transform: scale(1.03);
-    cursor: pointer;
+    transform: scale(1.02);
 }
-.caption {
-    text-align: center;
-    margin-top: 8px;
-    font-weight: 500;
+
+.video-grid .caption {
+    margin-top: 10px;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+/* Alert Styles */
+.alert-info {
+    background-color: var(--blue-300);
+    border-color: var(--blue-400);
+    color: var(--black);
 }

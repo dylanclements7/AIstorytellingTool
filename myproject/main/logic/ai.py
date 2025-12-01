@@ -14,18 +14,6 @@ api_key = os.getenv("GEMINI_API_KEY")
 # Configure Gemini
 genai.configure(api_key=api_key)
 
-# JSON Schemas for structured output
-# overview_schema = {
-#     "type": "object",
-#     "properties": {
-#         "storyline": {"type": "string"},
-#         "emotional_tones": {
-#             "type": "array",
-#             "items": {"type": "string"}
-#         }
-#     },
-#     "required": ["storyline", "emotional_tones"]
-# }
 
 story_schema = {
     "type": "object",
@@ -78,59 +66,6 @@ story_schema = {
     "required": ["storyline", "persona_description", "setting_description", "scenes", "emotional_tones"]
 }
 
-
-# def storyOverview(idea_text):
-#     prompt = f"""
-#     Based on this story idea, create a storyline overview in 6-10 sentences. The overview should include 1-3 main characters, 1-3 settings, and a description of 6 scenes.
-    
-#     Based off the storyline, identify the primary emotional tones of the story.
-
-#     Story Idea: {idea_text}
-#     """
-    
-#     try:
-#         model = genai.GenerativeModel(
-#             'models/gemini-2.5-flash',
-#             generation_config={
-#                 "response_mime_type": "application/json",
-#                 "response_schema": overview_schema
-#             }
-#         )
-#         response = model.generate_content(prompt)
-#         result = json.loads(response.text)
-#         logger.info(f"storyOverview result: {result}")
-#         return result
-#     except Exception as e:
-#         logger.error(f"Error in storyOverview: {e}")
-#         raise
-
-
-# def editOverview(current_overview, feedback):
-#     prompt = f"""
-#     Based on this story overview and user feedback, edit the 6-10 sentence storyline only making changes described in user feedback and then identify the primary emotional tones of the edited version. 
-
-#     Make sure the overview still includes 1-3 main characters, 1-3 settings, and a description of 6 scenes.
-    
-#     Current overview: {current_overview}
-
-#     Feedback: {feedback}
-#     """
-    
-#     try:
-#         model = genai.GenerativeModel(
-#             'models/gemini-2.5-flash',
-#             generation_config={
-#                 "response_mime_type": "application/json",
-#                 "response_schema": overview_schema
-#             }
-#         )
-#         response = model.generate_content(prompt)
-#         result = json.loads(response.text)
-#         logger.info(f"editOverview result: {result}")
-#         return result
-#     except Exception as e:
-#         logger.error(f"Error in editOverview: {e}")
-#         raise
 
 def storylineGenerate(story_data, feedback):
     """
@@ -200,11 +135,11 @@ def storyGenerate(idea):
 
     (2) Identify the primary emotional tones of the story.
 
-    (3) Create a persona_description of each persona (1-3 personas) including: id (starting from 1), name, age, clothing, skin tone, hair.
+    (3) Create a persona_description of each persona (1-3 personas) including: id (starting from 1), name, age, clothing, skin tone, hair. Be detailed and specific so that image generation is consistent.
 
-    (4) Create a setting_description for each setting (1-3 settings) including: id (starting from 1), name, and detailed description.
+    (4) Create a setting_description for each setting (1-3 settings) including: id (starting from 1), name, and a detailed description so that image generation is consistent.
 
-    (5) Create exactly 6 scenes. Each scene should have: id (starting from 1), the narration for the scene, and an image_prompt that describes a detailed visual for AI image generation using the persona and setting descriptions.  Personas and descriptions should be consistent across scenes.
+    (5) Create exactly 6 scenes. Each scene should have: id (starting from 1), the narration for the scene, and an image_prompt that describes a detailed visual for AI image generation using exactly the persona and setting descriptions.
     """
     
     try:
@@ -224,40 +159,60 @@ def storyGenerate(idea):
         logger.error(f"Error in storyGenerate: {e}")
         raise
 
-def generate_scene_image(image_prompt, scene_id):
+
+import time
+
+def generate_scene_image(image_prompt, scene_id, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            # Import here to avoid conflicts
+            from google import genai as google_genai
+            
+            # Create client with API key
+            client = google_genai.Client(api_key=api_key)
+            
+            # Generate image
+            response = client.models.generate_content(
+                model="gemini-2.5-flash-image",
+                contents=[image_prompt],
+            )
+            
+            # Extract and save image
+            for part in response.parts:
+                if part.inline_data is not None:
+                    image = part.as_image()
+                    
+                    # Create directory if it doesn't exist
+                    image_dir = Path("main/static/main/images/generated")
+                    image_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # Save with scene_id as filename
+                    image_path = image_dir / f"scene_{scene_id}.png"
+                    image.save(str(image_path))
+                    
+                    logger.info(f"Generated image for scene {scene_id} on attempt {attempt + 1}")
+                    
+                    # Return path relative to static folder
+                    return f"main/images/generated/scene_{scene_id}.png"
+            
+            # If no image in response
+            logger.warning(f"No image generated for scene {scene_id} on attempt {attempt + 1}")
+            
+        except Exception as e:
+            logger.warning(f"Error generating image for scene {scene_id} (attempt {attempt + 1}/{max_retries}): {e}")
+            
+            if attempt < max_retries - 1:
+                # Exponential backoff: wait 2^attempt seconds
+                wait_time = 2 ** attempt
+                logger.info(f"Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                # All retries failed
+                logger.error(f"Failed to generate image for scene {scene_id} after {max_retries} attempts")
+                return "main/images/exampleImage.png"
     
-    try:
-        from google import genai as google_genai
-        client = google_genai.Client(api_key=api_key)
-        
-        # Generate image
-        response = client.models.generate_content(
-            model="gemini-2.5-flash-image",
-            contents=[image_prompt],
-        )
-        
-        # Extract and save image
-        for part in response.parts:
-            if part.inline_data is not None:
-                image = part.as_image()
-                
-                # Create directory if it doesn't exist
-                image_dir = Path("main/static/main/images/generated")
-                image_dir.mkdir(parents=True, exist_ok=True)
-                
-                # Save with scene_id as filename
-                image_path = image_dir / f"scene_{scene_id}.png"
-                image.save(str(image_path))
-                
-                logger.info(f"Generated image for scene {scene_id}")
-                
-                # Return path relative to static folder
-                return f"main/images/generated/scene_{scene_id}.png"
-        
-    except Exception as e:
-        logger.error(f"Error generating image for scene {scene_id}: {e}")
-        # Return placeholder path if generation fails
-        return "main/images/exampleImage.png"
+    # Fallback if loop completes without returning
+    return "main/images/exampleImage.png"
 
 def generate_all_scene_images(scenes):
     updated_scenes = []
@@ -293,7 +248,7 @@ def characterGenerate(story_data, character_id, feedback):
     other_characters = [c for c in story_data['persona_description'] if c['id'] != character_id]
     
     prompt = f"""
-    You are updating a character in a story and must regenerate the ENTIRE story to reflect this change consistently throughout.
+    You are updating a character in a story and must edit any part of the story necessary to reflect this change consistently throughout.
     
     Current Story:
     Storyline: {story_data['storyline']}
@@ -314,11 +269,13 @@ def characterGenerate(story_data, character_id, feedback):
     {json.dumps(story_data['scenes'], indent=2)}
     
     IMPORTANT:
-    1. Update character {character_id} based on the user feedback
-    2. Keep the emotional tones, other characters, and settings the same
-    3. Regenerate the storyline and all 6 scenes to reflect the updated character consistently
-    4. If the character's name changed, update it everywhere in the scenes
-    5. Maintain the same story flow and scene structure
+    IMPORTANT:
+    1. Update character {character_id} based on the user feedback.
+    2. Keep the emotional tones, other characters, and other settings unchanged.
+    3. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated location naturally.
+    4. If this character's description changes significantly, update how scenes describe it.
+    5. Maintain the same story flow, structure, and scene ordering.
+    6. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
     """
     
     try:
@@ -357,8 +314,8 @@ def locationGenerate(story_data, location_id, feedback):
     ]
 
     prompt = f"""
-    You are updating a location in a story and must regenerate the ENTIRE story 
-    to reflect this environmental change consistently throughout.
+    You are updating a location in a story and must minimally regenerate any parts of the story 
+    that need changes to reflect this environmental change consistently throughout.
 
     Current Story:
     Storyline: {story_data['storyline']}
@@ -382,9 +339,10 @@ def locationGenerate(story_data, location_id, feedback):
     IMPORTANT:
     1. Update location {location_id} based on the user feedback.
     2. Keep the emotional tones, other characters, and other settings unchanged.
-    3. Regenerate the storyline and all 6 scenes to reflect the updated location naturally.
+    3. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated location naturally.
     4. If this location's description changes significantly, update how scenes describe it.
     5. Maintain the same story flow, structure, and scene ordering.
+    6. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
     """
 
     try:
@@ -392,7 +350,7 @@ def locationGenerate(story_data, location_id, feedback):
             "models/gemini-2.5-flash",
             generation_config={
                 "response_mime_type": "application/json",
-                "response_schema": story_schema   # <-- FULL STORY SCHEMA
+                "response_schema": story_schema  
             }
         )
 
@@ -467,7 +425,8 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
     
     prompt = f"""
     A user is editing the image prompt for Scene {scene_id}. This change may affect character descriptions, 
-    locations, or other story elements. You must regenerate the ENTIRE story to maintain consistency.
+    locations, or other story elements. You must regenerate any element in the story that needs to be changed to ensure
+    complete consistency throughout the entire story.
     
     Current Story:
     Storyline: {story_data['storyline']}
@@ -488,13 +447,15 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
     
     User's Change to Scene {scene_id} Image Prompt: {image_prompt_feedback}
     
-    CRITICAL INSTRUCTIONS:
+    IMPORTANT:
     1. If the feedback changes a character's appearance (hair color, clothing, age, etc.), 
        update that character in persona_description
     2. If the feedback changes a location's details, update that location in setting_description
     3. Update the storyline if the visual change affects the narrative
-    4. Regenerate ALL 6 scene image prompts to reflect the changes consistently
-    5. Update ALL scene narrations to match the visual changes.
+    4. Regenerate any of the image prompts that need to be changed to reflect the updated story elements.
+    5. Update the narrations of any scenes affected by these changes.
+    6. Maintain the same story flow, structure, and scene ordering.
+    7. Make minimal changes necessary to ensure consistency after making the user's changes.
     
     The goal is complete consistency: if something changes visually in one scene, 
     it must be reflected everywhere in the story.

@@ -101,32 +101,7 @@ def personas(request):
         'persona_description': story_data.get('persona_description', []),
     })
 
-# def locations(request):
-#     story = request.session.get('story', {})
-    
-#     if request.method == 'POST':
-#         action = request.POST.get('action')
-        
-#         if action == 'regenerate':
-            
-#             location_id = int(request.POST.get('location_id'))
-#             feedback = request.POST.get('feedback')
-            
-#             # Regenerate character
-#             updated_character = characterGenerate(story, location_id, feedback)
-            
-#             # Update in session
-#             for i, char in enumerate(story['setting_description']):
-#                 if char['id'] == location_id:
-#                     story['setting_description'][i] = updated_character
-#                     break
-            
-#             request.session['story'] = story
-#             request.session.modified = True
-    
-#     return render(request, 'main/locations.html', {
-#         'setting_description': story.get('setting_description', []),
-#     })
+
 
 def locations(request):
     story_data = request.session.get('story', {})
