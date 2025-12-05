@@ -53,17 +53,22 @@ story_schema = {
                 "properties": {
                     "id": {"type": "integer"},
                     "image_prompt": {"type": "string"},
-                    "narration": {"type": "string"}
+                    "narration": {"type": "string"},
+                    "emotional_tones": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                    "characters": {
+                        "type": "array",
+                        "items": {"type": "string"}
+                    },
+                    "location": {"type": "string"}
                 },
-                "required": ["id", "image_prompt"]
+                "required": ["id", "image_prompt", "narration", "emotional_tones", "characters", "location"]
             }
         },
-        "emotional_tones": {
-            "type": "array",
-            "items": {"type": "string"}
-        }
     },
-    "required": ["storyline", "persona_description", "setting_description", "scenes", "emotional_tones"]
+    "required": ["storyline", "persona_description", "setting_description", "scenes"]
 }
 
 
@@ -83,7 +88,6 @@ def storylineGenerate(story_data, feedback):
     
     Current Story:
     Storyline: {story_data['storyline']}
-    Emotional Tones: {', '.join(story_data['emotional_tones'])}
     
     Characters:
     {json.dumps(story_data['persona_description'], indent=2)}
@@ -98,8 +102,7 @@ def storylineGenerate(story_data, feedback):
     
     IMPORTANT:
     1. Update the storyline based on the user feedback
-    2. Update emotional tones if the storyline changes warrant it
-    3. Keep characters and locations generally the same unless the storyline change requires modification
+    2. Keep characters and locations generally the same unless the storyline change requires modification
     4. Regenerate all 6 scenes to match the updated storyline
     5. Maintain story coherence and flow
     """
@@ -114,10 +117,10 @@ def storylineGenerate(story_data, feedback):
         )
         response = model.generate_content(prompt)
         result = json.loads(response.text)
-        logger.info(f"storylineGenerate result: {result}")
+        logger.warning(f"storylineGenerate result: {result}")
         
         # Regenerate images for updated scenes
-        result['scenes'] = generate_all_scene_images(result['scenes'])
+        result['scenes'] = generate_all_scene_images(result['scenes'], result)
         
         return result
     except Exception as e:
@@ -127,7 +130,7 @@ def storylineGenerate(story_data, feedback):
 
 def storyGenerate(idea):
     prompt = f"""
-    You are a helpful tool to create a vlog-style script based off this story idea: {idea}. The vlog should be in a 1 minute long shortform video style."""
+    You are a helpful tool to create a story based off this story idea: {idea}. The story should be in a 1 minute-long shortform video style."""
     prompt += f"""
     Use chain-of-thoughts to create a script. 
     
@@ -135,11 +138,12 @@ def storyGenerate(idea):
 
     (2) Identify the primary emotional tones of the story.
 
-    (3) Create a persona_description of each persona (1-3 personas) including: id (starting from 1), name, age, clothing, skin tone, hair. Be detailed and specific so that image generation is consistent.
+    (3) Create a persona_description of each persona (1-3 personas) including: id (starting from 1), name, age, clothing, skin tone, hair. Be detailed and specific so that AI image generation is consistent with appearance repeatedly when handed this description.
 
-    (4) Create a setting_description for each setting (1-3 settings) including: id (starting from 1), name, and a detailed description so that image generation is consistent.
+    (4) Create a setting_description for each setting (1-3 settings) including: id (starting from 1), name, and a detailed description so that image generation is consistent with appearance repeatedly when handed this description.
 
     (5) Create exactly 6 scenes. Each scene should have: id (starting from 1), the narration for the scene, and an image_prompt that describes a detailed visual for AI image generation using exactly the persona and setting descriptions.
+        Each scene should also include 1-3 emotional tones in the scene, the personas present in the scene by name, and the setting in the scene by name.
     """
     
     try:
@@ -153,7 +157,7 @@ def storyGenerate(idea):
         response = model.generate_content(prompt)
         result = json.loads(response.text)
         logger.info(f"storyGenerate result: {result}")
-        result['scenes'] = generate_all_scene_images(result['scenes'])
+        result['scenes'] = generate_all_scene_images(result['scenes'], result)
         return result
     except Exception as e:
         logger.error(f"Error in storyGenerate: {e}")
@@ -161,20 +165,48 @@ def storyGenerate(idea):
 
 
 import time
+import re
 
-def generate_scene_image(image_prompt, scene_id, max_retries=3):
+def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, max_retries=3):
+    # Replace character names with full descriptions
+    enhanced_prompt = image_prompt
+    
+    for persona in story_data.get('persona_description', []):
+        name = persona['name']
+        description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
+        # Replace name with full description
+        enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
+    
+    # Replace location names with full descriptions
+    for location in story_data.get('setting_description', []):
+        name = location['name']
+        description = location['description']
+        enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
+    tone_text = ", ".join(emotional_tones)
+    enhanced_prompt += f". The image should reflect the emotional tones: {tone_text}."
+    print(f"Enhanced prompt for scene {scene_id}: {enhanced_prompt}")
     for attempt in range(max_retries):
         try:
-            # Import here to avoid conflicts
             from google import genai as google_genai
-            
+            from google.genai import types
             # Create client with API key
             client = google_genai.Client(api_key=api_key)
             
-            # Generate image
+            # Generate image flash
+            # response = client.models.generate_content(
+            #     model="gemini-2.5-flash-image",
+            #     contents=[enhanced_prompt],
+            # )
+
+            #Generate image pro
             response = client.models.generate_content(
-                model="gemini-2.5-flash-image",
-                contents=[image_prompt],
+                model="gemini-3-pro-image-preview",
+                contents=[enhanced_prompt],
+                config=types.GenerateContentConfig(
+                    image_config=types.ImageConfig(
+                        aspect_ratio="9:16"   
+                    )
+                )
             )
             
             # Extract and save image
@@ -182,7 +214,6 @@ def generate_scene_image(image_prompt, scene_id, max_retries=3):
                 if part.inline_data is not None:
                     image = part.as_image()
                     
-                    # Create directory if it doesn't exist
                     image_dir = Path("main/static/main/images/generated")
                     image_dir.mkdir(parents=True, exist_ok=True)
                     
@@ -192,10 +223,9 @@ def generate_scene_image(image_prompt, scene_id, max_retries=3):
                     
                     logger.info(f"Generated image for scene {scene_id} on attempt {attempt + 1}")
                     
-                    # Return path relative to static folder
+                    # Return path 
                     return f"main/images/generated/scene_{scene_id}.png"
             
-            # If no image in response
             logger.warning(f"No image generated for scene {scene_id} on attempt {attempt + 1}")
             
         except Exception as e:
@@ -214,15 +244,22 @@ def generate_scene_image(image_prompt, scene_id, max_retries=3):
     # Fallback if loop completes without returning
     return "main/images/exampleImage.png"
 
-def generate_all_scene_images(scenes):
+
+def generate_all_scene_images(scenes, story_data):
+    """Generate images with full character/location context."""
     updated_scenes = []
     
-    for scene in scenes:
+    for i, scene in enumerate(scenes):
         try:
-            # Generate image for this scene
-            image_path = generate_scene_image(scene['image_prompt'], scene['id'])
+            if i > 0:
+                time.sleep(1)
             
-            # Update scene with image path
+            image_path = generate_scene_image(
+                scene['image_prompt'],
+                scene['emotional_tones'], 
+                scene['id'],
+                story_data  # Pass story data
+            )
             scene['image_path'] = image_path
             updated_scenes.append(scene)
             
@@ -230,7 +267,6 @@ def generate_all_scene_images(scenes):
             
         except Exception as e:
             logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
-            # Use placeholder if generation fails
             scene['image_path'] = "main/images/exampleImage.png"
             updated_scenes.append(scene)
     
@@ -252,7 +288,6 @@ def characterGenerate(story_data, character_id, feedback):
     
     Current Story:
     Storyline: {story_data['storyline']}
-    Emotional Tones: {', '.join(story_data['emotional_tones'])}
     
     Character Being Updated (ID {character_id}):
     {json.dumps(current_character, indent=2)}
@@ -271,11 +306,9 @@ def characterGenerate(story_data, character_id, feedback):
     IMPORTANT:
     IMPORTANT:
     1. Update character {character_id} based on the user feedback.
-    2. Keep the emotional tones, other characters, and other settings unchanged.
-    3. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated location naturally.
-    4. If this character's description changes significantly, update how scenes describe it.
-    5. Maintain the same story flow, structure, and scene ordering.
-    6. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
+    2. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated character naturally (updating apperance, name, etc.).
+    3. Maintain the same story flow, structure, and scene ordering.
+    4. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
     """
     
     try:
@@ -291,7 +324,7 @@ def characterGenerate(story_data, character_id, feedback):
         logger.info(f"characterGenerate result: {result}")
 
         logger.info("Regenerating all scene images with updated character...")
-        result['scenes'] = generate_all_scene_images(result['scenes'])
+        result['scenes'] = generate_all_scene_images(result['scenes'], result)
         return result
     except Exception as e:
         logger.error(f"Error in characterGenerate: {e}")
@@ -319,7 +352,6 @@ def locationGenerate(story_data, location_id, feedback):
 
     Current Story:
     Storyline: {story_data['storyline']}
-    Emotional Tones: {', '.join(story_data['emotional_tones'])}
 
     Location Being Updated (ID {location_id}):
     {json.dumps(current_location, indent=2)}
@@ -338,11 +370,9 @@ def locationGenerate(story_data, location_id, feedback):
 
     IMPORTANT:
     1. Update location {location_id} based on the user feedback.
-    2. Keep the emotional tones, other characters, and other settings unchanged.
-    3. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated location naturally.
-    4. If this location's description changes significantly, update how scenes describe it.
-    5. Maintain the same story flow, structure, and scene ordering.
-    6. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
+    2. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated location naturally (updating description, name, etc.)
+    3. Maintain the same story flow, structure, and scene ordering.
+    4. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
     """
 
     try:
@@ -360,7 +390,7 @@ def locationGenerate(story_data, location_id, feedback):
         logger.info(f"locationGenerate result: {result}")
 
         logger.info("Regenerating all scene images with updated character...")
-        result['scenes'] = generate_all_scene_images(result['scenes'])
+        result['scenes'] = generate_all_scene_images(result['scenes'], result)
         return result
 
     except Exception as e:
@@ -385,7 +415,6 @@ def narrationGenerate(story_data, scene_id, narration_feedback):
     
     Story Context:
     Storyline: {story_data['storyline']}
-    Emotional Tones: {', '.join(story_data['emotional_tones'])}
     
     Scene {scene_id} Image:
     {current_scene['image_prompt']}
@@ -430,7 +459,6 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
     
     Current Story:
     Storyline: {story_data['storyline']}
-    Emotional Tones: {', '.join(story_data['emotional_tones'])}
     
     Characters:
     {json.dumps(story_data['persona_description'], indent=2)}
@@ -448,14 +476,13 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
     User's Change to Scene {scene_id} Image Prompt: {image_prompt_feedback}
     
     IMPORTANT:
-    1. If the feedback changes a character's appearance (hair color, clothing, age, etc.), 
+    1. only if the feedback changes a character's appearance (hair color, clothing, age, etc.), 
        update that character in persona_description
-    2. If the feedback changes a location's details, update that location in setting_description
-    3. Update the storyline if the visual change affects the narrative
-    4. Regenerate any of the image prompts that need to be changed to reflect the updated story elements.
-    5. Update the narrations of any scenes affected by these changes.
-    6. Maintain the same story flow, structure, and scene ordering.
-    7. Make minimal changes necessary to ensure consistency after making the user's changes.
+    2. Only if the feedback changes a location's details, update that location in setting_description
+    3. Update the storyline only if the change affects the narrative to guarantee consistency.
+    4. Regenerate the parts of all 6 scenes that need to be changed to reflect the updated image prompt naturally.
+    5. Maintain the same story flow, structure, and scene ordering.
+    6. Make minimal changes necessary to ensure consistency after making the user's changes. For example, if the user feedback is that a character should be doing a certain action or the camera angle should be different, only this scne's image prompt and narration need to be changed, nothing else.
     
     The goal is complete consistency: if something changes visually in one scene, 
     it must be reflected everywhere in the story.
@@ -475,7 +502,7 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
         
         # Regenerate ALL images with updated prompts
         logger.info("Regenerating all scene images...")
-        result['scenes'] = generate_all_scene_images(result['scenes'])
+        result['scenes'] = generate_all_scene_images(result['scenes'], result)
         
         return result
     except Exception as e:
