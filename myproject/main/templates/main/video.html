@@ -9,28 +9,105 @@
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
 </head>
 <body>
+    <nav class="d-flex justify-content-center py-4 bg-white">
+        <a href="{% url 'idea' %}" class="step completed">
+            <div>1</div>
+            <small>Idea</small>
+        </a>
+        <a href="{% url 'draft' %}" class="step completed">
+            <div>2</div>
+            <small>Draft</small>
+        </a>
+        <a href="{% url 'personas' %}" class="step completed">
+            <div>3</div>
+            <small>Personas</small>
+        </a>
+        <a href="{% url 'locations' %}" class="step completed">
+            <div>4</div>
+            <small>Locations</small>
+        </a>
+        <a href="{% url 'scene' %}" class="step completed">
+            <div>5</div>
+            <small>Scenes</small>
+        </a>
+        <div class="step active">
+            <div>6</div>
+            <small>Video</small>
+    </div>
+    </nav>
 
-<div class="container text-center">
-    <h2 class="mb-4">View Your Story</h2>
-    <div class="row video-grid g-4">
-
-        {% for scene in scenes %}
-        <div class="col-md-4 col-sm-6">
-            <h2>Scene {{ scene.id }}</h2>
-            <a href="{% url 'scene' %}?slide={{ scene.id }}">
-                <img src="{% static scene.image_path %}" alt="Scene {{ scene.id }}">
-            </a>
-            <div class="caption">{{ scene.narration }}</div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                No scenes available. Please complete the story generation steps.
+    <div class="mt-5">
+        <div class="card shadow-sm mx-auto p-4" style="max-width: 900px; text-align: left;">
+            <h3 class="mb-4 text-center">Story Overview</h3>
+            
+            <!-- Storyline -->
+            <div class="mb-4">
+                <h5 class="text-secondary">Storyline:</h5>
+                <p>{{ story_data.storyline }}</p>
+            </div>
+            
+            <!-- Emotional Tones -->
+            <div class="mb-4">
+                <h5 class="text-secondary">Emotional Tones:</h5>
+                <div>
+                    {% for scene in scenes %}
+                    {% for tone in scene.emotional_tones %}
+                    <span class="badge bg-primary me-1">{{ tone }}</span>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Characters -->
+            <div class="mb-4">
+                <h5 class="text-secondary">Characters:</h5>
+                {% for persona in story_data.persona_description %}
+                <div class="mb-3">
+                    <strong>{{ persona.name }}</strong> ({{ persona.age }})
+                    <ul class="mt-2">
+                        <li><strong>Hair:</strong> {{ persona.hair }}</li>
+                        <li><strong>Skin:</strong> {{ persona.skin }}</li>
+                        <li><strong>Clothing:</strong> {{ persona.clothing }}</li>
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Locations -->
+            <div class="mb-4">
+                <h5 class="text-secondary">Locations:</h5>
+                {% for location in story_data.setting_description %}
+                <div class="mb-3">
+                    <strong>{{ location.name }}</strong>
+                    <p class="mt-2">{{ location.description }}</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
-        {% endfor %}
-
     </div>
-</div>
+
+    <div class="container text-center">
+        <br>
+        <h2 class="mb-4">View Your Story</h2>
+        <div class="row video-grid g-4">
+
+            {% for scene in scenes %}
+            <div class="col-md-4 col-sm-6">
+                <h2>Scene {{ scene.id }}</h2>
+                <a href="{% url 'scene' %}?slide={{ scene.id }}">
+                    <img src="{% static scene.image_path %}" alt="Scene {{ scene.id }}">
+                </a>
+                <div class="caption" style="font-size: 20px; color: black;"><p>{{ scene.narration }}</div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No scenes available. Please complete the story generation steps.
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
 </body>
 </html>

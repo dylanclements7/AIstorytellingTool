@@ -1,61 +1,93 @@
-/* Color Palette */
+/* Color Palette – slightly darkened for better contrast */
 :root {
-    --gray-600: #60757d;
+    --gray-600: #4e5c63;      /* darker for WCAG contrast */
     --gray-300: #dde2e5;
-    --blue-400: #3d8bfd;
-    --blue-300: #86b4f8;
-    --green-400: #279876;
-    --green-600: #146c43;
-    --white: #fff;
-    --black: #000;
-    --shadow: rgba(0, 0, 0, 0.1);
+    --blue-400: #2f78e6;      /* improved contrast */
+    --blue-300: #6ba8ff;
+    --green-400: #1f7e60;     /* improved contrast */
+    --green-600: #0f5132;     /* stays WCAG-safe */
+    --white: #ffffff;
+    --black: #000000;
+    --shadow: rgba(0, 0, 0, 0.12);
 }
 
 /* Global Background */
 body {
     background-color: var(--gray-300) !important;
+    color: var(--gray-600);
 }
 
-/* Navigation Step Styles */
+/* Base step link */
 .step {
     text-align: center;
-    margin: 0 15px;
+    margin: 0 0.9375rem;
     color: var(--gray-600);
     text-decoration: none;
+    transition: color 0.2s;
 }
 
+/* Circle base */
 .step div {
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
+    width: 3.125rem;
+    height: 3.125rem;
+    line-height: 3.125rem;
     border-radius: 50%;
-    border: 2px solid var(--gray-600);
-    margin: 0 auto 5px;
+    border: 0.125rem solid var(--gray-600);
+    margin: 0 auto 0.3125rem;
     font-weight: bold;
     background-color: var(--white);
+    color: var(--gray-600);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
+/* Label text */
+.step small {
+    font-size: 0.875rem;
+}
+
+/* Hover (only for links) */
+a.step:hover div {
+    background-color: var(--gray-300);
+    border-color: var(--gray-600);
+    color: var(--black);
+}
+
+/* ACTIVE STEP (current step) */
 .step.active div {
-    background-color: var(--gray-600);
-    color: var(--white);
-}
-
-.step.completed div {
     background-color: var(--green-600);
     border-color: var(--green-600);
     color: var(--white);
 }
 
+.step.active small {
+    color: var(--green-600);
+    font-weight: 600;
+}
+
+/* COMPLETED STEPS */
+.step.completed div {
+    background-color: var(--green-400);
+    border-color: var(--green-400);
+    color: var(--white);
+}
+
+.step.completed small {
+    color: var(--green-600);
+    font-weight: 600;
+}
+
+/* Disabled (if ever used) */
 .step.disabled {
     pointer-events: none;
     opacity: 0.5;
 }
 
+
 /* Cards */
 .card {
     background-color: var(--white);
     border: none;
-    box-shadow: 0 2px 8px var(--shadow);
+    box-shadow: 0 0.125rem 0.5rem var(--shadow);
 }
 
 /* Buttons */
@@ -77,14 +109,15 @@ body {
 }
 
 .btn-secondary:hover {
-    background-color: var(--gray-300);
-    border-color: var(--gray-300);
-    color: var(--gray-600);
+    background-color: #6c7a81; /* hover maintains contrast */
+    border-color: #6c7a81;
+    color: var(--white);
 }
 
 .btn-success {
     background-color: var(--green-400);
     border-color: var(--green-400);
+    color: var(--white);
 }
 
 .btn-success:hover {
@@ -111,7 +144,7 @@ body {
 
 /* Carousel Styles */
 .carousel-item {
-    min-height: 300px;
+    min-height: 18.75rem;
 }
 
 .carousel-indicators {
@@ -121,8 +154,8 @@ body {
 
 .carousel-indicators [data-bs-target] {
     background-color: var(--gray-600);
-    width: 12px;
-    height: 12px;
+    width: 0.75rem;
+    height: 0.75rem;
     border-radius: 50%;
     opacity: 0.5;
 }
@@ -136,16 +169,16 @@ body {
 .carousel-control-next-icon {
     background-color: var(--gray-600);
     border-radius: 50%;
-    padding: 10px;
+    padding: 0.625rem;
 }
 
 .carousel-control-prev,
 .carousel-control-next {
     position: absolute;
     top: auto !important;
-    bottom: -50px !important;
-    width: 40px !important;
-    height: 40px !important;
+    bottom: -3.125rem !important;
+    width: 2.5rem !important;
+    height: 2.5rem !important;
 }
 
 .carousel-control-prev {
@@ -159,33 +192,36 @@ body {
 
 /* Scene-specific Styles */
 .scene-image {
-    width: 100%;
+    margin-left: 1.5rem;
+    width: 80%;
     height: auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px var(--shadow);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem var(--shadow);
+    display: block;
 }
 
 .carousel-inner {
-    min-height: 100px;
+    min-height: 6.25rem;
 }
 
-/* Prompt Badge Styles */
+/* Prompt Badge */
 .prompt-badge {
     cursor: pointer;
     transition: all 0.2s;
     background-color: var(--gray-600) !important;
+    color: var(--white);
 }
 
 .prompt-badge:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px var(--shadow);
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.125rem 0.5rem var(--shadow);
     background-color: var(--blue-400) !important;
 }
 
 /* Form Controls */
 .form-control:focus {
     border-color: var(--blue-400);
-    box-shadow: 0 0 0 0.2rem rgba(61, 139, 253, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(47, 120, 230, 0.25);
 }
 
 textarea.form-control {
@@ -212,7 +248,7 @@ textarea.form-control {
 
 .text-muted {
     color: var(--gray-600) !important;
-    opacity: 0.8;
+    opacity: 0.85; /* improved readability */
 }
 
 /* Links */
@@ -224,18 +260,18 @@ a:hover {
     color: var(--blue-300);
 }
 
-/* Navbar Background */
+/* Navbar */
 nav.bg-white {
     background-color: var(--white) !important;
-    box-shadow: 0 2px 4px var(--shadow);
+    box-shadow: 0 0.125rem 0.25rem var(--shadow);
 }
 
 /* Video Grid */
 .video-grid img {
-    width: 100%;
+    width: 15.625rem;
     height: auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px var(--shadow);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem var(--shadow);
     transition: transform 0.2s;
 }
 
@@ -244,14 +280,97 @@ nav.bg-white {
 }
 
 .video-grid .caption {
-    margin-top: 10px;
+    margin-top: 0.625rem;
     color: var(--gray-600);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
-/* Alert Styles */
+/* Alerts */
 .alert-info {
     background-color: var(--blue-300);
     border-color: var(--blue-400);
     color: var(--black);
+}
+
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2.5rem;   /* perfect circle */
+    height: 2.5rem;  /* perfect circle */
+
+    background-color: var(--white);
+    color: var(--gray-600);
+
+    border-radius: 50%;  /* makes it circular */
+    box-shadow: 0 0.125rem 0.25rem var(--shadow);
+
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background-color: var(--gray-600);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background-color: var(--white) !important;
+    border-color: var(--blue-400) !important;
+    color: var(--blue-400) !important;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--blue-400) !important;
+    border-color: var(--blue-400) !important;
+    color: var(--white) !important;
+}
+
+.prompts-grid .prompt-badge {
+    flex: 0 0 calc(50% - 0.5rem); 
+    text-align: left;
+    white-space: normal;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spin {
+    display: inline-block; 
+    animation: spin 1s linear infinite;
+}
+
+#regeneratePrompts i.spin {
+    display: inline-block !important;  
+}
+
+.rocket-orbit {
+    position: relative;
+    width: 150px;
+    height: 150px;
+}
+
+.rocket-icon {
+    position: absolute;
+    font-size: 3rem;
+    color: white;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: orbit 3s linear infinite;
+}
+
+@keyframes orbit {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg) translateX(75px) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg) translateX(75px) rotate(-360deg);
+    }
 }

@@ -36,7 +36,14 @@
             <small>Video</small>
         </a>
     </nav>
-
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+            <div class="rocket-orbit">
+                <i class="bi bi-rocket-takeoff rocket-icon"></i>
+            </div>
+            <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
+        </div>
+    </div>
     <div class="container mt-5">
         <div class="card shadow-sm mx-auto p-4" style="max-width: 700px;">
             <h4 class="mb-4 text-center">What story do you want to tell?</h4>
@@ -49,11 +56,7 @@
                         <i class="bi bi-arrow-clockwise"></i>
                     </button>
                 </div>
-                <div class="d-flex flex-wrap gap-2" id="promptsContainer">
-                    <span class="badge bg-secondary prompt-badge p-2">A detective discovers their own missing person case</span>
-                    <span class="badge bg-secondary prompt-badge p-2">Two strangers at a coffee shop, one is a time traveler</span>
-                    <span class="badge bg-secondary prompt-badge p-2">A musician who hears thoughts through music</span>
-                    <span class="badge bg-secondary prompt-badge p-2">An artist who paints the future</span>
+                <div class="d-flex flex-wrap gap-2 prompts-grid" id="promptsContainer">
                 </div>
             </div>
 
@@ -86,9 +89,85 @@
             });
         });
 
-        document.getElementById('regeneratePrompts').addEventListener('click', function() {
-            console.log('Regenerate');
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Check if this is a generation action
+                const action = form.querySelector('[name="action"]')?.value;
+                if (action && (action.includes('generate') || action.includes('regenerate'))) {
+                    document.getElementById('loadingOverlay').style.display = 'block';
+                }
+            });
         });
+
+        const promptsContainer = document.getElementById('promptsContainer');
+        const textarea = document.getElementById('storyPrompt');
+
+        function renderPrompts(suggestions) {
+            promptsContainer.innerHTML = '';
+
+            suggestions.forEach(text => {
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-secondary prompt-badge p-2';
+                badge.style.cursor = 'pointer';
+                badge.textContent = text;
+
+                badge.addEventListener('click', () => {
+                    textarea.value = text;
+                });
+
+                promptsContainer.appendChild(badge);
+            });
+        }
+
+        async function fetchPrompts() {
+            try {
+                const response = await fetch("{% url 'idea' %}", {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.suggestions) {
+                    renderPrompts(data.suggestions);
+                }
+            } catch (error) {
+                console.error('Failed to load suggestions', error);
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const regenerateBtn = document.getElementById('regeneratePrompts');
+            const regenerateIcon = regenerateBtn.querySelector('i');
+
+            fetchPrompts();
+
+            regenerateBtn.addEventListener('click', async () => {
+                regenerateIcon.classList.add('spin');
+                regenerateBtn.disabled = true;
+
+                try {
+                    await fetchPrompts();
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    regenerateIcon.classList.remove('spin');
+                    regenerateBtn.disabled = false;
+                }
+            });
+        });
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const action = form.querySelector('[name="action"]')?.value;
+                if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next')) {
+                    document.getElementById('loadingOverlay').style.display = 'block';
+                }
+            });
+        });
+
     </script>
 </body>
 </html>

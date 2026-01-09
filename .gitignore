@@ -13,3 +13,7 @@ venv/
 
 # OS
 .DS_Store
+
+user_logs
+
+generated

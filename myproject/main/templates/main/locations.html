@@ -36,15 +36,19 @@
             <small>Video</small>
         </a>
     </nav>
-
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+            <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status"></div>
+            <p class="text-white mt-3" style="font-size: 1.5rem;">Generating...</p>
+        </div>
+    </div>
     <div class="container mt-5">
-        <h4 class="mb-2 text-center">Locations</h4>
-        <p class="text-muted text-center mb-4">
-            Here you can edit what each location looks like for the story.
-        </p>
-
+        <h2 class="mb-2 text-center">Locations</h2>
+        <br>
         <div class="card shadow-sm mx-auto p-4" style="max-width: 700px;">
-
+            <p class="text-secondary mb-4">
+            Here you can edit what each location looks like for the story. This prompt will be used by AI to generate images of this location.
+            </p>
             <!-- Carousel -->
             <div id="locationsCarousel" class="carousel slide mb-4" data-bs-ride="false">
                 <div class="carousel-inner">
@@ -74,7 +78,7 @@
                                     class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
                                     style="font-size: 1.5rem; color: #6c757d;"
                                 >
-                                    <i class="bi bi-rocket-takeoff"></i>
+                                    <i class="bi bi-rocket-takeoff icon-button"></i>
                                 </button>
                             </div>
                         </form>
@@ -126,21 +130,15 @@
 
             const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement);
 
-            /* --------------------------------------------------------
-            1) Jump to a slide using ?slide=X    (new feature)
-            -------------------------------------------------------- */
             const slideParam = urlParams.get('slide');
             if (slideParam) {
                 const slideIndex = parseInt(slideParam, 10) - 1;
                 if (!isNaN(slideIndex)) {
                     carousel.to(slideIndex);
                 }
-                return; // If ?slide exists, stop here.
+                return; 
             }
 
-            /* --------------------------------------------------------
-            2) Jump to a slide using ?location=Forest   (existing logic)
-            -------------------------------------------------------- */
             const locationName = urlParams.get('location');
             if (locationName) {
                 const locations = {{ setting_description|safe }};
@@ -150,6 +148,16 @@
                     carousel.to(index);
                 }
             }
+        });
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Check if this is a generation action
+                const action = form.querySelector('[name="action"]')?.value;
+                if (action && (action.includes('generate') || action.includes('regenerate'))) {
+                    document.getElementById('loadingOverlay').style.display = 'block';
+                }
+            });
         });
     </script>
 

@@ -4,6 +4,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import logging
 from pathlib import Path
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +72,44 @@ story_schema = {
     "required": ["storyline", "persona_description", "setting_description", "scenes"]
 }
 
+def suggestionGenerate():
+    prompt = """
+    You are a helpful tool that suggests story ideas.
+    
+    Generate exactly four unique, engaging story ideas suitable for a 1 minute-long shortform video style.
+
+    Sugesstions should be no more than 10 words.
+
+    Return the result strictly as JSON in the following format:
+    {
+    "suggestions": ["idea 1", "idea 2", "idea 3", "idea 4"]
+    }
+    """
+    
+    try:
+        model = genai.GenerativeModel(
+            'models/gemini-2.5-flash',
+            generation_config={
+                "response_mime_type": "application/json",
+                "response_schema": {
+                    "type": "object",
+                    "properties": {
+                        "suggestions": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        }
+                    },
+                    "required": ["suggestions"]
+                }
+            }
+        )
+        response = model.generate_content(prompt)
+        result = json.loads(response.text)
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error in suggestionGenerate: {e}")
+        raise
 
 def storylineGenerate(story_data, feedback):
     """
@@ -109,7 +148,7 @@ def storylineGenerate(story_data, feedback):
     
     try:
         model = genai.GenerativeModel(
-            'models/gemini-2.5-flash',
+            'models/gemini-2.5-pro',
             generation_config={
                 "response_mime_type": "application/json",
                 "response_schema": story_schema
@@ -120,7 +159,7 @@ def storylineGenerate(story_data, feedback):
         logger.warning(f"storylineGenerate result: {result}")
         
         # Regenerate images for updated scenes
-        result['scenes'] = generate_all_scene_images(result['scenes'], result)
+        result['scenes'] = generate_all_scene_images(result['scenes'], result, old_scenes=story_data.get('scenes'))
         
         return result
     except Exception as e:
@@ -142,13 +181,15 @@ def storyGenerate(idea):
 
     (4) Create a setting_description for each setting (1-3 settings) including: id (starting from 1), name, and a detailed description so that image generation is consistent with appearance repeatedly when handed this description.
 
-    (5) Create exactly 6 scenes. Each scene should have: id (starting from 1), the narration for the scene, and an image_prompt that describes a detailed visual for AI image generation using exactly the persona and setting descriptions.
+    (5) Create exactly 6 scenes. Each scene should have: id (starting from 1), the narration for the scene, and an image_prompt that describes a detailed visual for AI image generation. Descriptions of characters and locations do not need to repeat details already included in persona_description and setting_description.
         Each scene should also include 1-3 emotional tones in the scene, the personas present in the scene by name, and the setting in the scene by name.
+
+    Ensure the storyline includes all personas and settings by exact name at least once.
     """
     
     try:
         model = genai.GenerativeModel(
-            'models/gemini-2.5-flash',
+            'models/gemini-2.5-pro',
             generation_config={
                 "response_mime_type": "application/json",
                 "response_schema": story_schema
@@ -157,7 +198,7 @@ def storyGenerate(idea):
         response = model.generate_content(prompt)
         result = json.loads(response.text)
         logger.info(f"storyGenerate result: {result}")
-        result['scenes'] = generate_all_scene_images(result['scenes'], result)
+        result['scenes'] = generate_all_scene_images(result['scenes'], result, old_scenes=None)
         return result
     except Exception as e:
         logger.error(f"Error in storyGenerate: {e}")
@@ -204,7 +245,7 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
                 contents=[enhanced_prompt],
                 config=types.GenerateContentConfig(
                     image_config=types.ImageConfig(
-                        aspect_ratio="9:16"   
+                        aspect_ratio="9:16"
                     )
                 )
             )
@@ -217,14 +258,13 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
                     image_dir = Path("main/static/main/images/generated")
                     image_dir.mkdir(parents=True, exist_ok=True)
                     
-                    # Save with scene_id as filename
-                    image_path = image_dir / f"scene_{scene_id}.png"
+                    timestamp = int(time.time())
+                    image_path = image_dir / f"scene_{scene_id}_{timestamp}.png"
                     image.save(str(image_path))
-                    
                     logger.info(f"Generated image for scene {scene_id} on attempt {attempt + 1}")
                     
                     # Return path 
-                    return f"main/images/generated/scene_{scene_id}.png"
+                    return f"main/images/generated/scene_{scene_id}_{timestamp}.png"
             
             logger.warning(f"No image generated for scene {scene_id} on attempt {attempt + 1}")
             
@@ -239,31 +279,48 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
             else:
                 # All retries failed
                 logger.error(f"Failed to generate image for scene {scene_id} after {max_retries} attempts")
-                return "main/images/exampleImage.png"
+                return f"main/images/generated/scene_{scene_id}.png"
     
     # Fallback if loop completes without returning
     return "main/images/exampleImage.png"
 
 
-def generate_all_scene_images(scenes, story_data):
-    """Generate images with full character/location context."""
+def generate_all_scene_images(scenes, story_data, old_scenes=None):
+    """Only regenerate images for scenes with changed prompts."""
     updated_scenes = []
     
     for i, scene in enumerate(scenes):
         try:
-            if i > 0:
-                time.sleep(1)
+            should_generate = True
             
-            image_path = generate_scene_image(
-                scene['image_prompt'],
-                scene['emotional_tones'], 
-                scene['id'],
-                story_data  # Pass story data
-            )
-            scene['image_path'] = image_path
+            # Check if we have old scenes to compare against
+            if old_scenes:
+                old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
+                if old_scene:
+                    # Compare prompts - only generate if different
+                    old_prompt = old_scene.get('image_prompt', '')
+                    new_prompt = scene.get('image_prompt', '')
+                    
+                    if old_prompt == new_prompt and 'image_path' in old_scene:
+                        # Prompt is the same, reuse old image
+                        should_generate = False
+                        scene['image_path'] = old_scene['image_path']
+                        logger.info(f"Reusing image for scene {scene['id']} - prompt unchanged")
+            
+            if should_generate:
+                if i > 0:
+                    time.sleep(1)
+                
+                image_path = generate_scene_image(
+                    scene['image_prompt'],
+                    scene['emotional_tones'],
+                    scene['id'],
+                    story_data
+                )
+                scene['image_path'] = image_path
+                logger.info(f"Generated NEW image for scene {scene['id']}")
+            
             updated_scenes.append(scene)
-            
-            logger.info(f"Generated image for scene {scene['id']}: {image_path}")
             
         except Exception as e:
             logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
@@ -306,14 +363,14 @@ def characterGenerate(story_data, character_id, feedback):
     IMPORTANT:
     IMPORTANT:
     1. Update character {character_id} based on the user feedback.
-    2. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated character naturally (updating apperance, name, etc.).
+    2. Regenerate only the parts of the storyline and all 6 scenes that need to be changed to reflect the updated character naturally (updating apperance, name, etc.), leave the rest exactly the same.
     3. Maintain the same story flow, structure, and scene ordering.
     4. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
     """
     
     try:
         model = genai.GenerativeModel(
-            'models/gemini-2.5-flash',
+            'models/gemini-2.5-pro',
             generation_config={
                 "response_mime_type": "application/json",
                 "response_schema": story_schema
@@ -324,7 +381,7 @@ def characterGenerate(story_data, character_id, feedback):
         logger.info(f"characterGenerate result: {result}")
 
         logger.info("Regenerating all scene images with updated character...")
-        result['scenes'] = generate_all_scene_images(result['scenes'], result)
+        result['scenes'] = generate_all_scene_images(result['scenes'], result, old_scenes=story_data.get('scenes'))
         return result
     except Exception as e:
         logger.error(f"Error in characterGenerate: {e}")
@@ -370,14 +427,14 @@ def locationGenerate(story_data, location_id, feedback):
 
     IMPORTANT:
     1. Update location {location_id} based on the user feedback.
-    2. Regenerate the parts of the storyline and all 6 scenes that need to be changed to reflect the updated location naturally (updating description, name, etc.)
+    2. Regenerate only the parts of the storyline and all 6 scenes that need to be changed to reflect the updated location naturally (updating description, name, etc.), leave the rest exactly the same.
     3. Maintain the same story flow, structure, and scene ordering.
     4. Minimize changes to unaffected parts of the story. Do not change anything that does not need to be changed in order to guarantee consistency.
     """
 
     try:
         model = genai.GenerativeModel(
-            "models/gemini-2.5-flash",
+            "models/gemini-2.5-pro",
             generation_config={
                 "response_mime_type": "application/json",
                 "response_schema": story_schema  
@@ -390,7 +447,7 @@ def locationGenerate(story_data, location_id, feedback):
         logger.info(f"locationGenerate result: {result}")
 
         logger.info("Regenerating all scene images with updated character...")
-        result['scenes'] = generate_all_scene_images(result['scenes'], result)
+        result['scenes'] = generate_all_scene_images(result['scenes'], result, story_data=story_data.get('scenes'))
         return result
 
     except Exception as e:
@@ -433,7 +490,7 @@ def narrationGenerate(story_data, scene_id, narration_feedback):
     """
     
     try:
-        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        model = genai.GenerativeModel('models/gemini-2.5-pro')
         response = model.generate_content(prompt)
         updated_narration = response.text.strip()
         logger.info(f"narrationGenerate for scene {scene_id}: updated")
@@ -482,7 +539,7 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
     3. Update the storyline only if the change affects the narrative to guarantee consistency.
     4. Regenerate the parts of all 6 scenes that need to be changed to reflect the updated image prompt naturally.
     5. Maintain the same story flow, structure, and scene ordering.
-    6. Make minimal changes necessary to ensure consistency after making the user's changes. For example, if the user feedback is that a character should be doing a certain action or the camera angle should be different, only this scne's image prompt and narration need to be changed, nothing else.
+    6. Make minimal changes necessary to ensure consistency after making the user's changes. For example, if the user feedback is that a character should be doing a certain action or the camera angle should be different, only this scene's image prompt and narration need to be changed, nothing else.
     
     The goal is complete consistency: if something changes visually in one scene, 
     it must be reflected everywhere in the story.
@@ -490,7 +547,7 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
     
     try:
         model = genai.GenerativeModel(
-            'models/gemini-2.5-flash',
+            'models/gemini-2.5-pro',
             generation_config={
                 "response_mime_type": "application/json",
                 "response_schema": story_schema
@@ -502,7 +559,7 @@ def PromptGenerate(story_data, scene_id, image_prompt_feedback):
         
         # Regenerate ALL images with updated prompts
         logger.info("Regenerating all scene images...")
-        result['scenes'] = generate_all_scene_images(result['scenes'], result)
+        result['scenes'] = generate_all_scene_images(result['scenes'], result, old_scenes=story_data.get('scenes'))
         
         return result
     except Exception as e:
