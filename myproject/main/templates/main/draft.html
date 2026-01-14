@@ -11,40 +11,46 @@
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
 </head>
 <body class="bg-light">
-    <nav class="d-flex justify-content-center py-4 bg-white">
+    <nav class="fixed-top  d-flex justify-content-center py-4 bg-white">
         <a href="{% url 'idea' %}" class="step completed">
             <div>1</div>
             <small>Idea</small>
         </a>
         <div class="step active">
-            <div>2</div>
-            <small>Draft</small>
+            <div>a</div>
+            <small>Storyline</small>
         </div>
         <a href="{% url 'personas' %}" class="step completed">
-            <div>3</div>
+            <div>b</div>
             <small>Personas</small>
         </a>
         <a href="{% url 'locations' %}" class="step completed">
-            <div>4</div>
+            <div>c</div>
             <small>Locations</small>
         </a>
         <a href="{% url 'scene' %}" class="step completed">
-            <div>5</div>
+            <div>d</div>
             <small>Scenes</small>
         </a>
         <a href="{% url 'video' %}" class="step completed">
-            <div>6</div>
+            <div>2</div>
             <small>Video</small>
         </a>
     </nav>
-    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999;">
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
-            <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status"></div>
-            <p class="text-white mt-3" style="font-size: 1.5rem;">Generating...</p>
+            <div class="rocket-orbit">
+                <i class="bi bi-rocket-takeoff rocket-icon"></i>
+            </div>
+            <p class="text-white mt-5" style="font-size: 1.5rem;">Regenerating your story...</p>
         </div>
     </div>
+    <br>
+    <br>
+    <br>
+    <br>
     <div class="container mt-5">
-        <h2 class="mb-2 text-center">Draft</h2>
+        <h2 class="mb-2 text-center">Storyline</h2>
 
         <br>
         
@@ -105,9 +111,8 @@
     <script>
         document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', function(e) {
-                // Check if this is a generation action
                 const action = form.querySelector('[name="action"]')?.value;
-                if (action && (action.includes('generate') || action.includes('regenerate'))) {
+                if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next')) {
                     document.getElementById('loadingOverlay').style.display = 'block';
                 }
             });

@@ -10,32 +10,17 @@
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
 </head>
 <body class="bg-light">
-    <nav class="d-flex justify-content-center py-4 bg-white">
+    <nav class="fixed-top  d-flex justify-content-center py-4 bg-white">
         <div class="step active">
             <div>1</div>
             <small>Idea</small>
         </div>
-        <a href="{% url 'draft' %}" class="step completed">
-            <div>2</div>
-            <small>Draft</small>
-        </a>
-        <a href="{% url 'personas' %}" class="step completed">
-            <div>3</div>
-            <small>Personas</small>
-        </a>
-        <a href="{% url 'locations' %}" class="step completed">
-            <div>4</div>
-            <small>Locations</small>
-        </a>
-        <a href="{% url 'scene' %}" class="step completed">
-            <div>5</div>
-            <small>Scenes</small>
-        </a>
         <a href="{% url 'video' %}" class="step completed">
-            <div>6</div>
+            <div>2</div>
             <small>Video</small>
         </a>
     </nav>
+
     <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
             <div class="rocket-orbit">
@@ -44,6 +29,10 @@
             <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
         </div>
     </div>
+    <br>
+    <br>
+    <br>
+    <br>
     <div class="container mt-5">
         <div class="card shadow-sm mx-auto p-4" style="max-width: 700px;">
             <h4 class="mb-4 text-center">What story do you want to tell?</h4>
@@ -86,16 +75,6 @@
             badge.addEventListener('click', function() {
                 const promptText = this.textContent;
                 document.getElementById('storyPrompt').value = promptText;
-            });
-        });
-
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                // Check if this is a generation action
-                const action = form.querySelector('[name="action"]')?.value;
-                if (action && (action.includes('generate') || action.includes('regenerate'))) {
-                    document.getElementById('loadingOverlay').style.display = 'block';
-                }
             });
         });
 

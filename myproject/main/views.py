@@ -50,8 +50,7 @@ def idea(request):
                 images=[s.get('image_path') for s in full_story.get('scenes', [])],
                 action_type='storyline_regenerate'
             )
-        logger.warning(f"Full story generated from idea")
-        return redirect('draft')
+        return redirect('video')
     
     return render(request, 'main/idea.html')
 

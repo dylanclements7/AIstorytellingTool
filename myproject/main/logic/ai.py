@@ -76,9 +76,9 @@ def suggestionGenerate():
     prompt = """
     You are a helpful tool that suggests story ideas.
     
-    Generate exactly four unique, engaging story ideas suitable for a 1 minute-long shortform video style.
+    Generate exactly four unique engaging story ideas suitable for a 1 minute-long shortform video style.
 
-    Sugesstions should be no more than 10 words.
+    Sugesstions should be no more than 80 characters.
 
     Return the result strictly as JSON in the following format:
     {
@@ -293,7 +293,7 @@ def generate_all_scene_images(scenes, story_data, old_scenes=None):
         try:
             should_generate = True
             
-            # Check if we have old scenes to compare against
+            # Check if there are old scenes to compare against
             if old_scenes:
                 old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
                 if old_scene:
