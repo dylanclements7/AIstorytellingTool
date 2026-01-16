@@ -10,31 +10,40 @@
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
 </head>
 <body class="bg-light">
-    <nav class="fixed-top  d-flex justify-content-center py-4 bg-white">
-        <a href="{% url 'idea' %}" class="step completed">
-            <div>1</div>
-            <small>Idea</small>
-        </a>
-        <a href="{% url 'draft' %}" class="step completed">
-            <div>a</div>
-            <small>Storyline</small>
-        </a>
-        <div class="step active">
-            <div>b</div>
-            <small>Personas</small>
+    <nav class="story-nav">
+        <div class="nav-container">
+            <!-- Left: Start Over -->
+            <a href="{% url 'idea' %}" class="nav-btn nav-start">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Start Over
+            </a>
+            
+            <!-- Center: 4 editing steps -->
+            <div class="nav-center">
+                <a href="{% url 'draft' %}" class="nav-step completed">
+                    <i class="bi bi-book"></i>
+                    Storyline
+                </a>
+                <div class="nav-step active">
+                    <i class="bi bi-person"></i>
+                    Personas
+                </div>
+                <a href="{% url 'locations' %}" class="nav-step completed">
+                    <i class="bi bi-house"></i>
+                    Locations
+                </a>
+                <a href="{% url 'scene' %}" class="nav-step completed">
+                    <i class="bi bi-camera"></i>
+                    Scenes
+                </a>
+            </div>
+            
+            <!-- Right: Storyboard -->
+            <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
+                <i class="bi bi-film"></i>
+                Storyboard
+            </a>
         </div>
-        <a href="{% url 'locations' %}" class="step completed">
-            <div>c</div>
-            <small>Locations</small>
-        </a>
-        <a href="{% url 'scene' %}" class="step completed">
-            <div>d</div>
-            <small>Scenes</small>
-        </a>
-        <a href="{% url 'video' %}" class="step completed">
-            <div>2</div>
-            <small>Video</small>
-        </a>
     </nav>
     <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
@@ -44,10 +53,7 @@
             <p class="text-white mt-5" style="font-size: 1.5rem;">Regenerating your story...</p>
         </div>
     </div>
-    <br>
-    <br>
-    <br>
-    <br>
+
     <div class="container mt-5">
         <h2 class="mb-2 text-center">Characters</h2>
         <br>
@@ -122,10 +128,6 @@
                 {% endif %}
             </div>
 
-            <!-- Next Button -->
-            <div class="d-flex justify-content-end">
-                <a href="{% url 'locations' %}" class="btn btn-primary">Next →</a>
-            </div>
 
         </div>
     </div>

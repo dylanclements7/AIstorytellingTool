@@ -1,105 +1,82 @@
-/* Color Palette – slightly darkened for better contrast */
+/* ===================================
+   COLOR PALETTE
+   =================================== */
 :root {
-    --gray-600: #4e5c63;      /* darker for WCAG contrast */
+    --gray-600: #4e5c63;
     --gray-300: #dde2e5;
-    --blue-400: #2f78e6;      /* improved contrast */
+    --blue-400: #2f78e6;
     --blue-300: #6ba8ff;
-    --green-400: #1f7e60;     /* improved contrast */
-    --green-600: #0f5132;     /* stays WCAG-safe */
+    --green-400: #1f7e60;
+    --green-600: #0f5132;
     --white: #ffffff;
     --black: #000000;
     --shadow: rgba(0, 0, 0, 0.12);
 }
 
-/* Global Background */
+/* ===================================
+   GLOBAL STYLES
+   =================================== */
 body {
     background-color: var(--gray-300) !important;
     color: var(--gray-600);
 }
 
-/* Base step link */
-.step {
-    text-align: center;
-    margin: 0 0.9375rem;
-    color: var(--gray-600);
-    text-decoration: none;
-    transition: color 0.2s;
+a {
+    color: var(--blue-400);
 }
 
-/* Circle base */
-.step div {
-    width: 3.125rem;
-    height: 3.125rem;
-    line-height: 3.125rem;
-    border-radius: 50%;
-    border: 0.125rem solid var(--gray-600);
-    margin: 0 auto 0.3125rem;
-    font-weight: bold;
-    background-color: var(--white);
-    color: var(--gray-600);
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+a:hover {
+    color: var(--blue-300);
 }
 
-/* Label text */
-.step small {
-    font-size: 0.875rem;
+/* ===================================
+   TYPOGRAPHY
+   =================================== */
+.text-secondary {
+    color: var(--gray-600) !important;
 }
 
-/* Hover (only for links) */
-a.step:hover div {
-    background-color: var(--gray-300);
-    border-color: var(--gray-600);
-    color: var(--black);
+.text-muted {
+    color: var(--gray-600) !important;
+    opacity: 0.85;
 }
 
-/* ACTIVE STEP (current step) */
-.step.active div {
-    background-color: var(--green-600);
-    border-color: var(--green-600);
-    color: var(--white);
-}
-
-.step.active small {
-    color: var(--green-600);
-    font-weight: 600;
-}
-
-/* COMPLETED STEPS */
-.step.completed div {
-    background-color: var(--green-400);
-    border-color: var(--green-400);
-    color: var(--white);
-}
-
-.step.completed small {
-    color: var(--green-600);
-    font-weight: 600;
-}
-
-/* Disabled (if ever used) */
-.step.disabled {
-    pointer-events: none;
-    opacity: 0.5;
-}
-
-
-/* Cards */
+/* ===================================
+   LAYOUT COMPONENTS
+   =================================== */
 .card {
     background-color: var(--white);
     border: none;
     box-shadow: 0 0.125rem 0.5rem var(--shadow);
 }
 
-/* Buttons */
-.btn-primary {
-    background-color: var(--blue-400);
-    border-color: var(--blue-400);
-    color: var(--white);
+.border {
+    border-color: var(--gray-300) !important;
 }
 
-.btn-primary:hover {
-    background-color: var(--blue-300);
-    border-color: var(--blue-300);
+.bg-light {
+    background-color: var(--gray-300) !important;
+}
+
+.bg-white {
+    background-color: var(--white) !important;
+}
+
+/* ===================================
+   BUTTONS
+   =================================== */
+.btn-primary {
+    background-color: var(--white) !important;
+    border-color: var(--blue-400) !important;
+    color: var(--blue-400) !important;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--blue-400) !important;
+    border-color: var(--blue-400) !important;
+    color: var(--white) !important;
 }
 
 .btn-secondary {
@@ -109,7 +86,7 @@ a.step:hover div {
 }
 
 .btn-secondary:hover {
-    background-color: #6c7a81; /* hover maintains contrast */
+    background-color: #6c7a81;
     border-color: #6c7a81;
     color: var(--white);
 }
@@ -125,7 +102,29 @@ a.step:hover div {
     border-color: var(--green-600);
 }
 
-/* Badges */
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--white);
+    color: var(--gray-600);
+    border-radius: 50%;
+    box-shadow: 0 0.125rem 0.25rem var(--shadow);
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background-color: var(--gray-600);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* ===================================
+   BADGES
+   =================================== */
 .badge {
     background-color: var(--blue-400);
 }
@@ -142,9 +141,124 @@ a.step:hover div {
     background-color: var(--blue-400) !important;
 }
 
-/* Carousel Styles */
+.prompt-badge {
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: var(--gray-600) !important;
+    color: var(--white);
+}
+
+.prompt-badge:hover {
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.125rem 0.5rem var(--shadow);
+    background-color: var(--blue-400) !important;
+}
+
+.prompts-grid .prompt-badge {
+    flex: 0 0 calc(50% - 0.5rem); 
+    text-align: left;
+    white-space: normal;
+}
+
+/* ===================================
+   FORMS
+   =================================== */
+.form-control:focus {
+    border-color: var(--blue-400);
+    box-shadow: 0 0 0 0.2rem rgba(47, 120, 230, 0.25);
+}
+
+textarea.form-control {
+    border-color: var(--gray-300);
+}
+
+/* ===================================
+   ALERTS
+   =================================== */
+.alert-info {
+    background-color: var(--blue-300);
+    border-color: var(--blue-400);
+    color: var(--black);
+}
+
+/* ===================================
+   NAVBAR
+   =================================== */
+nav.bg-white {
+    background-color: var(--white) !important;
+    box-shadow: 0 0.125rem 0.25rem var(--shadow);
+}
+
+/* ===================================
+   STEP INDICATOR (OLD)
+   =================================== */
+.step {
+    text-align: center;
+    margin: 0 0.9375rem;
+    color: var(--gray-600);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.step div {
+    width: 3.125rem;
+    height: 3.125rem;
+    line-height: 3.125rem;
+    border-radius: 50%;
+    border: 0.125rem solid var(--gray-600);
+    margin: 0 auto 0.3125rem;
+    font-weight: bold;
+    background-color: var(--white);
+    color: var(--gray-600);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.step small {
+    font-size: 0.875rem;
+}
+
+a.step:hover div {
+    background-color: var(--gray-300);
+    border-color: var(--gray-600);
+    color: var(--black);
+}
+
+.step.active div {
+    background-color: var(--green-600);
+    border-color: var(--green-600);
+    color: var(--white);
+}
+
+.step.active small {
+    color: var(--green-600);
+    font-weight: 600;
+}
+
+.step.completed div {
+    background-color: var(--green-400);
+    border-color: var(--green-400);
+    color: var(--white);
+}
+
+.step.completed small {
+    color: var(--green-600);
+    font-weight: 600;
+}
+
+.step.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+/* ===================================
+   CAROUSEL
+   =================================== */
 .carousel-item {
     min-height: 18.75rem;
+}
+
+.carousel-inner {
+    min-height: 6.25rem;
 }
 
 .carousel-indicators {
@@ -190,7 +304,9 @@ a.step:hover div {
     left: auto !important;
 }
 
-/* Scene-specific Styles */
+/* ===================================
+   SCENE STYLES
+   =================================== */
 .scene-image {
     margin-left: 1.5rem;
     width: 80%;
@@ -200,73 +316,9 @@ a.step:hover div {
     display: block;
 }
 
-.carousel-inner {
-    min-height: 6.25rem;
-}
-
-/* Prompt Badge */
-.prompt-badge {
-    cursor: pointer;
-    transition: all 0.2s;
-    background-color: var(--gray-600) !important;
-    color: var(--white);
-}
-
-.prompt-badge:hover {
-    transform: translateY(-0.125rem);
-    box-shadow: 0 0.125rem 0.5rem var(--shadow);
-    background-color: var(--blue-400) !important;
-}
-
-/* Form Controls */
-.form-control:focus {
-    border-color: var(--blue-400);
-    box-shadow: 0 0 0 0.2rem rgba(47, 120, 230, 0.25);
-}
-
-textarea.form-control {
-    border-color: var(--gray-300);
-}
-
-/* Borders and Backgrounds */
-.border {
-    border-color: var(--gray-300) !important;
-}
-
-.bg-light {
-    background-color: var(--gray-300) !important;
-}
-
-.bg-white {
-    background-color: var(--white) !important;
-}
-
-/* Text Colors */
-.text-secondary {
-    color: var(--gray-600) !important;
-}
-
-.text-muted {
-    color: var(--gray-600) !important;
-    opacity: 0.85; /* improved readability */
-}
-
-/* Links */
-a {
-    color: var(--blue-400);
-}
-
-a:hover {
-    color: var(--blue-300);
-}
-
-/* Navbar */
-nav.bg-white {
-    background-color: var(--white) !important;
-    box-shadow: 0 0.125rem 0.25rem var(--shadow);
-}
-
-/* Video Grid */
+/* ===================================
+   VIDEO GRID
+   =================================== */
 .video-grid img {
     width: 15.625rem;
     height: auto;
@@ -285,57 +337,9 @@ nav.bg-white {
     font-size: 1rem;
 }
 
-/* Alerts */
-.alert-info {
-    background-color: var(--blue-300);
-    border-color: var(--blue-400);
-    color: var(--black);
-}
-
-.icon-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 2.5rem;   /* perfect circle */
-    height: 2.5rem;  /* perfect circle */
-
-    background-color: var(--white);
-    color: var(--gray-600);
-
-    border-radius: 50%;  /* makes it circular */
-    box-shadow: 0 0.125rem 0.25rem var(--shadow);
-
-    transition: background-color 0.2s, color 0.2s, transform 0.2s;
-    cursor: pointer;
-}
-
-.icon-button:hover {
-    background-color: var(--gray-600);
-    color: var(--white);
-    transform: translateY(-2px);
-}
-
-.btn-primary {
-    background-color: var(--white) !important;
-    border-color: var(--blue-400) !important;
-    color: var(--blue-400) !important;
-    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-}
-
-.btn-primary:hover,
-.btn-primary:focus {
-    background-color: var(--blue-400) !important;
-    border-color: var(--blue-400) !important;
-    color: var(--white) !important;
-}
-
-.prompts-grid .prompt-badge {
-    flex: 0 0 calc(50% - 0.5rem); 
-    text-align: left;
-    white-space: normal;
-}
-
+/* ===================================
+   ANIMATIONS
+   =================================== */
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -348,6 +352,15 @@ nav.bg-white {
 
 #regeneratePrompts i.spin {
     display: inline-block !important;  
+}
+
+@keyframes orbit {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg) translateX(75px) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg) translateX(75px) rotate(-360deg);
+    }
 }
 
 .rocket-orbit {
@@ -366,11 +379,155 @@ nav.bg-white {
     animation: orbit 3s linear infinite;
 }
 
-@keyframes orbit {
-    0% {
-        transform: translate(-50%, -50%) rotate(0deg) translateX(75px) rotate(0deg);
+/* ===================================
+   STORY NAVIGATION
+   =================================== */
+.story-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: var(--white);
+    box-shadow: 0 0.125rem 0.25rem var(--shadow);
+    padding: 1rem 2rem;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Navigation buttons */
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none !important;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.nav-start,
+.nav-start:link,
+.nav-start:visited {
+    background-color: var(--gray-300);
+    color: var(--gray-600) !important;
+    border: 0.125rem solid var(--gray-600);
+}
+
+.nav-start:hover,
+.nav-start:focus {
+    background-color: var(--gray-600);
+    color: var(--white) !important;
+}
+
+.nav-storyboard,
+.nav-storyboard:link,
+.nav-storyboard:visited {
+    background-color: var(--blue-400);
+    color: var(--white) !important;
+    border: 0.125rem solid var(--blue-400);
+}
+
+.nav-storyboard:hover,
+.nav-storyboard:focus {
+    background-color: var(--blue-300);
+    border-color: var(--blue-300);
+    color: var(--white) !important;
+}
+
+.nav-storyboard.active {
+    background-color: var(--green-600);
+    border-color: var(--green-600);
+    color: var(--white) !important;
+}
+
+.nav-storyboard.completed,
+.nav-storyboard.completed:link,
+.nav-storyboard.completed:visited {
+    background-color: var(--blue-300);
+    border-color: var(--blue-300);
+    color: var(--white) !important;
+    opacity: 0.7;
+}
+
+.nav-storyboard.completed:hover {
+    opacity: 1;
+}
+
+/* Center navigation steps */
+.nav-center {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.nav-step,
+.nav-step:link,
+.nav-step:visited {
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    text-decoration: none !important;
+    transition: all 0.2s;
+    background-color: var(--gray-300);
+    color: var(--gray-600) !important;
+    border: 0.125rem solid transparent;
+}
+
+.nav-step:hover,
+.nav-step:focus {
+    background-color: var(--blue-300);
+    color: var(--white) !important;
+}
+
+.nav-step.active,
+.nav-step.active:link,
+.nav-step.active:visited,
+.nav-step.active:hover {
+    background-color: var(--green-600);
+    color: var(--white) !important;
+    font-weight: 600;
+    border-color: var(--green-600);
+}
+
+.nav-step.completed,
+.nav-step.completed:link,
+.nav-step.completed:visited {
+    background-color: var(--green-400);
+    color: var(--white) !important;
+    border-color: var(--green-400);
+}
+
+.nav-step.completed:hover {
+    background-color: var(--green-600);
+    color: var(--white) !important;
+}
+
+.nav-step.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+@media (max-width: 1200px) {
+    .nav-container {
+        flex-wrap: wrap;
+        gap: 1rem;
     }
-    100% {
-        transform: translate(-50%, -50%) rotate(360deg) translateX(75px) rotate(-360deg);
+    
+    .nav-center {
+        order: 3;
+        width: 100%;
+        justify-content: center;
     }
 }

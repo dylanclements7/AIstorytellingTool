@@ -10,17 +10,23 @@
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
 </head>
 <body class="bg-light">
-    <nav class="fixed-top  d-flex justify-content-center py-4 bg-white">
-        <div class="step active">
-            <div>1</div>
-            <small>Idea</small>
+    <nav class="story-nav">
+        <div class="nav-container">
+            <!-- Left: Start Over -->
+            <a href="{% url 'idea' %}" class="nav-btn nav-start">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Start Over
+            </a>
+            
+            <!-- Right: Storyboard -->
+            <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
+                <i class="bi bi-film"></i>
+                Storyboard
+            </a>
         </div>
-        <a href="{% url 'video' %}" class="step completed">
-            <div>2</div>
-            <small>Video</small>
-        </a>
     </nav>
-
+    <br>
+    <br>
     <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
             <div class="rocket-orbit">
@@ -29,10 +35,7 @@
             <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
         </div>
     </div>
-    <br>
-    <br>
-    <br>
-    <br>
+
     <div class="container mt-5">
         <div class="card shadow-sm mx-auto p-4" style="max-width: 700px;">
             <h4 class="mb-4 text-center">What story do you want to tell?</h4>
@@ -62,9 +65,6 @@
                     ></textarea>
                 </div>
                 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-primary" name="action" value="generate">Next →</button>
-                </div>
             </form>
         </div>
     </div>

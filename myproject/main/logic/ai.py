@@ -208,6 +208,24 @@ def storyGenerate(idea):
 import time
 import re
 
+# def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, max_retries=3):
+#     # Replace character names with full descriptions
+#     enhanced_prompt = image_prompt
+    
+#     for persona in story_data.get('persona_description', []):
+#         name = persona['name']
+#         description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
+#         # Replace name with full description
+#         enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
+    
+#     # Replace location names with full descriptions
+#     for location in story_data.get('setting_description', []):
+#         name = location['name']
+#         description = location['description']
+#         enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
+#     tone_text = ", ".join(emotional_tones)
+#     enhanced_prompt += f". The image should reflect the emotional tones: {tone_text}."
+
 def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, max_retries=3):
     # Replace character names with full descriptions
     enhanced_prompt = image_prompt
@@ -215,16 +233,16 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
     for persona in story_data.get('persona_description', []):
         name = persona['name']
         description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
-        # Replace name with full description
         enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
     
-    # Replace location names with full descriptions
     for location in story_data.get('setting_description', []):
         name = location['name']
         description = location['description']
         enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
+    
     tone_text = ", ".join(emotional_tones)
     enhanced_prompt += f". The image should reflect the emotional tones: {tone_text}."
+
     print(f"Enhanced prompt for scene {scene_id}: {enhanced_prompt}")
     for attempt in range(max_retries):
         try:
@@ -264,7 +282,7 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
                     logger.info(f"Generated image for scene {scene_id} on attempt {attempt + 1}")
                     
                     # Return path 
-                    return f"main/images/generated/scene_{scene_id}_{timestamp}.png"
+                    return f"main/images/generated/scene_{scene_id}_{timestamp}.png", enhanced_prompt
             
             logger.warning(f"No image generated for scene {scene_id} on attempt {attempt + 1}")
             
@@ -282,42 +300,99 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
                 return f"main/images/generated/scene_{scene_id}.png"
     
     # Fallback if loop completes without returning
-    return "main/images/exampleImage.png"
+    return "main/images/exampleImage.png", enhanced_prompt
 
+
+# def generate_all_scene_images(scenes, story_data, old_scenes=None):
+#     """Only regenerate images for scenes with changed prompts."""
+#     updated_scenes = []
+    
+#     for i, scene in enumerate(scenes):
+#         try:
+#             should_generate = True
+#             # FOUND BUG, THE IMAGE PROMPT IS BEING USED TO COMPARE AND IS NOT USING ENHANCED PROMPT, FIX IS HAND AND STORE ENHANCED INSTEAD OF REGULAR.
+
+#             # Check if there are old scenes to compare against
+#             if old_scenes:
+#                 old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
+#                 if old_scene:
+#                     # Compare prompts - only generate if different
+#                     old_prompt = old_scene.get('image_prompt', '')
+#                     new_prompt = scene.get('image_prompt', '')
+                    
+#                     if old_prompt == new_prompt and 'image_path' in old_scene:
+#                         # Prompt is the same, reuse old image
+#                         should_generate = False
+#                         scene['image_path'] = old_scene['image_path']
+#                         logger.info(f"Reusing image for scene {scene['id']} - prompt unchanged")
+            
+#             if should_generate:
+#                 if i > 0:
+#                     time.sleep(1)
+                
+#                 image_path = generate_scene_image(
+#                     scene['image_prompt'],
+#                     scene['emotional_tones'],
+#                     scene['id'],
+#                     story_data
+#                 )
+#                 scene['image_path'] = image_path
+#                 logger.info(f"Generated NEW image for scene {scene['id']}")
+            
+#             updated_scenes.append(scene)
+            
+#         except Exception as e:
+#             logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
+#             scene['image_path'] = "main/images/exampleImage.png"
+#             updated_scenes.append(scene)
+    
+#     return updated_scenes
 
 def generate_all_scene_images(scenes, story_data, old_scenes=None):
-    """Only regenerate images for scenes with changed prompts."""
+    """Only regenerate images for scenes with changed enhanced prompts."""
     updated_scenes = []
     
     for i, scene in enumerate(scenes):
         try:
             should_generate = True
             
-            # Check if there are old scenes to compare against
             if old_scenes:
                 old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
-                if old_scene:
-                    # Compare prompts - only generate if different
-                    old_prompt = old_scene.get('image_prompt', '')
-                    new_prompt = scene.get('image_prompt', '')
+                if old_scene and 'enhanced_prompt' in old_scene:
+                    # Generate the new enhanced prompt for comparison
+                    test_enhanced = scene.get('image_prompt', '')
+                    for persona in story_data.get('persona_description', []):
+                        name = persona['name']
+                        description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
+                        test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
                     
-                    if old_prompt == new_prompt and 'image_path' in old_scene:
-                        # Prompt is the same, reuse old image
+                    for location in story_data.get('setting_description', []):
+                        name = location['name']
+                        description = location['description']
+                        test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
+                    
+                    tone_text = ", ".join(scene['emotional_tones'])
+                    test_enhanced += f". The image should reflect the emotional tones: {tone_text}."
+                    
+                    # Compare enhanced prompts
+                    if test_enhanced == old_scene.get('enhanced_prompt') and 'image_path' in old_scene:
                         should_generate = False
                         scene['image_path'] = old_scene['image_path']
-                        logger.info(f"Reusing image for scene {scene['id']} - prompt unchanged")
+                        scene['enhanced_prompt'] = old_scene['enhanced_prompt']
+                        logger.info(f"Reusing image for scene {scene['id']} - enhanced prompt unchanged")
             
             if should_generate:
                 if i > 0:
                     time.sleep(1)
                 
-                image_path = generate_scene_image(
+                image_path, enhanced_prompt = generate_scene_image(
                     scene['image_prompt'],
                     scene['emotional_tones'],
                     scene['id'],
                     story_data
                 )
                 scene['image_path'] = image_path
+                scene['enhanced_prompt'] = enhanced_prompt  # Store for future comparisons
                 logger.info(f"Generated NEW image for scene {scene['id']}")
             
             updated_scenes.append(scene)

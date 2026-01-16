@@ -16,4 +16,4 @@ venv/
 
 user_logs
 
-static/main/images/generated
+main/static/main/images/generated/
