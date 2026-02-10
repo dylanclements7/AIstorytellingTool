@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .logic.ai import suggestionGenerate, characterGenerate, storyGenerate, locationGenerate, storylineGenerate, narrationGenerate, PromptGenerate
+from .logic.ai import characterGenerate, storyGenerate, locationGenerate, storylineGenerate, narrationGenerate, PromptGenerate, addSceneGenerate, splitSceneGenerate, deleteSceneGenerate
 import logging
 import json
 from datetime import datetime
@@ -32,9 +32,9 @@ def save_interaction_log(user_input, output_data, images, action_type):
     logger.info(f"Saved interaction log: {log_file}")
 
 def idea(request):
-    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        result = suggestionGenerate()
-        return JsonResponse(result)
+    # if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    #     result = suggestionGenerate()
+    #     return JsonResponse(result)
     if request.method == 'POST':
         idea_text = request.POST.get('story_prompt', '')
         
@@ -48,7 +48,7 @@ def idea(request):
                 user_input=idea_text,
                 output_data=full_story,
                 images=[s.get('image_path') for s in full_story.get('scenes', [])],
-                action_type='storyline_regenerate'
+                action_type='idea_generate'
             )
         return redirect('video')
     
@@ -120,8 +120,23 @@ def personas(request):
             print("DEBUG updated_story:", updated_story)
         return redirect(f"{reverse('personas')}?slide={persona_id}")
     
+    # Pre-process personas to add preview images
+    personas = story_data.get('persona_description', [])
+    scenes = story_data.get('scenes', [])
+    
+    for persona in personas:
+        # Find first scene containing this character
+        persona['preview_image'] = None
+        persona['preview_scene_id'] = None
+        for scene in scenes:
+            if persona['name'] in scene.get('characters', []):
+                persona['preview_image'] = scene.get('image_path')
+                persona['preview_scene_id'] = scene.get('id')
+                break
+    
     return render(request, 'main/personas.html', {
-        'persona_description': story_data.get('persona_description', []),
+        'persona_description': personas,
+        'scenes': scenes,
     })
 
 
@@ -149,8 +164,23 @@ def locations(request):
             story_data = updated_story
         return redirect(f"{reverse('locations')}?slide={location_id}")
     
+    # Pre-process locations to add preview images
+    locations = story_data.get('setting_description', [])
+    scenes = story_data.get('scenes', [])
+    
+    for location in locations:
+        # Find first scene at this location
+        location['preview_image'] = None
+        location['preview_scene_id'] = None
+        for scene in scenes:
+            if location['name'] == scene.get('location'):
+                location['preview_image'] = scene.get('image_path')
+                location['preview_scene_id'] = scene.get('id')
+                break
+    
     return render(request, 'main/locations.html', {
-        'setting_description': story_data.get('setting_description', []),
+        'setting_description': locations,
+        'scenes': scenes,
     })
 
 
@@ -167,8 +197,8 @@ def scene(request):
             updated_narration = narrationGenerate(story_data, scene_id, feedback)
             save_interaction_log(
                 user_input=feedback,
-                output_data=updated_story,
-                images=[s.get('image_path') for s in updated_story.get('scenes', [])],
+                output_data=story_data,
+                images=[s.get('image_path') for s in story_data.get('scenes', [])],
                 action_type='narration_regenerate'
             )
             for scene in story_data['scenes']:
@@ -202,6 +232,63 @@ def scene(request):
 
 def video(request):
     story_data = request.session.get('story', {})
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'delete':
+            scene_id = int(request.POST.get('scene_id'))
+            
+            updated_story = deleteSceneGenerate(story_data, scene_id)
+            
+            save_interaction_log(
+                user_input=f"Delete scene {scene_id}",
+                output_data=updated_story,
+                images=[s.get('image_path') for s in updated_story.get('scenes', [])],
+                action_type='scene_delete'
+            )
+            
+            request.session['story'] = updated_story
+            request.session.modified = True
+            logger.info(f"Scene {scene_id} deleted")
+            
+            return redirect('video')
+        
+        elif action == 'add':
+            after_scene_id = int(request.POST.get('after_scene_id'))
+            
+            updated_story = addSceneGenerate(story_data, after_scene_id)
+            
+            save_interaction_log(
+                user_input=f"Add scene after scene {after_scene_id}",
+                output_data=updated_story,
+                images=[s.get('image_path') for s in updated_story.get('scenes', [])],
+                action_type='scene_add'
+            )
+            
+            request.session['story'] = updated_story
+            request.session.modified = True
+            logger.info(f"Scene added after scene {after_scene_id}")
+            
+            return redirect('video')
+        
+        elif action == 'split':
+            scene_id = int(request.POST.get('scene_id'))
+            
+            updated_story = splitSceneGenerate(story_data, scene_id)
+            
+            save_interaction_log(
+                user_input=f"Split scene {scene_id}",
+                output_data=updated_story,
+                images=[s.get('image_path') for s in updated_story.get('scenes', [])],
+                action_type='scene_split'
+            )
+            
+            request.session['story'] = updated_story
+            request.session.modified = True
+            logger.info(f"Scene {scene_id} split into two scenes")
+            
+            return redirect('video')
     
     return render(request, 'main/video.html', {
         'scenes': story_data.get('scenes', []),

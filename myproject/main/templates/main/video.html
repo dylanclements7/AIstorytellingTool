@@ -14,7 +14,7 @@
     <nav class="story-nav">
         <div class="nav-container">
             <!-- Left: Start Over -->
-            <a href="{% url 'idea' %}" class="nav-btn nav-start">
+            <a href="{% url 'idea' %}" class="nav-btn nav-start" onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 Start Over
             </a>
@@ -46,20 +46,57 @@
             </a>
         </div>
     </nav>
-
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+            <div class="rocket-orbit">
+                <i class="bi bi-rocket-takeoff rocket-icon"></i>
+            </div>
+            <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
+        </div>
+    </div>
     <div class="container text-center">
         <br>
         <h2 class="mb-4">View Your Story</h2>
-        <div class="row video-grid g-4">
-
+        <div class="video-grid-container">
             {% for scene in scenes %}
-            <div class="col-md-4 col-sm-6">
+            <div class="scene-item">
+                <div class="scene-actions">
+                    <form method="post" action="{% url 'video' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="scene_id" value="{{ scene.id }}">
+                        <button type="submit" name="action" value="split" class="btn btn-sm btn-secondary scene-action-btn">
+                            <i class="bi bi-scissors me-1"></i>Split
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'video' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="scene_id" value="{{ scene.id }}">
+                        <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger scene-action-btn" onclick="return confirm('Are you sure you want to delete this scene?');">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                    </form>
+                </div>
                 <h2>Scene {{ scene.id }}</h2>
                 <a href="{% url 'scene' %}?slide={{ scene.id }}">
                     <img src="{% static scene.image_path %}" alt="Scene {{ scene.id }}">
                 </a>
-                <div class="caption" style="font-size: 20px; color: black;"><p>{{ scene.narration }}</div>
+                <div class="caption">
+                    <p>{{ scene.narration }}</p>
+                </div>
             </div>
+            
+            {% if not forloop.last %}
+            <div class="scene-add-btn-container">
+                <form method="post" action="{% url 'video' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="after_scene_id" value="{{ scene.id }}">
+                    <button type="submit" name="action" value="add" class="scene-add-btn">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            
             {% empty %}
             <div class="col-12">
                 <div class="alert alert-info">
@@ -67,54 +104,18 @@
                 </div>
             </div>
             {% endfor %}
-
         </div>
     </div>
-<!-- 
-    <div class="mt-5">
-        <div class="card shadow-sm mx-auto p-4" style="max-width: 900px; text-align: left;">
-            <h3 class="mb-4 text-center">Story Overview</h3>
-            <p class="text-secondary text-center mb-4">This is the prompt the AI used to create your story:</p>
-            <div class="mb-4">
-                <h5><a href="{% url 'draft' %}">Storyline:</a></h5>
-                <p>{{ story_data.storyline|linkify_characters_and_locations:story_data  }}</p>
-            </div>
-            
-            <div class="mb-4">
-                <h5 class="text-secondary">Emotional Tones:</h5>
-                <div>
-                    {% for scene in scenes %}
-                    {% for tone in scene.emotional_tones %}
-                    <span class="badge bg-primary me-1">{{ tone }}</span>
-                    {% endfor %}
-                    {% endfor %}
-                </div>
-            </div>
-            
-            <div class="mb-4">
-                <h5 class="text-secondary">Characters:</h5>
-                {% for persona in story_data.persona_description %}
-                <div class="mb-3">
-                    <strong>{{ persona.name|linkify_characters_and_locations:story_data  }}</strong> ({{ persona.age }})
-                    <ul class="mt-2">
-                        <li><strong>Hair:</strong> {{ persona.hair }}</li>
-                        <li><strong>Skin:</strong> {{ persona.skin }}</li>
-                        <li><strong>Clothing:</strong> {{ persona.clothing }}</li>
-                    </ul>
-                </div>
-                {% endfor %}
-            </div>
-            
-            <div class="mb-4">
-                <h5 class="text-secondary">Locations:</h5>
-                {% for location in story_data.setting_description %}
-                <div class="mb-3">
-                    <strong>{{ location.name|linkify_characters_and_locations:story_data  }}</strong>
-                    <p class="mt-2">{{ location.description }}</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div> -->
 </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const action = form.querySelector('[name="action"]')?.value;
+            if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next' || action === "delete" || action === 'split' || action === 'add')) {
+                document.getElementById('loadingOverlay').style.display = 'block';
+            }
+        });
+    });
+</script>
 </html>
