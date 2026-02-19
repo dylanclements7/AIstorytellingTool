@@ -87,18 +87,18 @@
                         <div class="col-lg-8">
                             <div class="card shadow-sm chat-container">
                                 <div class="chat-header">
-                                    <h5><i class="bi bi-palette2 me-2"></i>Visual Assistant</h5>
+                                    <h5><i class="bi bi-palette2 me-2"></i>Image Assistant</h5>
                                 </div>
                                 <div class="chat-messages scene-chat-messages">
                                     <div class="chat-bubble chat-bubble-left">
                                         <div class="chat-bubble-content">
-                                            <strong>Current Visual Prompt:</strong><br>
+                                            <strong>Current Image Prompt:</strong><br>
                                             {{ scene.image_prompt|linkify_characters_and_locations:story_data }}
                                         </div>
                                     </div>
                                     <div class="chat-bubble chat-bubble-left">
                                         <div class="chat-bubble-content">
-                                            Would you like to make any changes? Maybe more of the apartment can be shown to show how bleak their life is?
+                                            Would you like to make any changes? Maybe the image should be brighter to show how happy they are?
                                         </div>
                                     </div>
                                 </div>
@@ -107,7 +107,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="scene_id" value="{{ scene.id }}">
                                         <div class="position-relative">
-                                            <textarea class="form-control" name="image_prompt_feedback" rows="2" placeholder="Describe how to change the image..."></textarea>
+                                            <textarea class="form-control" name="image_prompt_feedback" rows="2" placeholder="Edit Image Prompt"></textarea>
                                             <button type="submit" name="action" value="regenerate_image" class="btn btn-link position-absolute top-0 end-0 mt-2 me-2">
                                                 <i class="bi bi-rocket-takeoff icon-button"></i>
                                             </button>
@@ -133,7 +133,7 @@
                                     </div>
                                     <div class="chat-bubble chat-bubble-left">
                                         <div class="chat-bubble-content">
-                                            Would you like to make any changes? Maybe they could be more relaxed in this scene?
+                                            Would you like to make any changes? Maybe they speak more relaxed in this scene?
                                         </div>
                                     </div>
                                 </div>
@@ -142,7 +142,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="scene_id" value="{{ scene.id }}">
                                         <div class="position-relative">
-                                            <textarea class="form-control" name="narration_feedback" rows="2" placeholder="How should the narration change?"></textarea>
+                                            <textarea class="form-control" name="narration_feedback" rows="2" placeholder="Edit Narration"></textarea>
                                             <button type="submit" name="action" value="regenerate_narration" class="btn btn-link position-absolute top-0 end-0 mt-2 me-2">
                                                 <i class="bi bi-rocket-takeoff icon-button"></i>
                                             </button>

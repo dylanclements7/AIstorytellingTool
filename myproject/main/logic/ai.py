@@ -308,59 +308,148 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
     # Fallback if loop completes without returning
     return "main/images/exampleImage.png", enhanced_prompt
 
-def generate_all_scene_images(scenes, story_data, old_scenes=None):
-    """Only regenerate images for scenes with changed enhanced prompts."""
-    updated_scenes = []
+# old version took 2 minutes, threaded with 6 took 45 seconds
+
+# def generate_all_scene_images(scenes, story_data, old_scenes=None):
+#     """Only regenerate images for scenes with changed enhanced prompts."""
+#     updated_scenes = []
     
-    for i, scene in enumerate(scenes):
-        try:
-            should_generate = True
+#     for i, scene in enumerate(scenes):
+#         try:
+#             should_generate = True
             
-            if old_scenes:
-                old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
-                if old_scene and 'enhanced_prompt' in old_scene:
-                    # Generate the new enhanced prompt for comparison
-                    test_enhanced = scene.get('image_prompt', '')
-                    for persona in story_data.get('persona_description', []):
-                        name = persona['name']
-                        description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
-                        test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
+#             if old_scenes:
+#                 old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
+#                 if old_scene and 'enhanced_prompt' in old_scene:
+#                     # Generate the new enhanced prompt for comparison
+#                     test_enhanced = scene.get('image_prompt', '')
+#                     for persona in story_data.get('persona_description', []):
+#                         name = persona['name']
+#                         description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
+#                         test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
                     
-                    for location in story_data.get('setting_description', []):
-                        name = location['name']
-                        description = location['description']
-                        test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
+#                     for location in story_data.get('setting_description', []):
+#                         name = location['name']
+#                         description = location['description']
+#                         test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
                     
-                    tone_text = ", ".join(scene['emotional_tones'])
-                    test_enhanced += f". The image should reflect the emotional tones: {tone_text}."
+#                     tone_text = ", ".join(scene['emotional_tones'])
+#                     test_enhanced += f". The image should reflect the emotional tones: {tone_text}."
                     
-                    # Compare enhanced prompts
-                    if test_enhanced == old_scene.get('enhanced_prompt') and 'image_path' in old_scene:
-                        should_generate = False
-                        scene['image_path'] = old_scene['image_path']
-                        scene['enhanced_prompt'] = old_scene['enhanced_prompt']
-                        logger.info(f"Reusing image for scene {scene['id']} - enhanced prompt unchanged")
+#                     # Compare enhanced prompts
+#                     if test_enhanced == old_scene.get('enhanced_prompt') and 'image_path' in old_scene:
+#                         should_generate = False
+#                         scene['image_path'] = old_scene['image_path']
+#                         scene['enhanced_prompt'] = old_scene['enhanced_prompt']
+#                         logger.info(f"Reusing image for scene {scene['id']} - enhanced prompt unchanged")
             
-            if should_generate:
-                if i > 0:
-                    time.sleep(1)
+#             if should_generate:
+#                 if i > 0:
+#                     time.sleep(1)
                 
+#                 image_path, enhanced_prompt = generate_scene_image(
+#                     scene['image_prompt'],
+#                     scene['emotional_tones'],
+#                     scene['id'],
+#                     story_data
+#                 )
+#                 scene['image_path'] = image_path
+#                 scene['enhanced_prompt'] = enhanced_prompt  # Store for future comparisons
+#                 logger.info(f"Generated NEW image for scene {scene['id']}")
+            
+#             updated_scenes.append(scene)
+            
+#         except Exception as e:
+#             logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
+#             scene['image_path'] = "main/images/exampleImage.png"
+#             updated_scenes.append(scene)
+    
+#     return updated_scenes
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def generate_all_scene_images(scenes, story_data, old_scenes=None):
+    """Generate images for scenes in parallel, only regenerating changed prompts."""
+    updated_scenes = []
+    scenes_to_generate = []
+    
+    # First pass: identify which scenes need new images
+    for i, scene in enumerate(scenes):
+        should_generate = True
+        
+        if old_scenes:
+            old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
+            if old_scene and 'enhanced_prompt' in old_scene:
+                # Generate the new enhanced prompt for comparison
+                test_enhanced = scene.get('image_prompt', '')
+                for persona in story_data.get('persona_description', []):
+                    name = persona['name']
+                    description = f"a {persona['species']} with {persona['disability']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
+                    test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
+                
+                for location in story_data.get('setting_description', []):
+                    name = location['name']
+                    description = location['description']
+                    test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
+                
+                tone_text = ", ".join(scene['emotional_tones'])
+                test_enhanced += f". The image should reflect the emotional tones: {tone_text}."
+                
+                # Compare enhanced prompts
+                if test_enhanced == old_scene.get('enhanced_prompt') and 'image_path' in old_scene:
+                    should_generate = False
+                    scene['image_path'] = old_scene['image_path']
+                    scene['enhanced_prompt'] = old_scene['enhanced_prompt']
+                    logger.info(f"Reusing image for scene {scene['id']} - enhanced prompt unchanged")
+        
+        if should_generate:
+            scenes_to_generate.append((i, scene))
+        
+        updated_scenes.append(scene)
+    
+    # Second pass: generate images in parallel
+    if scenes_to_generate:
+        logger.info(f"Generating {len(scenes_to_generate)} images in parallel...")
+        
+        def generate_single_scene(scene_tuple):
+            """Helper function to generate a single scene's image"""
+            index, scene = scene_tuple
+            try:
                 image_path, enhanced_prompt = generate_scene_image(
                     scene['image_prompt'],
                     scene['emotional_tones'],
                     scene['id'],
                     story_data
                 )
-                scene['image_path'] = image_path
-                scene['enhanced_prompt'] = enhanced_prompt  # Store for future comparisons
-                logger.info(f"Generated NEW image for scene {scene['id']}")
+                return (index, scene['id'], image_path, enhanced_prompt, None)
+            except Exception as e:
+                logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
+                return (index, scene['id'], "main/images/exampleImage.png", None, e)
+        
+        # Use ThreadPoolExecutor to generate images in parallel
+        # Max workers = number of scenes to generate (but cap at 6 to avoid rate limits)
+        max_workers = min(len(scenes_to_generate), 6)
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks
+            future_to_scene = {
+                executor.submit(generate_single_scene, scene_tuple): scene_tuple 
+                for scene_tuple in scenes_to_generate
+            }
             
-            updated_scenes.append(scene)
-            
-        except Exception as e:
-            logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
-            scene['image_path'] = "main/images/exampleImage.png"
-            updated_scenes.append(scene)
+            # Collect results as they complete
+            for future in as_completed(future_to_scene):
+                index, scene_id, image_path, enhanced_prompt, error = future.result()
+                
+                # Update the scene in our list
+                updated_scenes[index]['image_path'] = image_path
+                if enhanced_prompt:
+                    updated_scenes[index]['enhanced_prompt'] = enhanced_prompt
+                
+                if error:
+                    logger.error(f"Error generating image for scene {scene_id}: {error}")
+                else:
+                    logger.info(f"Generated NEW image for scene {scene_id}")
     
     return updated_scenes
 
