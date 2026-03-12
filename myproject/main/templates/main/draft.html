@@ -9,17 +9,105 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <style>
+        .chat-bubble {
+            max-width: 80%;
+            padding: 0.65rem 1rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+        .chat-bubble.user {
+            background: #0d6efd;
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble.assistant {
+            background: #f1f3f5;
+            color: #212529;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-bubble.thinking {
+            opacity: 0.6;
+            font-style: italic;
+        }
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            gap: 0.25rem;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 200px;
+            max-height: 380px;
+        }
+        .continue-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        .done-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 2px solid #1f7e60;
+            background: #fff;
+            color: #1f7e60;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            user-select: none;
+        }
+        .done-btn:hover:not(:disabled) {
+            background: #1f7e60;
+            color: #fff;
+        }
+        .done-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .chat-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #dee2e6;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .chat-footer-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        /* Scene links — plain text, no colour */
+        .scene-list a {
+            color: inherit;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        /* Scrollable scene list */
+        .scene-list {
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+            flex: 1;
+        }
+    </style>
 </head>
 <body class="bg-light">
     <nav class="story-nav">
         <div class="nav-container">
-            <!-- Left: Start Over -->
-            <a href="{% url 'idea' %}" class="nav-btn nav-start" onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
+            <a href="{% url 'idea' %}" class="nav-btn nav-start"
+               onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 Start Over
             </a>
-            
-            <!-- Center: 4 editing steps -->
+
             <div class="nav-center">
                 <div class="nav-step active">
                     <i class="bi bi-book"></i>
@@ -27,93 +115,223 @@
                 </div>
                 <a href="{% url 'personas' %}" class="nav-step completed">
                     <i class="bi bi-person"></i>
-                    Personas
+                    Characters
                 </a>
                 <a href="{% url 'locations' %}" class="nav-step completed">
                     <i class="bi bi-house"></i>
-                    Locations
+                    Settings
                 </a>
                 <a href="{% url 'scene' %}" class="nav-step completed">
                     <i class="bi bi-camera"></i>
                     Scenes
                 </a>
             </div>
-            
-            <!-- Right: Storyboard -->
+
             <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
                 <i class="bi bi-film"></i>
                 Storyboard
             </a>
         </div>
     </nav>
-    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
             <div class="rocket-orbit">
                 <i class="bi bi-rocket-takeoff rocket-icon"></i>
             </div>
-            <p class="text-white mt-5" style="font-size: 1.5rem;">Regenerating your story...</p>
+            <p class="text-white mt-5" style="font-size:1.5rem;">Regenerating your story...</p>
         </div>
     </div>
-    
+
     <div class="container-fluid mt-4 px-4">
         <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card shadow-sm p-4">
-                    <h2 class="mb-2">Storyline</h2>
-                    <p class="text-secondary mb-4">This is the storyline used to generate your story. Make changes via the assistant on the right.</p>
 
-                    <div class="p-3 bg-light rounded" style="max-height: 500px; overflow-y: auto;">
+            <!-- ── Left: scene list ── -->
+            <div class="col-lg-6 d-flex flex-column">
+                <div class="card shadow-sm p-4 flex-grow-1 d-flex flex-column">
+                    <h2 class="mb-3">Storyline</h2>
+                    <div class="scene-list">
                         {% for scene_text in draft.storyline %}
-                            <div class="mb-3">
-                                <strong class="fw-bold mb-3">
-                                    <a href="{% url 'scene' %}?slide={{ forloop.counter }}">Scene {{ forloop.counter }}</a>
-                                </strong>
-                                <br>
-                                <span class="text-secondary">{{ scene_text|linkify_characters_and_locations:story_data }}</span>
-                            </div>  
+                        <div class="mb-2">
+                            <a href="{% url 'scene' %}?slide={{ forloop.counter }}">Scene {{ forloop.counter }}</a>
+                            <br>
+                            <span class="text-secondary" style="font-size: 0.9rem;">{{ scene_text|linkify_characters_and_locations:story_data }}</span>
+                        </div>
+                        {% if not forloop.last %}<hr class="my-2">{% endif %}
                         {% endfor %}
                     </div>
+                    <div class="continue-row">
+                        <a href="{% url 'personas' %}" class="btn btn-primary">
+                            Edit Characters <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
                 </div>
-            </div> 
-            <div class="col-lg-6">
-                <div class="card shadow-sm chat-container">
+            </div>
+
+            <!-- ── Right: instructions + chat ── -->
+            <div class="col-lg-6 d-flex flex-column">
+                <p class="text-muted mb-2" style="font-size: 0.9rem;">Chat with the assistant to discuss and refine changes to the storyline. When you're happy, hit <strong>Done</strong> to apply them.</p>
+
+                <div class="card shadow-sm chat-container flex-grow-1" style="display:flex; flex-direction:column;">
                     <div class="chat-header">
                         <h5><i class="bi bi-stars me-2"></i>Storyline Assistant</h5>
                     </div>
 
-                    <div class="chat-messages" id="chatMessages" style="height: 440px;">
-                        <div class="chat-bubble chat-bubble-left">
-                            <div class="chat-bubble-content">
-                                Would you like to change the storyline? Maybe you could add a tragic twist at the end?
-                            </div>
-                        </div>
-                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
 
-                    <div class="chat-input-area">
-                        <form method="post" action="{% url 'draft' %}" id="chatForm">
-                            {% csrf_token %}
-                            <div class="position-relative">
-                                <textarea class="form-control" name="feedback" rows="2" placeholder="Edit Storyline" required></textarea>
-                                <button type="submit" name="action" value="regenerate" class="btn btn-link position-absolute top-0 end-0 mt-2 me-2">
-                                    <i class="bi bi-rocket-takeoff icon-button"></i>
-                                </button>
-                            </div>
-                        </form>
+                    <form method="post" action="{% url 'draft' %}" id="submitForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="regenerate">
+                        <input type="hidden" name="feedback" id="feedbackField">
+                    </form>
+
+                    <div class="chat-footer">
+                        <div class="position-relative">
+                            <textarea
+                                class="form-control"
+                                id="chatInput"
+                                rows="2"
+                                placeholder="Describe a change to the storyline…"
+                            ></textarea>
+                            <button id="sendBtn" type="button"
+                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
+                                    style="border:none; background:transparent; padding:0;">
+                                <i class="bi bi-rocket-takeoff icon-button"></i>
+                            </button>
+                        </div>
+                        <div class="chat-footer-actions">
+                            <button id="doneBtn" type="button" class="done-btn" disabled>
+                                <i class="bi bi-check2-circle"></i> Done — Apply Changes
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const action = form.querySelector('[name="action"]')?.value;
-                if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next')) {
-                    document.getElementById('loadingOverlay').style.display = 'block';
-                }
+    (function () {
+        'use strict';
+
+        var STORAGE_KEY   = 'draft_chat_history';
+        var CSRF_TOKEN    = '{{ csrf_token }}';
+        var chatHistory   = [];
+        var isThinking    = false;
+
+        var messagesBox   = document.getElementById('chatMessages');
+        var chatInput     = document.getElementById('chatInput');
+        var sendBtn       = document.getElementById('sendBtn');
+        var doneBtn       = document.getElementById('doneBtn');
+        var feedbackField = document.getElementById('feedbackField');
+        var submitForm    = document.getElementById('submitForm');
+
+        function saveHistory() {
+            try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory)); } catch (e) {}
+        }
+
+        function loadHistory() {
+            try {
+                var raw = sessionStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        function renderHistory() {
+            messagesBox.innerHTML = '';
+            chatHistory.forEach(function (msg) {
+                appendBubble(msg.role, msg.content);
             });
+        }
+
+        function appendBubble(role, text, extraClass) {
+            var wrap = document.createElement('div');
+            wrap.style.display        = 'flex';
+            wrap.style.justifyContent = role === 'user' ? 'flex-end' : 'flex-start';
+            var bubble = document.createElement('div');
+            bubble.className   = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
+            bubble.textContent = text;
+            wrap.appendChild(bubble);
+            messagesBox.appendChild(wrap);
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+            return bubble;
+        }
+
+        function removeThinking() {
+            var el = messagesBox.querySelector('.thinking');
+            if (el && el.parentNode) el.parentNode.remove();
+        }
+
+        function handleSend() {
+            var msg = chatInput.value.trim();
+            if (!msg || isThinking) return;
+            chatInput.value  = '';
+            isThinking       = true;
+            sendBtn.disabled = true;
+
+            chatHistory.push({ role: 'user', content: msg });
+            saveHistory();
+            appendBubble('user', msg);
+            appendBubble('assistant', 'Thinking…', 'thinking');
+
+            var formData = new FormData();
+            formData.append('action', 'chat');
+            formData.append('history', JSON.stringify(chatHistory));
+            formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+            fetch('{% url "draft" %}', { method: 'POST', body: formData })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                removeThinking();
+                var reply = data.reply || 'Sorry, something went wrong. Please try again.';
+                appendBubble('assistant', reply);
+                chatHistory.push({ role: 'assistant', content: reply });
+                saveHistory();
+                doneBtn.disabled = false;
+            })
+            .catch(function () {
+                removeThinking();
+                appendBubble('assistant', 'Something went wrong. Please try again.');
+            })
+            .finally(function () {
+                isThinking       = false;
+                sendBtn.disabled = false;
+                chatInput.focus();
+            });
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        chatInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
         });
+
+        doneBtn.addEventListener('click', function () {
+            var summary = chatHistory.slice(1).map(function (m) {
+                return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content;
+            }).join('\n');
+            feedbackField.value = summary;
+            try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            document.getElementById('loadingOverlay').style.display = 'block';
+            submitForm.submit();
+        });
+
+        var saved = loadHistory();
+        if (saved && saved.length > 0) {
+            chatHistory = saved;
+            renderHistory();
+            var hasUserMsg = chatHistory.some(function (m) { return m.role === 'user'; });
+            if (hasUserMsg) doneBtn.disabled = false;
+        } else {
+            var greeting = 'Would you like to make any changes to the storyline?';
+            chatHistory = [{ role: 'assistant', content: greeting }];
+            saveHistory();
+            appendBubble('assistant', greeting);
+        }
+
+    })();
     </script>
 </body>
 </html>

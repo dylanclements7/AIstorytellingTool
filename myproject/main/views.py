@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .logic.ai import characterGenerate, storyGenerate, locationGenerate, storylineGenerate, narrationGenerate, PromptGenerate, addSceneGenerate, splitSceneGenerate, deleteSceneGenerate
+from .logic.ai import characterGenerate, storyGenerate, locationGenerate, storylineGenerate, sceneGenerate, addSceneGenerate, splitSceneGenerate, deleteSceneGenerate, draftChat, personaChat, locationChat, sceneChat
 import logging
 import json
 from datetime import datetime
@@ -32,24 +32,21 @@ def save_interaction_log(user_input, output_data, images, action_type):
     logger.info(f"Saved interaction log: {log_file}")
 
 def idea(request):
-    # if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-    #     result = suggestionGenerate()
-    #     return JsonResponse(result)
     if request.method == 'POST':
-        idea_text = request.POST.get('story_prompt', '')
-        
-        # Generate FULL story directly from the raw idea
-        full_story = storyGenerate(idea_text)
-        
-        # Store complete story in session
+        conflict   = request.POST.get('conflict', '').strip()
+        moments    = request.POST.get('moments', '').strip()
+        resolution = request.POST.get('resolution', '').strip()
+
+        full_story = storyGenerate(conflict, moments, resolution)
+
         request.session['story'] = full_story
         request.session.modified = True
         save_interaction_log(
-                user_input=idea_text,
-                output_data=full_story,
-                images=[s.get('image_path') for s in full_story.get('scenes', [])],
-                action_type='idea_generate'
-            )
+            user_input={'conflict': conflict, 'moments': moments, 'resolution': resolution},
+            output_data=full_story,
+            images=[s.get('image_path') for s in full_story.get('scenes', [])],
+            action_type='idea_generate'
+        )
         return redirect('video')
     
     return render(request, 'main/idea.html')
@@ -65,7 +62,6 @@ def draft(request):
         
         if action == 'regenerate':
             feedback = request.POST.get('feedback')
-            
             updated_story = storylineGenerate(story, feedback)
             save_interaction_log(
                 user_input=feedback,
@@ -77,23 +73,27 @@ def draft(request):
             request.session.modified = True
             story = updated_story
             logger.warning(f"Storyline regenerated with full story update")
-            
+
+        elif action == 'chat':
+            history = json.loads(request.POST.get('history', '[]'))
+            reply = draftChat(story, history)
+            return JsonResponse({'reply': reply})
+
         elif action == 'next':
             return redirect('personas')
     
     scenes = story.get("scenes", [])
-
     emotional_tones = list({
         tone
         for scene in scenes
         for tone in scene.get("emotional_tones", [])
     })
     return render(request, 'main/draft.html', {
-    'draft': {
-        'storyline': story.get('storyline', ''),
-        'emotional_tones': emotional_tones
-    },
-    'story_data': story  # <-- full story so filter can access characters & locations
+        'draft': {
+            'storyline': story.get('storyline', ''),
+            'emotional_tones': emotional_tones
+        },
+        'story_data': story
     })
 
 def personas(request):
@@ -101,13 +101,17 @@ def personas(request):
     
     if request.method == 'POST':
         action = request.POST.get('action')
-        
-        if action == 'regenerate':
+
+        if action == 'chat':
+            persona_id = int(request.POST.get('persona_id'))
+            history = json.loads(request.POST.get('history', '[]'))
+            reply = personaChat(story_data, persona_id, history)
+            return JsonResponse({'reply': reply})
+
+        elif action == 'regenerate':
             persona_id = int(request.POST.get('persona_id'))
             feedback = request.POST.get('feedback')
-            
             updated_story = characterGenerate(story_data, persona_id, feedback)
-            
             save_interaction_log(
                 user_input=feedback,
                 output_data=updated_story,
@@ -116,16 +120,14 @@ def personas(request):
             )
             request.session['story'] = updated_story
             request.session.modified = True
-            story_data = updated_story 
-            print("DEBUG updated_story:", updated_story)
-        return redirect(f"{reverse('personas')}?slide={persona_id}")
-    
+            story_data = updated_story
+            return redirect(f"{reverse('personas')}?slide={persona_id}")
+
     # Pre-process personas to add preview images
     personas = story_data.get('persona_description', [])
     scenes = story_data.get('scenes', [])
     
     for persona in personas:
-        # Find first scene containing this character
         persona['preview_image'] = None
         persona['preview_scene_id'] = None
         for scene in scenes:
@@ -133,24 +135,27 @@ def personas(request):
                 persona['preview_image'] = scene.get('image_path')
                 persona['preview_scene_id'] = scene.get('id')
                 break
-    
+
     return render(request, 'main/personas.html', {
         'persona_description': personas,
         'scenes': scenes,
     })
-
-
 
 def locations(request):
     story_data = request.session.get('story', {})
     
     if request.method == 'POST':
         action = request.POST.get('action')
-        
-        if action == 'regenerate':
+
+        if action == 'chat':
+            location_id = int(request.POST.get('location_id'))
+            history = json.loads(request.POST.get('history', '[]'))
+            reply = locationChat(story_data, location_id, history)
+            return JsonResponse({'reply': reply})
+
+        elif action == 'regenerate':
             location_id = int(request.POST.get('location_id'))
             feedback = request.POST.get('feedback')
-            
             updated_story = locationGenerate(story_data, location_id, feedback)
             save_interaction_log(
                 user_input=feedback,
@@ -160,16 +165,14 @@ def locations(request):
             )
             request.session['story'] = updated_story
             request.session.modified = True
-            print("DEBUG updated_story:", updated_story)
             story_data = updated_story
-        return redirect(f"{reverse('locations')}?slide={location_id}")
+            return redirect(f"{reverse('locations')}?slide={location_id}")
     
     # Pre-process locations to add preview images
     locations = story_data.get('setting_description', [])
     scenes = story_data.get('scenes', [])
     
     for location in locations:
-        # Find first scene at this location
         location['preview_image'] = None
         location['preview_scene_id'] = None
         for scene in scenes:
@@ -183,47 +186,32 @@ def locations(request):
         'scenes': scenes,
     })
 
-
 def scene(request):
     story_data = request.session.get('story', {})
     
     if request.method == 'POST':
-        action = request.POST.get('action')
+        action   = request.POST.get('action')
         scene_id = int(request.POST.get('scene_id'))
-        
-        if action == 'regenerate_narration':
-            feedback = request.POST.get('narration_feedback')
-            from main.logic.ai import narrationGenerate
-            updated_narration = narrationGenerate(story_data, scene_id, feedback)
-            save_interaction_log(
-                user_input=feedback,
-                output_data=story_data,
-                images=[s.get('image_path') for s in story_data.get('scenes', [])],
-                action_type='narration_regenerate'
-            )
-            for scene in story_data['scenes']:
-                if scene['id'] == scene_id:
-                    scene['narration'] = updated_narration
-                    break
-            
-            request.session['story'] = story_data
-            request.session.modified = True
-            logger.warning(f"Narration updated for scene {scene_id}")
-            
-        elif action == 'regenerate_image':
-            feedback = request.POST.get('image_prompt_feedback')
-            updated_story = PromptGenerate(story_data, scene_id, feedback)
+
+        if action == 'chat':
+            history = json.loads(request.POST.get('history', '[]'))
+            reply = sceneChat(story_data, scene_id, history)
+            return JsonResponse({'reply': reply})
+
+        elif action == 'regenerate_scene':
+            feedback = request.POST.get('feedback')
+            updated_story = sceneGenerate(story_data, scene_id, feedback)
             save_interaction_log(
                 user_input=feedback,
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='image_regenerate'
+                action_type='scene_regenerate'
             )
             request.session['story'] = updated_story
             request.session.modified = True
             story_data = updated_story
-            logger.warning(f"Full story regenerated from scene {scene_id} image prompt edit")
-        return redirect(f"{reverse('scene')}?slide={scene_id}")
+            logger.warning(f"Scene {scene_id} updated via sceneGenerate")
+            return redirect(f"{reverse('scene')}?slide={scene_id}")
     
     return render(request, 'main/scene.html', {
         'scenes': story_data.get('scenes', []),
@@ -238,56 +226,44 @@ def video(request):
         
         if action == 'delete':
             scene_id = int(request.POST.get('scene_id'))
-            
             updated_story = deleteSceneGenerate(story_data, scene_id)
-            
             save_interaction_log(
                 user_input=f"Delete scene {scene_id}",
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
                 action_type='scene_delete'
             )
-            
             request.session['story'] = updated_story
             request.session.modified = True
             logger.info(f"Scene {scene_id} deleted")
-            
             return redirect('video')
         
         elif action == 'add':
             after_scene_id = int(request.POST.get('after_scene_id'))
-            
             updated_story = addSceneGenerate(story_data, after_scene_id)
-            
             save_interaction_log(
                 user_input=f"Add scene after scene {after_scene_id}",
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
                 action_type='scene_add'
             )
-            
             request.session['story'] = updated_story
             request.session.modified = True
             logger.info(f"Scene added after scene {after_scene_id}")
-            
             return redirect('video')
         
         elif action == 'split':
             scene_id = int(request.POST.get('scene_id'))
-            
             updated_story = splitSceneGenerate(story_data, scene_id)
-            
             save_interaction_log(
                 user_input=f"Split scene {scene_id}",
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
                 action_type='scene_split'
             )
-            
             request.session['story'] = updated_story
             request.session.modified = True
             logger.info(f"Scene {scene_id} split into two scenes")
-            
             return redirect('video')
     
     return render(request, 'main/video.html', {

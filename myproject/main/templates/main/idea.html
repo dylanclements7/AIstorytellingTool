@@ -8,154 +8,271 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <style>
+        #ideaCarousel .carousel-control-prev,
+        #ideaCarousel .carousel-control-next,
+        #ideaCarousel .carousel-indicators {
+            display: none !important;
+        }
+        .carousel-item { min-height: unset; }
+
+        .idea-slide {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 2rem 6rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .step-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        .slide-question {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 0.5rem;
+            line-height: 1.25;
+        }
+        .slide-hint {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 1.75rem;
+        }
+        .idea-textarea {
+            font-size: 1rem;
+            resize: none;
+        }
+        .idea-textarea.is-invalid {
+            border-bottom-color: #dc3545 !important;
+        }
+
+        /* Fixed bottom nav bar */
+        .idea-nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background: #fff;
+            box-shadow: 0 -1px 0 #dee2e6;
+            z-index: 100;
+        }
+        .idea-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            background: #fff;
+            color: #495057;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            text-decoration: none;
+        }
+        .idea-nav-btn:hover:not(:disabled) {
+            background: #f0f4ff;
+            border-color: #6c8ebf;
+            color: #2c4a7c;
+        }
+        .idea-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .idea-nav-btn.primary {
+            background: var(--blue-400, #2f78e6);
+            border-color: var(--blue-400, #2f78e6);
+            color: #fff;
+        }
+        .idea-nav-btn.primary:hover {
+            background: var(--blue-300, #6ba8ff);
+            border-color: var(--blue-300, #6ba8ff);
+        }
+        .step-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #dee2e6;
+            transition: background 0.2s;
+        }
+        .step-dot.active {
+            background: var(--blue-400, #2f78e6);
+        }
+    </style>
 </head>
 <body class="bg-light">
     <nav class="story-nav">
         <div class="nav-container">
-            <!-- Left: Start Over -->
             <a href="{% url 'idea' %}" class="nav-btn nav-start">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 Start Over
             </a>
-            
-            <!-- Right: Storyboard -->
             <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
                 <i class="bi bi-film"></i>
                 Storyboard
             </a>
         </div>
     </nav>
-    <br>
-    <br>
-    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
             <div class="rocket-orbit">
                 <i class="bi bi-rocket-takeoff rocket-icon"></i>
             </div>
-            <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
+            <p class="text-white mt-5" style="font-size:1.5rem;">Generating your story...</p>
         </div>
     </div>
 
-    <div class="container mt-5">
-        <div class="card shadow-sm mx-auto p-4" style="max-width: 700px;">
-            <h4 class="mb-4 text-center">What story do you want to tell?</h4>
-            
-            <!-- Story Prompt Suggestions -->
-            <!-- <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <small class="text-muted">Try one of these ideas:</small>
-                    <button type="button" class="btn btn-link btn-sm p-0" id="regeneratePrompts" style="font-size: 1.2rem; color: #6c757d;">
-                        <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                </div>
-                <div class="d-flex flex-wrap gap-2 prompts-grid" id="promptsContainer">
-                </div>
-            </div> -->
+    <form method="post" action="{% url 'idea' %}" id="storyForm">
+        {% csrf_token %}
+        <input type="hidden" name="moments" value="">
 
-            <form method="post" action="{% url 'idea' %}">
-                {% csrf_token %}
-                <div class="mb-4 position-relative">
-                    <textarea 
-                        class="form-control" 
-                        id="storyPrompt"
-                        name="story_prompt" 
-                        rows="6" 
-                        placeholder="Tell your story here. Just start typing like you're talking to a friend."
-                        style="padding-right: 3.5rem;"
-                        required
-                    ></textarea>
-                    <button 
-                        type="submit" 
-                        name="action" 
-                        value="generate" 
-                        class="btn btn-link position-absolute bottom-0 end-0 mb-2 me-2"
-                        style="font-size: 1.5rem; color: #6c757d;"
-                    >
-                        <i class="bi bi-rocket-takeoff icon-button"></i>
-                    </button>
+        <div id="ideaCarousel" class="carousel slide" data-bs-ride="false">
+            <div class="carousel-inner">
+
+                <!-- Slide 1 -->
+                <div class="carousel-item active">
+                    <div class="idea-slide">
+                        <div class="card shadow-sm p-4">
+                            <div class="step-label">1 of 2 &nbsp;·&nbsp; Required</div>
+                            <div class="slide-question">What is the story about?</div>
+                            <p class="slide-hint">Describe the event, conflict, or situation at the heart of your story.</p>
+                            <textarea
+                                class="form-control idea-textarea"
+                                name="conflict"
+                                id="conflictInput"
+                                rows="5"
+                                placeholder="Enter as much or as little as you'd like."
+                            ></textarea>
+                        </div>
+                    </div>
                 </div>
-            </form>
+
+                <!-- Slide 2 -->
+                <div class="carousel-item">
+                    <div class="idea-slide">
+                        <div class="card shadow-sm p-4">
+                            <div class="step-label">2 of 2 &nbsp;·&nbsp; Optional</div>
+                            <div class="slide-question">How does it end?</div>
+                            <p class="slide-hint">What do you want to say through this story? How does it resolve?</p>
+                            <textarea
+                                class="form-control idea-textarea"
+                                name="resolution"
+                                id="resolutionInput"
+                                rows="5"
+                                placeholder="Enter as much or as little as you'd like."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
+    </form>
+
+    <!-- Fixed bottom nav -->
+    <div class="idea-nav-bar">
+        <button type="button" id="btnBack" class="idea-nav-btn" disabled>
+            <i class="bi bi-arrow-left"></i> Back
+        </button>
+        <div class="step-dots">
+            <div class="step-dot active" id="dot0"></div>
+            <div class="step-dot" id="dot1"></div>
+        </div>
+        <button type="button" id="btnNext" class="idea-nav-btn primary">
+            Next <i class="bi bi-arrow-right"></i>
+        </button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.querySelectorAll('.prompt-badge').forEach(badge => {
-            badge.addEventListener('click', function() {
-                const promptText = this.textContent;
-                document.getElementById('storyPrompt').value = promptText;
-            });
-        });
+    (function () {
+        var carouselEl = document.getElementById('ideaCarousel');
+        var carousel   = bootstrap.Carousel.getOrCreateInstance(carouselEl, { interval: false, ride: false });
+        var current    = 0;
+        var total      = 2;
 
-        const promptsContainer = document.getElementById('promptsContainer');
-        const textarea = document.getElementById('storyPrompt');
+        var btnBack = document.getElementById('btnBack');
+        var btnNext = document.getElementById('btnNext');
 
-        function renderPrompts(suggestions) {
-            promptsContainer.innerHTML = '';
-
-            suggestions.forEach(text => {
-                const badge = document.createElement('span');
-                badge.className = 'badge bg-secondary prompt-badge p-2';
-                badge.style.cursor = 'pointer';
-                badge.textContent = text;
-
-                badge.addEventListener('click', () => {
-                    textarea.value = text;
-                });
-
-                promptsContainer.appendChild(badge);
-            });
-        }
-
-        async function fetchPrompts() {
-            try {
-                const response = await fetch("{% url 'idea' %}", {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.suggestions) {
-                    renderPrompts(data.suggestions);
-                }
-            } catch (error) {
-                console.error('Failed to load suggestions', error);
+        function updateUI() {
+            btnBack.disabled = current === 0;
+            if (current === total - 1) {
+                btnNext.innerHTML = '<i class="bi bi-rocket-takeoff icon-button"></i>';
+                btnNext.classList.remove('primary');
+                btnNext.style.border = 'none';
+                btnNext.style.background = 'transparent';
+                btnNext.style.padding = '0';
+            } else {
+                btnNext.innerHTML = 'Next <i class="bi bi-arrow-right"></i>';
+            }
+            for (var i = 0; i < total; i++) {
+                document.getElementById('dot' + i).classList.toggle('active', i === current);
             }
         }
 
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const regenerateBtn = document.getElementById('regeneratePrompts');
-            const regenerateIcon = regenerateBtn.querySelector('i');
-
-            fetchPrompts();
-
-            regenerateBtn.addEventListener('click', async () => {
-                regenerateIcon.classList.add('spin');
-                regenerateBtn.disabled = true;
-
-                try {
-                    await fetchPrompts();
-                } catch (error) {
-                    console.error(error);
-                } finally {
-                    regenerateIcon.classList.remove('spin');
-                    regenerateBtn.disabled = false;
-                }
-            });
+        btnBack.addEventListener('click', function () {
+            if (current > 0) {
+                current--;
+                carousel.to(current);
+                updateUI();
+            }
         });
 
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const action = form.querySelector('[name="action"]')?.value;
-                if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next')) {
-                    document.getElementById('loadingOverlay').style.display = 'block';
+        btnNext.addEventListener('click', function () {
+            if (current < total - 1) {
+                if (current === 0) {
+                    var val = document.getElementById('conflictInput').value.trim();
+                    if (!val) {
+                        document.getElementById('conflictInput').focus();
+                        document.getElementById('conflictInput').classList.add('is-invalid');
+                        return;
+                    }
+                    document.getElementById('conflictInput').classList.remove('is-invalid');
                 }
-            });
+                current++;
+                carousel.to(current);
+                updateUI();
+            } else {
+                var val = document.getElementById('conflictInput').value.trim();
+                if (!val) {
+                    current = 0;
+                    carousel.to(0);
+                    updateUI();
+                    document.getElementById('conflictInput').focus();
+                    document.getElementById('conflictInput').classList.add('is-invalid');
+                    return;
+                }
+                // Clear all chat histories before generating a new story
+                sessionStorage.removeItem('draft_chat_history');
+                sessionStorage.removeItem('persona_chat_histories');
+                sessionStorage.removeItem('location_chat_histories');
+                sessionStorage.removeItem('scene_chat_histories');
+                document.getElementById('loadingOverlay').style.display = 'block';
+                document.getElementById('storyForm').submit();
+            }
         });
 
+        document.getElementById('conflictInput').addEventListener('input', function () {
+            this.classList.remove('is-invalid');
+        });
+    })();
     </script>
 </body>
 </html>

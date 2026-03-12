@@ -9,17 +9,136 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <style>
+        .continue-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            background: #fff;
+            color: #495057;
+            text-decoration: none;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .continue-btn:hover {
+            background: #f0f4ff;
+            border-color: #6c8ebf;
+            color: #2c4a7c;
+        }
+        .continue-row {
+            display: flex;
+            justify-content: flex-end;
+            max-width: 1400px;
+            margin: 0.5rem auto 0.25rem;
+            padding: 0 1rem;
+        }
+
+        /* Shrink images */
+        .scene-item img {
+            aspect-ratio: 16 / 9 !important;
+            max-height: 180px !important;
+            object-fit: cover !important;
+        }
+        .scene-item .caption p {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        /* ── Hover-reveal overlay ── */
+        .scene-card {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .scene-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            border-radius: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            pointer-events: none;
+        }
+
+        .scene-card:hover .scene-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .scene-overlay .btn {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            white-space: nowrap;
+        }
+
+        /* ── Add-button tooltip ── */
+        .scene-add-btn-container {
+            position: relative;
+        }
+
+        .scene-add-btn-container .add-tooltip,
+        .scene-split-wrap .split-tooltip {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #343a40;
+            color: #fff;
+            font-size: 0.72rem;
+            padding: 0.3rem 0.55rem;
+            border-radius: 0.375rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 10;
+        }
+
+        .scene-add-btn-container:hover .add-tooltip,
+        .scene-split-wrap:hover .split-tooltip {
+            opacity: 1;
+        }
+
+        /* small caret under tooltip */
+        .scene-add-btn-container .add-tooltip::after,
+        .scene-split-wrap .split-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #343a40;
+        }
+
+        /* wrap the split button so we can attach tooltip */
+        .scene-split-wrap {
+            position: relative;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
     <nav class="story-nav">
         <div class="nav-container">
-            <!-- Left: Start Over -->
             <a href="{% url 'idea' %}" class="nav-btn nav-start" onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 Start Over
             </a>
-            
-            <!-- Center: 4 editing steps -->
+
             <div class="nav-center">
                 <a href="{% url 'draft' %}" class="nav-step completed">
                     <i class="bi bi-book"></i>
@@ -27,25 +146,25 @@
                 </a>
                 <a href="{% url 'personas' %}" class="nav-step completed">
                     <i class="bi bi-person"></i>
-                    Personas
+                    Characters
                 </a>
                 <a href="{% url 'locations' %}" class="nav-step completed">
                     <i class="bi bi-house"></i>
-                    Locations
+                    Settings
                 </a>
                 <a href="{% url 'scene' %}" class="nav-step completed">
                     <i class="bi bi-camera"></i>
                     Scenes
                 </a>
             </div>
-            
-            <!-- Right: Storyboard -->
+
             <a href="{% url 'video' %}" class="nav-btn nav-storyboard completed">
                 <i class="bi bi-film"></i>
                 Storyboard
             </a>
         </div>
     </nav>
+
     <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
             <div class="rocket-orbit">
@@ -54,39 +173,60 @@
             <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
         </div>
     </div>
+
+    <!-- Edit Story button -->
+    <div class="continue-row">
+        <a href="{% url 'draft' %}" class="continue-btn">
+            Edit Story <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
     <div class="container text-center">
-        <br>
-        <h2 class="mb-4">View Your Story</h2>
         <div class="video-grid-container">
             {% for scene in scenes %}
             <div class="scene-item">
-                <div class="scene-actions">
-                    <form method="post" action="{% url 'video' %}" class="d-inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="{{ scene.id }}">
-                        <button type="submit" name="action" value="split" class="btn btn-sm btn-secondary scene-action-btn">
-                            <i class="bi bi-scissors me-1"></i>Split
-                        </button>
-                    </form>
-                    <form method="post" action="{% url 'video' %}" class="d-inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="scene_id" value="{{ scene.id }}">
-                        <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger scene-action-btn" onclick="return confirm('Are you sure you want to delete this scene?');">
-                            <i class="bi bi-trash me-1"></i>Delete
-                        </button>
-                    </form>
-                </div>
                 <h2>Scene {{ scene.id }}</h2>
-                <a href="{% url 'scene' %}?slide={{ scene.id }}">
+
+                <!-- Image + hover overlay -->
+                <div class="scene-card">
                     <img src="{% static scene.image_path %}" alt="Scene {{ scene.id }}">
-                </a>
+
+                    <div class="scene-overlay">
+                        <!-- Edit -->
+                        <a href="{% url 'scene' %}?slide={{ scene.id }}" class="btn btn-sm btn-light">
+                            <i class="bi bi-pencil me-1"></i>Edit
+                        </a>
+
+                        <!-- Split (with tooltip) -->
+                        <form method="post" action="{% url 'video' %}" class="scene-split-wrap">
+                            {% csrf_token %}
+                            <input type="hidden" name="scene_id" value="{{ scene.id }}">
+                            <span class="split-tooltip">Split this scene into two separate scenes</span>
+                            <button type="submit" name="action" value="split" class="btn btn-sm btn-secondary">
+                                <i class="bi bi-scissors me-1"></i>Split
+                            </button>
+                        </form>
+
+                        <!-- Delete -->
+                        <form method="post" action="{% url 'video' %}" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="scene_id" value="{{ scene.id }}">
+                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Are you sure you want to delete this scene?');">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="caption">
                     <p>{{ scene.narration }}</p>
                 </div>
             </div>
-            
+
             {% if not forloop.last %}
             <div class="scene-add-btn-container">
+                <span class="add-tooltip">Insert a new scene here</span>
                 <form method="post" action="{% url 'video' %}">
                     {% csrf_token %}
                     <input type="hidden" name="after_scene_id" value="{{ scene.id }}">
@@ -96,7 +236,7 @@
                 </form>
             </div>
             {% endif %}
-            
+
             {% empty %}
             <div class="col-12">
                 <div class="alert alert-info">
@@ -106,16 +246,17 @@
             {% endfor %}
         </div>
     </div>
-</body>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const action = form.querySelector('[name="action"]')?.value;
-            if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next' || action === "delete" || action === 'split' || action === 'add')) {
-                document.getElementById('loadingOverlay').style.display = 'block';
-            }
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const action = form.querySelector('[name="action"]')?.value;
+                if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next' || action === "delete" || action === 'split' || action === 'add')) {
+                    document.getElementById('loadingOverlay').style.display = 'block';
+                }
+            });
         });
-    });
-</script>
+    </script>
+</body>
 </html>

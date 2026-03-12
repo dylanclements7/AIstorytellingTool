@@ -519,7 +519,6 @@ a.step:hover div {
     flex-direction: column;
     padding: 0;
     overflow: hidden;
-    height: 600px;
 }
 
 .chat-header {
@@ -610,15 +609,14 @@ a.step:hover div {
     display: flex;
     flex-wrap: wrap;
     gap: 2rem;
-    justify-content: flex-start; /* Change from center to flex-start */
+    justify-content: flex-start;
     padding: 1rem 0;
     max-width: 1400px;
     margin: 0 auto;
 }
 
 .scene-item {
-    /* Use calc to account for the gaps so exactly 3 fit per row */
-    flex: 0 0 calc(33.333% - (4rem / 3)); 
+    flex: 0 0 calc(33.333% - (4rem / 3));
     max-width: 19.5rem;
     position: relative;
     display: flex;
@@ -651,7 +649,7 @@ a.step:hover div {
 
 .scene-item img {
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.25rem var(--shadow);
@@ -705,7 +703,7 @@ a.step:hover div {
 /* Responsive adjustments */
 @media (max-width: 1200px) {
     .scene-item {
-        flex: 0 0 calc(50% - 1rem); /* Adjust gap math for 2 items */
+        flex: 0 0 calc(50% - 1rem);
     }
 }
 
@@ -740,7 +738,7 @@ a.step:hover div {
 
 .scene-image-display {
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     border-radius: 0.5rem 0.5rem 0 0;
 }
@@ -796,11 +794,25 @@ a.step:hover div {
 .persona-preview-image,
 .location-preview-image {
     width: 100%;
-    max-width: 250px;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem var(--shadow);
-    margin: 0 auto;
+    border-radius: 0.5rem 0.5rem 0 0;
     display: block;
+}
+
+/* ===================================
+   EQUAL-HEIGHT EDITOR ROWS
+   =================================== */
+.editor-row {
+    align-items: stretch;
+}
+
+.editor-row > [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-row > [class*="col-"] > .card {
+    flex: 1;
+    min-height: 0;
 }

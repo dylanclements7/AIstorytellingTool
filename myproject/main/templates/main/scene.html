@@ -9,18 +9,168 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <style>
+        .row.g-4.mb-3 {
+            align-items: stretch;
+        }
+
+        .row.g-4.mb-3 > .col-lg-6 {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row.g-4.mb-3 > .col-lg-6 > .card {
+            flex: 1;
+        }
+
+        .row.g-4.mb-3 > .col-lg-6 > .card.chat-container {
+            height: 100%;
+        }
+        .scene-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            background: #fff;
+            color: #495057;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            user-select: none;
+            text-decoration: none;
+        }
+        .scene-nav-btn:hover:not(:disabled) {
+            background: #f0f4ff;
+            border-color: #6c8ebf;
+            color: #2c4a7c;
+        }
+        .scene-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .scene-nav-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.25rem;
+            padding: 0 0.25rem;
+        }
+        .scene-counter {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 0.65rem 1rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+        .chat-bubble.user {
+            background: #0d6efd;
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble.assistant {
+            background: #f1f3f5;
+            color: #212529;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-bubble.thinking {
+            opacity: 0.6;
+            font-style: italic;
+        }
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            gap: 0.25rem;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 160px;
+            max-height: 300px;
+        }
+        .done-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 2px solid #1f7e60;
+            background: #fff;
+            color: #1f7e60;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            user-select: none;
+        }
+        .done-btn:hover:not(:disabled) {
+            background: #1f7e60;
+            color: #fff;
+        }
+        .done-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .chat-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #dee2e6;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .chat-footer-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        #scenesCarousel .carousel-control-prev,
+        #scenesCarousel .carousel-control-next,
+        #scenesCarousel .carousel-indicators,
+        .scene-carousel-controls {
+            display: none !important;
+        }
+        .scene-image-display {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            border-radius: 0.5rem 0.5rem 0 0;
+            display: block;
+        }
+        .scene-meta {
+            padding: 1rem 1.25rem;
+            background: #fff;
+            border-radius: 0 0 0.5rem 0.5rem;
+            border-top: 1px solid #e9ecef;
+            font-size: 0.9rem;
+            color: #343a40;
+        }
+        .scene-meta p {
+            margin-bottom: 0.3rem;
+        }
+        .scene-meta p:last-child {
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
     <nav class="story-nav">
         <div class="nav-container">
-            <!-- Left: Start Over -->
-            <a href="{% url 'idea' %}" class="nav-btn nav-start" onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
+            <a href="{% url 'idea' %}" class="nav-btn nav-start"
+               onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 Start Over
             </a>
-            
-            <!-- Center: 4 editing steps -->
             <div class="nav-center">
                 <a href="{% url 'draft' %}" class="nav-step completed">
                     <i class="bi bi-book"></i>
@@ -28,19 +178,17 @@
                 </a>
                 <a href="{% url 'personas' %}" class="nav-step completed">
                     <i class="bi bi-person"></i>
-                    Personas
+                    Characters
                 </a>
                 <a href="{% url 'locations' %}" class="nav-step completed">
                     <i class="bi bi-house"></i>
-                    Locations
+                    Settings
                 </a>
                 <div class="nav-step active">
                     <i class="bi bi-camera"></i>
                     Scenes
                 </div>
             </div>
-            
-            <!-- Right: Storyboard -->
             <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
                 <i class="bi bi-film"></i>
                 Storyboard
@@ -48,12 +196,12 @@
         </div>
     </nav>
 
-    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
             <div class="rocket-orbit">
                 <i class="bi bi-rocket-takeoff rocket-icon"></i>
             </div>
-            <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
+            <p class="text-white mt-5" style="font-size:1.5rem;">Generating your story...</p>
         </div>
     </div>
 
@@ -63,143 +211,260 @@
         <div id="scenesCarousel" class="carousel slide" data-bs-ride="false">
             <div class="carousel-inner">
                 {% for scene in scenes %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-scene="{{ scene.id }}">
-                    
-                    <div class="text-center mb-4">
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-scene-id="{{ scene.id }}">
+
+                    <div class="text-center mb-3">
                         <span class="badge bg-primary scene-badge">Scene {{ scene.id }}</span>
-                        <div class="d-flex justify-content-center gap-2 mt-3">
-                            {% for tone in scene.emotional_tones %}
-                                <span class="badge bg-secondary tone-badge">{{ tone }}</span>
-                            {% endfor %}
-                        </div>
                     </div>
 
-                    <div class="row g-4 mb-5">
-                        <div class="col-lg-4">
-                            <div class="card shadow-sm scene-image-card">
+                    <div class="row g-4 mb-3 editor-row">
+
+                        <!-- Left: image + narration/prompt (~half screen) -->
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm" style="border:none; overflow:hidden;">
                                 <img src="{% static scene.image_path %}" class="scene-image-display" alt="Scene {{ scene.id }}">
-                                <div class="scene-image-info">
-                                    <p class="mb-0"><strong>Location:</strong> {{ scene.location|linkify_characters_and_locations:story_data }}</p>
+                                <div class="scene-meta">
+                                    <p><strong>Narration:</strong> {{ scene.narration }}</p>
+                                    <p><strong>Image prompt:</strong> {{ scene.image_prompt|linkify_characters_and_locations:story_data }}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-lg-8">
-                            <div class="card shadow-sm chat-container">
+                        <!-- Right: about + chat (~half screen) -->
+                        <div class="col-lg-6">
+                            <p class="text-muted mb-2" style="font-size: 0.9rem;">Edit this scene's image or narration. Use the assistant to describe any changes, then hit <strong>Done</strong> to apply them.</p>
+                            <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
                                 <div class="chat-header">
-                                    <h5><i class="bi bi-palette2 me-2"></i>Image Assistant</h5>
+                                    <h5><i class="bi bi-stars me-2"></i>Scene Assistant</h5>
                                 </div>
-                                <div class="chat-messages scene-chat-messages">
-                                    <div class="chat-bubble chat-bubble-left">
-                                        <div class="chat-bubble-content">
-                                            <strong>Current Image Prompt:</strong><br>
-                                            {{ scene.image_prompt|linkify_characters_and_locations:story_data }}
-                                        </div>
-                                    </div>
-                                    <div class="chat-bubble chat-bubble-left">
-                                        <div class="chat-bubble-content">
-                                            Would you like to make any changes? Maybe the image should be brighter to show how happy they are?
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="chat-input-area">
-                                    <form method="post" action="{% url 'scene' %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="scene_id" value="{{ scene.id }}">
-                                        <div class="position-relative">
-                                            <textarea class="form-control" name="image_prompt_feedback" rows="2" placeholder="Edit Image Prompt"></textarea>
-                                            <button type="submit" name="action" value="regenerate_image" class="btn btn-link position-absolute top-0 end-0 mt-2 me-2">
-                                                <i class="bi bi-rocket-takeoff icon-button"></i>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                <div class="chat-messages" id="chatMessages-{{ scene.id }}"></div>
 
-                    <div class="row g-4 mb-4">
-                        <div class="col-12">
-                            <div class="card shadow-sm chat-container">
-                                <div class="chat-header chat-header-narration">
-                                    <h5><i class="bi bi-mic-fill me-2"></i>Narration Assistant</h5>
-                                </div>
-                                <div class="chat-messages scene-chat-messages">
-                                    <div class="chat-bubble chat-bubble-left">
-                                        <div class="chat-bubble-content">
-                                            <strong>Current Narration:</strong><br>
-                                            {{ scene.narration }}
-                                        </div>
+                                <form method="post" action="{% url 'scene' %}" class="scene-submit-form" style="display:none;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="regenerate_scene">
+                                    <input type="hidden" name="scene_id" value="{{ scene.id }}">
+                                    <input type="hidden" name="feedback" class="scene-feedback-field">
+                                </form>
+
+                                <div class="chat-footer">
+                                    <div class="position-relative">
+                                        <textarea
+                                            class="form-control scene-chat-input"
+                                            rows="2"
+                                            placeholder="Change the image, narration, or both…"
+                                            data-scene-id="{{ scene.id }}"
+                                        ></textarea>
+                                        <button type="button"
+                                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2 scene-send-btn"
+                                                style="border:none; background:transparent; padding:0;"
+                                                data-scene-id="{{ scene.id }}">
+                                            <i class="bi bi-rocket-takeoff icon-button"></i>
+                                        </button>
                                     </div>
-                                    <div class="chat-bubble chat-bubble-left">
-                                        <div class="chat-bubble-content">
-                                            Would you like to make any changes? Maybe they speak more relaxed in this scene?
-                                        </div>
+                                    <div class="chat-footer-actions">
+                                        <button type="button" class="done-btn scene-done-btn" data-scene-id="{{ scene.id }}" disabled>
+                                            <i class="bi bi-check2-circle"></i> Done — Apply Changes
+                                        </button>
                                     </div>
-                                </div>
-                                <div class="chat-input-area">
-                                    <form method="post" action="{% url 'scene' %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="scene_id" value="{{ scene.id }}">
-                                        <div class="position-relative">
-                                            <textarea class="form-control" name="narration_feedback" rows="2" placeholder="Edit Narration"></textarea>
-                                            <button type="submit" name="action" value="regenerate_narration" class="btn btn-link position-absolute top-0 end-0 mt-2 me-2">
-                                                <i class="bi bi-rocket-takeoff icon-button"></i>
-                                            </button>
-                                        </div>
-                                    </form>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
                 {% endfor %}
             </div>
 
             <div class="scene-carousel-controls">
-                <button class="carousel-control-prev" type="button" data-bs-target="#scenesCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                
-                <div class="carousel-indicators">
-                    {% for scene in scenes %}
-                    <button type="button" data-bs-target="#scenesCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Scene {{ forloop.counter }}"></button>
-                    {% endfor %}
-                </div>
-                
-                <button class="carousel-control-next" type="button" data-bs-target="#scenesCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
+                <button class="carousel-control-prev" type="button" data-bs-target="#scenesCarousel" data-bs-slide="prev"></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#scenesCarousel" data-bs-slide="next"></button>
             </div>
+        </div>
+
+        <div class="scene-nav-row">
+            <button id="btnPrev" class="scene-nav-btn" disabled>
+                <i class="bi bi-arrow-left"></i> Back
+            </button>
+            <span class="scene-counter" id="sceneCounter">1 / {{ scenes|length }}</span>
+            <button id="btnNext" class="scene-nav-btn">
+                Next Scene <i class="bi bi-arrow-right"></i>
+            </button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    {{ scenes|json_script:"scene-data" }}
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const slideId = urlParams.get('slide');
+    (function () {
+        'use strict';
 
-            if (slideId) {
-                const carouselElement = document.querySelector("#scenesCarousel");
-                const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement);
+        var SCENES       = JSON.parse(document.getElementById('scene-data').textContent);
+        var total        = SCENES.length;
+        var currentIndex = 0;
+        var CSRF_TOKEN   = '{{ csrf_token }}';
 
-                // Move to index (scene.id starts at 1, carousel uses 0-based index)
-                const index = parseInt(slideId) - 1;
-                carousel.to(index);
-            }
+        var carouselEl = document.getElementById('scenesCarousel');
+        var carousel   = carouselEl
+            ? bootstrap.Carousel.getOrCreateInstance(carouselEl, { interval: false, ride: false })
+            : null;
+        var btnPrev   = document.getElementById('btnPrev');
+        var btnNext   = document.getElementById('btnNext');
+        var counterEl = document.getElementById('sceneCounter');
+
+        var chatHistories = {};
+        var thinking      = {};
+        var STORAGE_KEY   = 'scene_chat_histories';
+
+        function saveHistories() {
+            try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories)); } catch (e) {}
+        }
+        function loadHistories() {
+            try { var raw = sessionStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+        }
+        function clearSceneHistory(sceneId) {
+            try { var stored = loadHistories() || {}; delete stored[sceneId]; sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored)); } catch (e) {}
+        }
+        function getHistory(sceneId) {
+            if (!chatHistories[sceneId]) chatHistories[sceneId] = [];
+            return chatHistories[sceneId];
+        }
+        function getChatBox(sceneId) {
+            return document.getElementById('chatMessages-' + sceneId);
+        }
+        function appendBubble(sceneId, role, text, extraClass) {
+            var box = getChatBox(sceneId);
+            if (!box) return;
+            var wrap = document.createElement('div');
+            wrap.style.display        = 'flex';
+            wrap.style.justifyContent = role === 'user' ? 'flex-end' : 'flex-start';
+            var bubble = document.createElement('div');
+            bubble.className   = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
+            bubble.textContent = text;
+            wrap.appendChild(bubble);
+            box.appendChild(wrap);
+            box.scrollTop = box.scrollHeight;
+        }
+        function removeThinking(sceneId) {
+            var box = getChatBox(sceneId);
+            if (!box) return;
+            var el = box.querySelector('.thinking');
+            if (el && el.parentNode) el.parentNode.remove();
+        }
+        function renderChat(idx) {
+            var scene = SCENES[idx];
+            if (!scene) return;
+            var box = getChatBox(scene.id);
+            if (!box) return;
+            box.innerHTML = '';
+            getHistory(scene.id).forEach(function (msg) { appendBubble(scene.id, msg.role, msg.content); });
+            var hasUserMsg = getHistory(scene.id).some(function (m) { return m.role === 'user'; });
+            var doneBtn = document.querySelector('.scene-done-btn[data-scene-id="' + scene.id + '"]');
+            if (doneBtn) doneBtn.disabled = !hasUserMsg;
+        }
+
+        function handleSend(sceneId) {
+            var input = document.querySelector('.scene-chat-input[data-scene-id="' + sceneId + '"]');
+            var msg   = input ? input.value.trim() : '';
+            if (!msg || thinking[sceneId]) return;
+            input.value       = '';
+            thinking[sceneId] = true;
+
+            getHistory(sceneId).push({ role: 'user', content: msg });
+            saveHistories();
+            appendBubble(sceneId, 'user', msg);
+            appendBubble(sceneId, 'assistant', 'Thinking…', 'thinking');
+
+            var formData = new FormData();
+            formData.append('action', 'chat');
+            formData.append('scene_id', sceneId);
+            formData.append('history', JSON.stringify(getHistory(sceneId)));
+            formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+            fetch('{% url "scene" %}', { method: 'POST', body: formData })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                removeThinking(sceneId);
+                var reply = data.reply || 'Sorry, something went wrong.';
+                appendBubble(sceneId, 'assistant', reply);
+                getHistory(sceneId).push({ role: 'assistant', content: reply });
+                saveHistories();
+                var doneBtn = document.querySelector('.scene-done-btn[data-scene-id="' + sceneId + '"]');
+                if (doneBtn) doneBtn.disabled = false;
+            })
+            .catch(function () {
+                removeThinking(sceneId);
+                appendBubble(sceneId, 'assistant', 'Something went wrong. Please try again.');
+            })
+            .finally(function () { thinking[sceneId] = false; });
+        }
+
+        document.querySelectorAll('.scene-send-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () { handleSend(parseInt(btn.dataset.sceneId, 10)); });
+        });
+        document.querySelectorAll('.scene-chat-input').forEach(function (input) {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(parseInt(input.dataset.sceneId, 10)); }
+            });
         });
 
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const action = form.querySelector('[name="action"]')?.value;
-                if (action && (action.includes('generate') || action.includes('regenerate') || action === 'next')) {
+        document.querySelectorAll('.scene-done-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var sceneId = parseInt(btn.dataset.sceneId, 10);
+                var summary = getHistory(sceneId).slice(1)
+                    .map(function (m) { return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content; })
+                    .join('\n');
+                var idInput = document.querySelector('.scene-submit-form input[name="scene_id"][value="' + sceneId + '"]');
+                if (idInput) {
+                    idInput.closest('form').querySelector('.scene-feedback-field').value = summary;
+                    clearSceneHistory(sceneId);
                     document.getElementById('loadingOverlay').style.display = 'block';
+                    idInput.closest('form').submit();
                 }
             });
         });
+
+        function goTo(idx) {
+            if (total === 0) return;
+            if (idx < 0 || idx >= total) return;
+            currentIndex = idx;
+            if (carousel) carousel.to(idx);
+            btnPrev.disabled      = idx === 0;
+            btnNext.disabled      = false;
+            btnNext.innerHTML     = idx === total - 1
+                ? 'View Storyboard <i class="bi bi-arrow-right"></i>'
+                : 'Next Scene <i class="bi bi-arrow-right"></i>';
+            counterEl.textContent = (idx + 1) + ' / ' + total;
+            renderChat(idx);
+        }
+
+        btnPrev.addEventListener('click', function () { goTo(currentIndex - 1); });
+        btnNext.addEventListener('click', function () {
+            if (currentIndex === total - 1) { window.location.href = "{% url 'video' %}"; }
+            else { goTo(currentIndex + 1); }
+        });
+
+        var stored = loadHistories() || {};
+        for (var i = 0; i < total; i++) {
+            var sid = SCENES[i].id;
+            chatHistories[sid] = (stored[sid] && stored[sid].length > 0)
+                ? stored[sid]
+                : [{ role: 'assistant', content: 'Would you like to make any changes to Scene ' + sid + '? You can edit the image, the narration, or both.' }];
+        }
+        saveHistories();
+
+        var urlParams  = new URLSearchParams(window.location.search);
+        var slideParam = urlParams.get('slide');
+        var startIndex = 0;
+        if (slideParam) {
+            var found = SCENES.findIndex(function (s) { return s.id === parseInt(slideParam, 10); });
+            if (found !== -1) startIndex = found;
+        }
+
+        goTo(startIndex);
+
+    })();
     </script>
 </body>
 </html>

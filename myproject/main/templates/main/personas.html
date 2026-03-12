@@ -8,17 +8,169 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
+    <style>
+        .row.g-4.mb-3 {
+            align-items: stretch;
+        }
+
+        .row.g-4.mb-3 > .col-lg-6 {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row.g-4.mb-3 > .col-lg-6 > .card {
+            flex: 1;
+        }
+
+        .row.g-4.mb-3 > .col-lg-6 > .card.chat-container {
+            height: 100%;
+        }
+        .persona-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            background: #fff;
+            color: #495057;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            user-select: none;
+            text-decoration: none;
+        }
+        .persona-nav-btn:hover:not(:disabled) {
+            background: #f0f4ff;
+            border-color: #6c8ebf;
+            color: #2c4a7c;
+        }
+        .persona-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .persona-nav-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.25rem;
+            padding: 0 0.25rem;
+        }
+        .persona-counter {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 0.65rem 1rem;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+        .chat-bubble.user {
+            background: #0d6efd;
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble.assistant {
+            background: #f1f3f5;
+            color: #212529;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-bubble.thinking {
+            opacity: 0.6;
+            font-style: italic;
+        }
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            gap: 0.25rem;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 160px;
+            max-height: 300px;
+        }
+        .persona-preview-image {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            border-radius: 0.5rem 0.5rem 0 0;
+            display: block;
+        }
+        .persona-desc-block {
+            background: #fff;
+            border-radius: 0 0 0.5rem 0.5rem;
+            padding: 1rem 1.25rem;
+            font-size: 0.9rem;
+            color: #343a40;
+            border-top: 1px solid #e9ecef;
+        }
+        .persona-desc-block h6 {
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            font-size: 1rem;
+        }
+        .persona-desc-block p {
+            margin-bottom: 0.3rem;
+        }
+        .done-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 2px solid #1f7e60;
+            background: #fff;
+            color: #1f7e60;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            user-select: none;
+        }
+        .done-btn:hover:not(:disabled) {
+            background: #1f7e60;
+            color: #fff;
+        }
+        .done-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .chat-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #dee2e6;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .chat-footer-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        #personasCarousel .carousel-control-prev,
+        #personasCarousel .carousel-control-next,
+        #personasCarousel .carousel-indicators {
+            display: none !important;
+        }
+    </style>
 </head>
 <body class="bg-light">
+
     <nav class="story-nav">
         <div class="nav-container">
-            <!-- Left: Start Over -->
-            <a href="{% url 'idea' %}" class="nav-btn nav-start" onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
+            <a href="{% url 'idea' %}" class="nav-btn nav-start"
+               onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 Start Over
             </a>
-            
-            <!-- Center: 4 editing steps -->
             <div class="nav-center">
                 <a href="{% url 'draft' %}" class="nav-step completed">
                     <i class="bi bi-book"></i>
@@ -26,218 +178,311 @@
                 </a>
                 <div class="nav-step active">
                     <i class="bi bi-person"></i>
-                    Personas
+                    Characters
                 </div>
                 <a href="{% url 'locations' %}" class="nav-step completed">
                     <i class="bi bi-house"></i>
-                    Locations
+                    Settings
                 </a>
                 <a href="{% url 'scene' %}" class="nav-step completed">
                     <i class="bi bi-camera"></i>
                     Scenes
                 </a>
             </div>
-            
-            <!-- Right: Storyboard -->
             <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
                 <i class="bi bi-film"></i>
                 Storyboard
             </a>
         </div>
     </nav>
-    
-    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999;">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+
+    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
             <div class="rocket-orbit">
                 <i class="bi bi-rocket-takeoff rocket-icon"></i>
             </div>
-            <p class="text-white mt-5" style="font-size: 1.5rem;">Generating your story...</p>
+            <p class="text-white mt-5" style="font-size:1.5rem;">Generating your story...</p>
         </div>
     </div>
 
     <div class="container-fluid mt-4 px-4">
-        <div class="row g-4">
-            <!-- Left Panel: Persona Carousel -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm p-4">
-                    <h2 class="mb-2">Characters</h2>
-                    <p class="text-secondary mb-4">
-                        Here you can edit what each character looks like for the story. These descriptions will be used to generate images of the characters in each scene.
-                    </p>
-                    
-                    <!-- Carousel -->
-                    <div id="personasCarousel" class="carousel slide mb-4" data-bs-ride="false">
-                        <div class="carousel-inner">
-                            {% for persona in persona_description %}
-                            <div class="carousel-item {% if forloop.first %}active{% endif %}" data-persona-id="{{ persona.id }}">
-                                <!-- Character Image -->
+        <div id="personasCarousel" class="carousel slide" data-bs-ride="false">
+            <div class="carousel-inner">
+                {% for persona in persona_description %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-persona-id="{{ persona.id }}">
+
+                    <div class="text-center mb-3">
+                        <span class="badge bg-primary" style="font-size:1.1rem; padding:0.5rem 1.25rem;">{{ persona.name }}</span>
+                    </div>
+
+                    <div class="row g-4 mb-3 editor-row">
+
+                        <!-- Left: image + description (~half screen) -->
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm" style="border:none; overflow:hidden;">
                                 {% if persona.preview_image %}
-                                    <div class="persona-image-container mb-3">
-                                        <a href="{% url 'scene' %}?slide={{ persona.preview_scene_id }}">
-                                            <img src="{% static persona.preview_image %}" class="persona-preview-image" alt="{{ persona.name }}">
-                                        </a>
-                                        <p class="text-center text-muted small mt-2">
-                                            From <a href="{% url 'scene' %}?slide={{ persona.preview_scene_id }}">Scene {{ persona.preview_scene_id }}</a>
-                                        </p>
-                                    </div>
+                                <a href="{% url 'scene' %}?slide={{ persona.preview_scene_id }}">
+                                    <img src="{% static persona.preview_image %}" class="persona-preview-image" alt="{{ persona.name }}">
+                                </a>
+                                {% else %}
+                                <div class="d-flex align-items-center justify-content-center bg-light persona-preview-image">
+                                    <i class="bi bi-person-fill" style="font-size:6rem; color:#ced4da;"></i>
+                                </div>
                                 {% endif %}
-                                
-                                <!-- Character Details -->
-                                <div class="border rounded p-3 bg-white mb-3">
-                                    <h6 class="mb-3">{{ persona.name }}</h6>
-                                    <p class="mb-1"><strong>Age:</strong> {{ persona.age }}</p>
-                                    <p class="mb-1"><strong>Clothing:</strong> {{ persona.clothing }}</p>
-                                    <p class="mb-1"><strong>Disability:</strong> {{ persona.disability }}</p>
-                                    <p class="mb-1"><strong>Skin:</strong> {{ persona.skin }}</p>
-                                    <p class="mb-3"><strong>Hair:</strong> {{ persona.hair }}</p>
+                                <div class="persona-desc-block">
+                                    <h6>{{ persona.name }}</h6>
+                                    <p><strong>Age:</strong> {{ persona.age }}</p>
+                                    <p><strong>Clothing:</strong> {{ persona.clothing }}</p>
+                                    <p><strong>Disability:</strong> {{ persona.disability }}</p>
+                                    <p><strong>Skin:</strong> {{ persona.skin }}</p>
+                                    <p class="mb-0"><strong>Hair:</strong> {{ persona.hair }}</p>
                                 </div>
                             </div>
-                            {% empty %}
-                            <div class="carousel-item active">
-                                <div class="alert alert-info">
-                                    No characters have been generated yet.
+                            <!-- {% if persona.preview_image %}
+                            <p class="text-center text-muted small mt-2">
+                                From <a href="{% url 'scene' %}?slide={{ persona.preview_scene_id }}">Scene {{ persona.preview_scene_id }}</a>
+                            </p>
+                            {% endif %} -->
+                        </div>
+
+                        <!-- Right: instructions + chat (~half screen) -->
+                        <div class="col-lg-6">
+                            <p class="text-muted mb-2" style="font-size: 0.9rem;">Edit what this character looks like. Use the assistant to describe any changes — these will be used to generate images of the character in each scene.</p>
+                            <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
+                                <div class="chat-header">
+                                    <h5><i class="bi bi-stars me-2"></i>Character Assistant</h5>
+                                </div>
+                                <div class="chat-messages" id="chatMessages-{{ persona.id }}"></div>
+
+                                <form method="post" action="{% url 'personas' %}" class="persona-submit-form" style="display:none;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="regenerate">
+                                    <input type="hidden" name="persona_id" value="{{ persona.id }}">
+                                    <input type="hidden" name="feedback" class="persona-feedback-field">
+                                </form>
+
+                                <div class="chat-footer">
+                                    <div class="position-relative">
+                                        <textarea
+                                            class="form-control persona-chat-input"
+                                            rows="2"
+                                            placeholder="Describe a change for this character…"
+                                            data-persona-id="{{ persona.id }}"
+                                        ></textarea>
+                                        <button type="button"
+                                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2 persona-send-btn"
+                                                style="border:none; background:transparent; padding:0;"
+                                                data-persona-id="{{ persona.id }}">
+                                            <i class="bi bi-rocket-takeoff icon-button"></i>
+                                        </button>
+                                    </div>
+                                    <div class="chat-footer-actions">
+                                        <button type="button" class="done-btn persona-done-btn" data-persona-id="{{ persona.id }}" disabled>
+                                            <i class="bi bi-check2-circle"></i> Done — Apply Changes
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            {% endfor %}
                         </div>
-                        
-                        {% if persona_description %}
-                        <button class="carousel-control-prev" type="button" data-bs-target="#personasCarousel" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        
-                        <!-- Carousel Indicators -->
-                        <div class="carousel-indicators position-relative mt-3">
-                            {% for persona in persona_description %}
-                            <button type="button" data-bs-target="#personasCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Persona {{ forloop.counter }}"></button>
-                            {% endfor %}
-                        </div>
-                        
-                        <button class="carousel-control-next" type="button" data-bs-target="#personasCarousel" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
-                        {% endif %}
+
                     </div>
                 </div>
-            </div>
-
-            <!-- Right Panel: Chat Interface -->
-            <div class="col-lg-6">
-                <div class="card shadow-sm chat-container">
-                    <div class="chat-header">
-                        <h5><i class="bi bi-stars me-2"></i>Character Assistant</h5>
-                    </div>
-
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- Bot message -->
-                        <div class="chat-bubble chat-bubble-left">
-                            <div class="chat-bubble-content">
-                                Here is your persona! Would you like to make any changes? Maybe they should be older to give off a feeling of wisdom?
-                            </div>
-                        </div>
-
-                        <!-- User message -->
-                        <div class="chat-bubble chat-bubble-right">
-                            <div class="chat-bubble-content">
-                                Make them younger
-                            </div>
-                        </div>
-
-                        <!-- Bot response -->
-                        <div class="chat-bubble chat-bubble-left">
-                            <div class="chat-bubble-content">
-                                Great! I've updated the character to be younger. Would you like to make any changes? Maybe their outfit could be more modern to reflect their age?
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="chat-input-area">
-                        <form method="post" action="{% url 'personas' %}" id="chatForm">
-                            {% csrf_token %}
-                            <input type="hidden" name="persona_id" id="currentPersonaId" value="{% if persona_description %}{{ persona_description.0.id }}{% endif %}">
-                            
-                            <div class="position-relative">
-                                <textarea 
-                                    class="form-control" 
-                                    name="feedback" 
-                                    id="chatInput"
-                                    rows="2" 
-                                    placeholder="Edit Persona"
-                                    required
-                                ></textarea>
-                                <button 
-                                    type="submit" 
-                                    name="action" 
-                                    value="regenerate" 
-                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2"
-                                >
-                                    <i class="bi bi-rocket-takeoff icon-button"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                {% empty %}
+                <div class="carousel-item active">
+                    <div class="alert alert-info">No characters have been generated yet.</div>
                 </div>
+                {% endfor %}
             </div>
+        </div>
+
+        <div class="persona-nav-row">
+            <button id="btnPrev" class="persona-nav-btn" disabled>
+                <i class="bi bi-arrow-left"></i> Back
+            </button>
+            <span class="persona-counter" id="personaCounter">1 / {{ persona_description|length }}</span>
+            <button id="btnNext" class="persona-nav-btn">
+                Next Character <i class="bi bi-arrow-right"></i>
+            </button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    {{ persona_description|json_script:"persona-data" }}
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const carouselElement = document.getElementById('personasCarousel');
-            const currentPersonaIdInput = document.getElementById('currentPersonaId');
-            const chatMessages = document.getElementById('chatMessages');
+    (function () {
+        'use strict';
 
-            if (!carouselElement) return;
+        var PERSONAS     = JSON.parse(document.getElementById('persona-data').textContent);
+        var total        = PERSONAS.length;
+        var currentIndex = 0;
+        var CSRF_TOKEN   = '{{ csrf_token }}';
 
-            const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement);
+        var carouselEl = document.getElementById('personasCarousel');
+        var carousel   = carouselEl
+            ? bootstrap.Carousel.getOrCreateInstance(carouselEl, { interval: false, ride: false })
+            : null;
+        var btnPrev   = document.getElementById('btnPrev');
+        var btnNext   = document.getElementById('btnNext');
+        var counterEl = document.getElementById('personaCounter');
 
-            const slideParam = urlParams.get('slide');
-            if (slideParam) {
-                const slideIndex = parseInt(slideParam, 10) - 1;
-                if (!isNaN(slideIndex)) {
-                    carousel.to(slideIndex);
-                }
-                return; 
-            }
+        var chatHistories = {};
+        var thinking      = {};
+        var STORAGE_KEY   = 'persona_chat_histories';
 
-            const characterName = urlParams.get('character');
-            if (characterName) {
-                const personas = {{ persona_description|safe }};
-                const index = personas.findIndex(p => p.name === characterName);
+        function saveHistories() {
+            try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories)); } catch (e) {}
+        }
+        function loadHistories() {
+            try { var raw = sessionStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+        }
+        function clearPersonaHistory(personaId) {
+            try { var stored = loadHistories() || {}; delete stored[personaId]; sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored)); } catch (e) {}
+        }
+        function getHistory(personaId) {
+            if (!chatHistories[personaId]) chatHistories[personaId] = [];
+            return chatHistories[personaId];
+        }
+        function getChatBox(personaId) {
+            return document.getElementById('chatMessages-' + personaId);
+        }
+        function appendBubble(personaId, role, text, extraClass) {
+            var box = getChatBox(personaId);
+            if (!box) return;
+            var wrap = document.createElement('div');
+            wrap.style.display        = 'flex';
+            wrap.style.justifyContent = role === 'user' ? 'flex-end' : 'flex-start';
+            var bubble = document.createElement('div');
+            bubble.className   = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
+            bubble.textContent = text;
+            wrap.appendChild(bubble);
+            box.appendChild(wrap);
+            box.scrollTop = box.scrollHeight;
+        }
+        function removeThinking(personaId) {
+            var box = getChatBox(personaId);
+            if (!box) return;
+            var el = box.querySelector('.thinking');
+            if (el && el.parentNode) el.parentNode.remove();
+        }
+        function renderChat(idx) {
+            var persona = PERSONAS[idx];
+            if (!persona) return;
+            var box = getChatBox(persona.id);
+            if (!box) return;
+            box.innerHTML = '';
+            getHistory(persona.id).forEach(function (msg) { appendBubble(persona.id, msg.role, msg.content); });
+            var hasUserMsg = getHistory(persona.id).some(function (m) { return m.role === 'user'; });
+            var doneBtn = document.querySelector('.persona-done-btn[data-persona-id="' + persona.id + '"]');
+            if (doneBtn) doneBtn.disabled = !hasUserMsg;
+        }
 
-                if (index !== -1) {
-                    carousel.to(index);
-                }
-            }
+        function handleSend(personaId) {
+            var input = document.querySelector('.persona-chat-input[data-persona-id="' + personaId + '"]');
+            var msg   = input ? input.value.trim() : '';
+            if (!msg || thinking[personaId]) return;
+            input.value         = '';
+            thinking[personaId] = true;
 
-            // Update hidden persona_id when carousel slides
-            carouselElement.addEventListener('slide.bs.carousel', function (event) {
-                const activeItem = event.relatedTarget;
-                const personaId = activeItem.getAttribute('data-persona-id');
-                if (personaId && currentPersonaIdInput) {
-                    currentPersonaIdInput.value = personaId;
-                }
-            });
+            getHistory(personaId).push({ role: 'user', content: msg });
+            saveHistories();
+            appendBubble(personaId, 'user', msg);
+            appendBubble(personaId, 'assistant', 'Thinking…', 'thinking');
 
-            // Auto-scroll chat to bottom
-            function scrollToBottom() {
-                if (chatMessages) {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
-            }
+            var formData = new FormData();
+            formData.append('action', 'chat');
+            formData.append('persona_id', personaId);
+            formData.append('history', JSON.stringify(getHistory(personaId)));
+            formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
 
-            // Show loading overlay on form submit
-            document.getElementById('chatForm').addEventListener('submit', function(e) {
-                document.getElementById('loadingOverlay').style.display = 'block';
-            });
+            fetch('{% url "personas" %}', { method: 'POST', body: formData })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                removeThinking(personaId);
+                var reply = data.reply || 'Sorry, something went wrong.';
+                appendBubble(personaId, 'assistant', reply);
+                getHistory(personaId).push({ role: 'assistant', content: reply });
+                saveHistories();
+                var doneBtn = document.querySelector('.persona-done-btn[data-persona-id="' + personaId + '"]');
+                if (doneBtn) doneBtn.disabled = false;
+            })
+            .catch(function () {
+                removeThinking(personaId);
+                appendBubble(personaId, 'assistant', 'Something went wrong. Please try again.');
+            })
+            .finally(function () { thinking[personaId] = false; });
+        }
 
-            // Initial scroll
-            scrollToBottom();
+        document.querySelectorAll('.persona-send-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () { handleSend(parseInt(btn.dataset.personaId, 10)); });
         });
+        document.querySelectorAll('.persona-chat-input').forEach(function (input) {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(parseInt(input.dataset.personaId, 10)); }
+            });
+        });
+
+        document.querySelectorAll('.persona-done-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var personaId = parseInt(btn.dataset.personaId, 10);
+                var summary = getHistory(personaId).slice(1)
+                    .map(function (m) { return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content; })
+                    .join('\n');
+                var form = document.querySelector('.persona-submit-form input[name="persona_id"][value="' + personaId + '"]');
+                if (form) {
+                    form.closest('form').querySelector('.persona-feedback-field').value = summary;
+                    clearPersonaHistory(personaId);
+                    document.getElementById('loadingOverlay').style.display = 'block';
+                    form.closest('form').submit();
+                }
+            });
+        });
+
+        function goTo(idx) {
+            if (total === 0) return;
+            if (idx < 0 || idx >= total) return;
+            currentIndex = idx;
+            if (carousel) carousel.to(idx);
+            btnPrev.disabled      = idx === 0;
+            btnNext.disabled      = false;
+            btnNext.innerHTML     = idx === total - 1
+                ? 'Edit Settings <i class="bi bi-arrow-right"></i>'
+                : 'Next Character <i class="bi bi-arrow-right"></i>';
+            counterEl.textContent = (idx + 1) + ' / ' + total;
+            renderChat(idx);
+        }
+
+        btnPrev.addEventListener('click', function () { goTo(currentIndex - 1); });
+        btnNext.addEventListener('click', function () {
+            if (currentIndex === total - 1) { window.location.href = "{% url 'locations' %}"; }
+            else { goTo(currentIndex + 1); }
+        });
+
+        var stored = loadHistories() || {};
+        for (var i = 0; i < total; i++) {
+            var pid = PERSONAS[i].id;
+            chatHistories[pid] = (stored[pid] && stored[pid].length > 0)
+                ? stored[pid]
+                : [{ role: 'assistant', content: 'Would you like to make any changes to ' + PERSONAS[i].name + '?' }];
+        }
+        saveHistories();
+
+        var urlParams      = new URLSearchParams(window.location.search);
+        var slideParam     = urlParams.get('slide');
+        var characterParam = urlParams.get('character');
+        var startIndex     = 0;
+        if (slideParam) {
+            var found = PERSONAS.findIndex(function (p) { return p.id === parseInt(slideParam, 10); });
+            if (found !== -1) startIndex = found;
+        } else if (characterParam) {
+            var found = PERSONAS.findIndex(function (p) { return p.name === characterParam; });
+            if (found !== -1) startIndex = found;
+        }
+
+        goTo(startIndex);
+
+    })();
     </script>
 </body>
 </html>

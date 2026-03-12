@@ -77,44 +77,14 @@ story_schema = {
     "required": ["storyline", "persona_description", "setting_description", "scenes"]
 }
 
-# def suggestionGenerate():
-#     prompt = """
-#     You are a helpful tool that suggests story ideas.
-    
-#     Generate exactly four unique engaging story ideas suitable for a 1 minute-long shortform video style.
 
-#     Sugesstions should be no more than 80 characters.
-
-#     Return the result strictly as JSON in the following format:
-#     {
-#     "suggestions": ["idea 1", "idea 2", "idea 3", "idea 4"]
-#     }
-#     """
-    
-#     try:
-#         model = genai.GenerativeModel(
-#             'models/gemini-2.5-flash',
-#             generation_config={
-#                 "response_mime_type": "application/json",
-#                 "response_schema": {
-#                     "type": "object",
-#                     "properties": {
-#                         "suggestions": {
-#                             "type": "array",
-#                             "items": {"type": "string"}
-#                         }
-#                     },
-#                     "required": ["suggestions"]
-#                 }
-#             }
-#         )
-#         response = model.generate_content(prompt)
-#         result = json.loads(response.text)
-        
-#         return result
-#     except Exception as e:
-#         logger.error(f"Error in suggestionGenerate: {e}")
-#         raise
+# CHAT_HISTORY_SCHEMA = {
+#     "draft": [],
+#     "personas": {},
+#     "locations": {},
+#     "scenes_image": {},
+#     "scenes_narration": {}
+# }
 
 def storylineGenerate(story_data, feedback):
     """
@@ -172,27 +142,53 @@ def storylineGenerate(story_data, feedback):
         raise
 
 
-def storyGenerate(idea):
+def storyGenerate(conflict, moments="", resolution=""):
+    """
+    Generate a full story from structured inputs.
+    `conflict` (the event/what it's about) is required.
+    `resolution` (ending/message) is optional.
+    `moments` is unused but kept for signature compatibility.
+    """
+    user_inputs = f"What the story is about / the event (required): {conflict}"
+
+    if resolution and resolution.strip():
+        user_inputs += f"\nHow it ends / the message (provided by user — must be used): {resolution}"
+    else:
+        user_inputs += "\nHow it ends / the message: not specified — invent a satisfying ending and clear emotional message."
+
     prompt = f"""
-    You are a helpful tool to create a story based off this story idea: {idea}. The story should be in a 1 minute-long shortform video style."""
-    prompt += f"""
-    Use chain-of-thoughts to create a script. 
-    
-    (1) Create a 6 scene storyline in 6-10 sentences inlcuding 1-3 main characters and 1-3 key locations, storing the storyline of each scene as a string in the storyline array.
+    You are a helpful tool to create a story for a 1-minute shortform video.
+
+    The user has provided the following story inputs:
+    {user_inputs}
+
+    IMPORTANT: You MUST use the event/subject exactly as given. If an ending or message was provided,
+    you MUST incorporate it faithfully. Only invent what was left blank.
+
+    Use chain-of-thought to build the full story:
+
+    (1) Create a 6-scene storyline (6–10 sentences total) including 1–3 main characters and
+        1–3 key locations. Store the storyline of each scene as a string in the storyline array.
+        The storyline must honour the event, and end with the provided resolution if given.
 
     (2) Identify the primary emotional tones of the story.
 
-    (3) Create a persona_description of each persona (1-3 personas) including: id (starting from 1), name, species, age, clothing, skin tone, hair. Be detailed and specific so that AI image generation is consistent with appearance repeatedly when handed this description.
+    (3) Create a persona_description for each persona (1–3) including: id (starting from 1),
+        name, species, age, clothing, skin tone, hair, and disability.
+        Be specific so AI image generation stays consistent across scenes.
 
-    (4) Create a setting_description for each setting (1-3 settings) including: id (starting from 1), name, and a detailed description so that image generation is consistent with appearance repeatedly when handed this description.
+    (4) Create a setting_description for each setting (1–3) including: id (starting from 1),
+        name, and a detailed description for consistent image generation.
 
-    (5) Create exactly 6 scenes. Each scene should have: id (starting from 1), the narration for the scene, and an image_prompt that describes a detailed visual for AI image generation. Descriptions of characters and locations do not need to repeat details already included in persona_description and setting_description.
-        Ensure each image prompt specifies the image style, it should be consistent across all scenes unless specifically requested otherwise.
-        Each scene should also include 1-3 emotional tones in the scene, the personas present in the scene by name, and the setting in the scene by name.
+    (5) Create exactly 6 scenes. Each scene must have: id (starting from 1), narration,
+        and an image_prompt describing a detailed visual for AI image generation.
+        Each image_prompt must specify a consistent image style across all scenes.
+        Each scene must also include 1–3 emotional tones, the personas present by name,
+        and the setting by name.
 
     Ensure the storyline includes all personas and settings by exact name at least once.
     """
-    
+
     try:
         model = genai.GenerativeModel(
             'models/gemini-2.5-pro',
@@ -269,7 +265,7 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
                 contents=[enhanced_prompt],
                 config=types.GenerateContentConfig(
                     image_config=types.ImageConfig(
-                        aspect_ratio="3:4"
+                        aspect_ratio="16:9"
                     )
                 )
             )
@@ -308,63 +304,6 @@ def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, ma
     # Fallback if loop completes without returning
     return "main/images/exampleImage.png", enhanced_prompt
 
-# old version took 2 minutes, threaded with 6 took 45 seconds
-
-# def generate_all_scene_images(scenes, story_data, old_scenes=None):
-#     """Only regenerate images for scenes with changed enhanced prompts."""
-#     updated_scenes = []
-    
-#     for i, scene in enumerate(scenes):
-#         try:
-#             should_generate = True
-            
-#             if old_scenes:
-#                 old_scene = next((s for s in old_scenes if s['id'] == scene['id']), None)
-#                 if old_scene and 'enhanced_prompt' in old_scene:
-#                     # Generate the new enhanced prompt for comparison
-#                     test_enhanced = scene.get('image_prompt', '')
-#                     for persona in story_data.get('persona_description', []):
-#                         name = persona['name']
-#                         description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
-#                         test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
-                    
-#                     for location in story_data.get('setting_description', []):
-#                         name = location['name']
-#                         description = location['description']
-#                         test_enhanced = re.sub(r'\b' + re.escape(name) + r'\b', description, test_enhanced, flags=re.IGNORECASE)
-                    
-#                     tone_text = ", ".join(scene['emotional_tones'])
-#                     test_enhanced += f". The image should reflect the emotional tones: {tone_text}."
-                    
-#                     # Compare enhanced prompts
-#                     if test_enhanced == old_scene.get('enhanced_prompt') and 'image_path' in old_scene:
-#                         should_generate = False
-#                         scene['image_path'] = old_scene['image_path']
-#                         scene['enhanced_prompt'] = old_scene['enhanced_prompt']
-#                         logger.info(f"Reusing image for scene {scene['id']} - enhanced prompt unchanged")
-            
-#             if should_generate:
-#                 if i > 0:
-#                     time.sleep(1)
-                
-#                 image_path, enhanced_prompt = generate_scene_image(
-#                     scene['image_prompt'],
-#                     scene['emotional_tones'],
-#                     scene['id'],
-#                     story_data
-#                 )
-#                 scene['image_path'] = image_path
-#                 scene['enhanced_prompt'] = enhanced_prompt  # Store for future comparisons
-#                 logger.info(f"Generated NEW image for scene {scene['id']}")
-            
-#             updated_scenes.append(scene)
-            
-#         except Exception as e:
-#             logger.error(f"Failed to generate image for scene {scene['id']}: {e}")
-#             scene['image_path'] = "main/images/exampleImage.png"
-#             updated_scenes.append(scene)
-    
-#     return updated_scenes
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -578,116 +517,111 @@ def locationGenerate(story_data, location_id, feedback):
         logger.error(f"Error in locationGenerate: {e}")
         raise
 
-def narrationGenerate(story_data, scene_id, narration_feedback):
+def sceneGenerate(story_data, scene_id, feedback):
     current_scene = next(
-        (scene for scene in story_data['scenes'] if scene['id'] == scene_id),
-        None
+        (s for s in story_data['scenes'] if s['id'] == scene_id), None
     )
-    
     if not current_scene:
         raise ValueError(f"Scene with id {scene_id} not found")
-    
+
     scene_index = scene_id - 1
-    prev_scene = story_data['scenes'][scene_index - 1] if scene_index > 0 else None
-    next_scene = story_data['scenes'][scene_index + 1] if scene_index < len(story_data['scenes']) - 1 else None
-    
-    prompt = f"""
-    You are updating ONLY the narration for Scene {scene_id}. Do not change anything else.
-    
-    Story Context:
-    Storyline: {story_data['storyline']}
-    
-    Scene {scene_id} Image:
-    {current_scene['image_prompt']}
-    
-    Current Narration:
-    {current_scene['narration']}
-    
-    {"Previous Scene Narration: " + prev_scene['narration'] if prev_scene else "This is the first scene."}
-    {"Next Scene Narration: " + next_scene['narration'] if next_scene else "This is the final scene."}
-    
-    User Feedback: {narration_feedback}
-    
-    Update ONLY the narration based on the feedback. Maintain story continuity and match the visual description.
-    
-    Return as plain text, not JSON.
-    """
-    
-    try:
-        model = genai.GenerativeModel('models/gemini-2.5-pro')
-        response = model.generate_content(prompt)
-        updated_narration = response.text.strip()
-        logger.info(f"narrationGenerate for scene {scene_id}: updated")
-        return updated_narration
-    except Exception as e:
-        logger.error(f"Error in narrationGenerate: {e}")
-        raise
+    scenes = story_data['scenes']
+    prev_scene = scenes[scene_index - 1] if scene_index > 0 else None
+    next_scene = scenes[scene_index + 1] if scene_index < len(scenes) - 1 else None
 
+    change_schema = {
+        "type": "object",
+        "properties": {
+            "image_prompt_changed": {"type": "boolean"},
+            "narration_changed":    {"type": "boolean"},
+            "storyline":            story_schema["properties"]["storyline"],
+            "persona_description":  story_schema["properties"]["persona_description"],
+            "setting_description":  story_schema["properties"]["setting_description"],
+            "scenes":               story_schema["properties"]["scenes"]
+        },
+        "required": [
+            "image_prompt_changed", "narration_changed",
+            "storyline", "persona_description", "setting_description", "scenes"
+        ]
+    }
 
-def PromptGenerate(story_data, scene_id, image_prompt_feedback):
-    current_scene = next(
-        (scene for scene in story_data['scenes'] if scene['id'] == scene_id),
-        None
-    )
-    
-    if not current_scene:
-        raise ValueError(f"Scene with id {scene_id} not found")
-    
     prompt = f"""
-    A user is editing the image prompt for Scene {scene_id}. This change may affect character descriptions, 
-    locations, or other story elements. You must regenerate any element in the story that needs to be changed to ensure
-    complete consistency throughout the entire story.
-    
-    Current Story:
-    Storyline: {story_data['storyline']}
-    
+    A user wants to edit Scene {scene_id} of their story. Decide what needs to change
+    based on their feedback, then make the minimal changes required to keep the story consistent.
+
+    RULES:
+    1. If the feedback is purely about narration/dialogue/voiceover text → set image_prompt_changed=false,
+       update only the narration for this scene, do NOT change image_prompt at all.
+    2. If the feedback changes visuals (appearance, setting, action, lighting, style) → set image_prompt_changed=true,
+       update image_prompt. Also update narration ONLY if it no longer makes sense after the visual change.
+    3. If characters or locations change visually, update persona_description / setting_description for consistency.
+    4. Always return the full scenes array with the final image_prompt and narration for every scene.
+    5. Minimize changes to everything that doesn't need to change.
+
+    Story context:
+    Storyline: {json.dumps(story_data['storyline'], indent=2)}
+
     Characters:
     {json.dumps(story_data['persona_description'], indent=2)}
-    
+
     Locations:
     {json.dumps(story_data['setting_description'], indent=2)}
-    
-    Current Scene {scene_id}:
-    Image Prompt: {current_scene['image_prompt']}
-    Narration: {current_scene['narration']}
-    
-    All Scenes:
+
+    All scenes:
     {json.dumps(story_data['scenes'], indent=2)}
-    
-    User's Change to Scene {scene_id} Image Prompt: {image_prompt_feedback}
-    
-    IMPORTANT:
-    1. only if the feedback changes a character's appearance (hair color, clothing, age, etc.), 
-       update that character in persona_description
-    2. Only if the feedback changes a location's details, update that location in setting_description
-    3. Update the storyline only if the change affects the narrative to guarantee consistency.
-    4. Change only the image prompt for this scene, only change others if neccesary to maintain consitency and storyline.
-    5. Maintain the same story flow, structure, and scene ordering.
-    6. Make minimal changes necessary to ensure consistency after making the user's changes.
-    
-    The goal is complete consistency: if something changes visually in one scene, 
-    it must be reflected everywhere in the story.
+
+    Scene {scene_id} being edited:
+    image_prompt : {current_scene['image_prompt']}
+    narration    : {current_scene['narration']}
+    {"Previous scene narration: " + prev_scene['narration'] if prev_scene else "This is the first scene."}
+    {"Next scene narration: " + next_scene['narration'] if next_scene else "This is the last scene."}
+
+    User feedback: {feedback}
+
+    Return the complete updated story. Use image_prompt_changed and narration_changed flags
+    to indicate what actually changed for scene {scene_id}.
     """
-    
+
     try:
         model = genai.GenerativeModel(
             'models/gemini-2.5-pro',
             generation_config={
                 "response_mime_type": "application/json",
-                "response_schema": story_schema
+                "response_schema": change_schema
             }
         )
         response = model.generate_content(prompt)
         result = json.loads(response.text)
-        logger.info(f"sceneImagePromptGenerate: full story regenerated from scene {scene_id} edit")
-        
-        # Regenerate ALL images with updated prompts
-        logger.info("Regenerating all scene images...")
-        result['scenes'] = generate_all_scene_images(result['scenes'], result, old_scenes=story_data.get('scenes'))
-        
-        return result
+        logger.info(
+            f"sceneGenerate scene {scene_id}: "
+            f"image_changed={result['image_prompt_changed']}, "
+            f"narration_changed={result['narration_changed']}"
+        )
+
+        updated = {
+            "storyline":           result["storyline"],
+            "persona_description": result["persona_description"],
+            "setting_description": result["setting_description"],
+            "scenes":              result["scenes"]
+        }
+
+        if result["image_prompt_changed"]:
+            logger.info(f"Regenerating image(s) for scene {scene_id}")
+            updated["scenes"] = generate_all_scene_images(
+                updated["scenes"], updated, old_scenes=story_data.get("scenes")
+            )
+        else:
+            # Reuse all existing images — no regeneration needed
+            for new_s in updated["scenes"]:
+                old_s = next((s for s in story_data["scenes"] if s["id"] == new_s["id"]), None)
+                if old_s:
+                    new_s["image_path"]      = old_s.get("image_path", "")
+                    new_s["enhanced_prompt"] = old_s.get("enhanced_prompt", "")
+
+        return updated
+
     except Exception as e:
-        logger.error(f"Error in sceneImagePromptGenerate: {e}")
+        logger.error(f"Error in sceneGenerate: {e}")
         raise
 
 def deleteSceneGenerate(story_data, scene_id):
@@ -941,4 +875,151 @@ def splitSceneGenerate(story_data, scene_id):
         return result
     except Exception as e:
         logger.error(f"Error in splitSceneGenerate: {e}")
+        raise
+
+
+def draftChat(story_data, chat_history):
+    storyline_text = '\n'.join(
+        f"Scene {i + 1}: {s}"
+        for i, s in enumerate(story_data.get('storyline', []))
+    )
+
+    system_prompt = (
+        """You are a helpful storyline editing assistant for a storyboard creation tool. 
+        Have a natural, friendly conversation to understand what changes the user wants. 
+        Ask clarifying questions if needed. Keep responses short (2-4 sentences). Use simple language.
+        When the user seems satisfied, remind them to hit 'Done — Apply Changes'.\n\n
+        fCurrent storyline:\n{storyline_text}"""
+    )
+
+    prompt_parts = [system_prompt, "\n\n"]
+    for msg in chat_history:
+        role_label = "User" if msg['role'] == 'user' else "Assistant"
+        prompt_parts.append(f"{role_label}: {msg['content']}\n")
+    prompt_parts.append("Assistant:")
+
+    try:
+        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        response = model.generate_content("".join(prompt_parts))
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Error in draftChat: {e}")
+        raise
+
+
+def personaChat(story_data, persona_id, chat_history):
+    persona = next(
+        (p for p in story_data.get('persona_description', []) if p['id'] == persona_id),
+        None
+    )
+    if not persona:
+        return "I couldn't find that character. Please try again."
+
+    persona_text = (
+        f"Name: {persona.get('name')}\n"
+        f"Age: {persona.get('age')}\n"
+        f"Clothing: {persona.get('clothing')}\n"
+        f"Disability: {persona.get('disability')}\n"
+        f"Skin: {persona.get('skin')}\n"
+        f"Hair: {persona.get('hair')}"
+    )
+
+    system_prompt = (
+        """You are a helpful character editing assistant for a storyboard creation tool. 
+        The user wants to refine the appearance of a character. Have a natural, friendly conversation 
+        to understand what changes they want. Ask clarifying questions if needed. 
+        Keep responses short (2-4 sentences). Use simple language.
+        When the user seems satisfied, remind them to hit 'Done — Apply Changes'.\n\n
+        f"Current character:\n{persona_text}"""
+    )
+
+    prompt_parts = [system_prompt, "\n\n"]
+    for msg in chat_history:
+        role_label = "User" if msg['role'] == 'user' else "Assistant"
+        prompt_parts.append(f"{role_label}: {msg['content']}\n")
+    prompt_parts.append("Assistant:")
+
+    try:
+        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        response = model.generate_content("".join(prompt_parts))
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Error in personaChat: {e}")
+        raise
+
+
+def locationChat(story_data, location_id, chat_history):
+    location = next(
+        (l for l in story_data.get('setting_description', []) if l['id'] == location_id),
+        None
+    )
+    if not location:
+        return "I couldn't find that location. Please try again."
+
+    location_text = (
+        f"Name: {location.get('name')}\n"
+        f"Description: {location.get('description')}"
+    )
+
+    system_prompt = (
+        """You are a helpful location editing assistant for a storyboard creation tool. 
+        The user wants to refine the appearance of a character. Have a natural, friendly conversation 
+        to understand what changes they want. Ask clarifying questions if needed. 
+        Keep responses short (2-4 sentences). Use simple language.
+        When the user seems satisfied, remind them to hit 'Done — Apply Changes'.\n\n
+        f"Current character:\n{location_text}"""
+    )
+
+    prompt_parts = [system_prompt, "\n\n"]
+    for msg in chat_history:
+        role_label = "User" if msg['role'] == 'user' else "Assistant"
+        prompt_parts.append(f"{role_label}: {msg['content']}\n")
+    prompt_parts.append("Assistant:")
+
+    try:
+        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        response = model.generate_content("".join(prompt_parts))
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Error in locationChat: {e}")
+        raise
+
+
+def sceneChat(story_data, scene_id, chat_history):
+    scene = next(
+        (s for s in story_data.get('scenes', []) if s['id'] == scene_id),
+        None
+    )
+    if not scene:
+        return "I couldn't find that scene. Please try again."
+
+    scene_text = (
+        f"Narration: {scene.get('narration')}\n"
+        f"Image prompt: {scene.get('image_prompt')}\n"
+        f"Location: {scene.get('location')}\n"
+        f"Characters: {', '.join(scene.get('characters', []))}"
+    )
+
+    system_prompt = (
+        """"You are a helpful character assistant for a storyboard creation tool. 
+        The user wants to refine a scene in the storyboard, this could be editing the image prompt, narratioon, or both.
+        Have a natural, friendly conversation 
+        to understand what changes they want. Ask clarifying questions if needed. 
+        Keep responses short (2-4 sentences). Use simple language.
+        When the user seems satisfied, remind them to hit 'Done — Apply Changes'.\n\n
+        f"Current character:\n{scene_text}"""
+    )
+
+    prompt_parts = [system_prompt, "\n\n"]
+    for msg in chat_history:
+        role_label = "User" if msg['role'] == 'user' else "Assistant"
+        prompt_parts.append(f"{role_label}: {msg['content']}\n")
+    prompt_parts.append("Assistant:")
+
+    try:
+        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        response = model.generate_content("".join(prompt_parts))
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Error in sceneChat: {e}")
         raise
