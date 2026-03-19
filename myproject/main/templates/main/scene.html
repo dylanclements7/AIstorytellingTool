@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scene Editor — Story Builder</title>
+    <title>Scene Editor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
@@ -71,12 +71,12 @@
          aria-hidden="true">
         <div class="confirm-dialog">
             <h2 class="confirm-dialog-title" id="confirmTitle">
-                <i class="bi bi-stars me-2" aria-hidden="true"></i>Apply changes?
+                <i class="bi bi-stars me-2" aria-hidden="true"></i>Change Scene?
             </h2>
-            <p>This will regenerate the scene based on your conversation. Are you sure you want to proceed?</p>
+            <p>This will change the scene. Are you sure you want to?</p>
             <div class="confirm-actions">
-                <button class="confirm-cancel-btn" id="confirmCancel">Cancel</button>
-                <button class="confirm-ok-btn" id="confirmOk">Yes, apply changes</button>
+                <button class="confirm-cancel-btn" id="confirmCancel">No</button>
+                <button class="confirm-ok-btn" id="confirmOk">Yes</button>
             </div>
         </div>
     </div>
@@ -120,7 +120,7 @@
                             <!-- Right: chat assistant -->
                             <div class="col-lg-6">
                                 <p class="text-muted mb-2">
-                                    Edit this scene's image or narration. Use the assistant to describe any changes, then hit <strong>Done</strong> to apply them.
+                                    Talk with the assistant to edit the image and narration. When you're ready to make the changes, hit <strong>Done</strong>.
                                 </p>
                                 <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
                                     <div class="chat-header">
@@ -187,7 +187,7 @@
                                                     disabled
                                                     aria-label="Done — apply changes to Scene {{ scene.id }}"
                                                     aria-disabled="true">
-                                                <i class="bi bi-check2-circle" aria-hidden="true"></i> Done — Apply Changes
+                                                <i class="bi bi-check2-circle" aria-hidden="true"></i> Done
                                             </button>
                                         </div>
                                     </div>
@@ -485,6 +485,19 @@
         }
 
         goTo(startIndex);
+
+        /* ── Entity link tooltips ──────────────────────────────────────
+           For every <a> inside .scene-meta (characters, locations)
+           stamp data-tooltip="Edit [Name]" so the CSS tooltip works,
+           and aria-label for screen readers.
+        ────────────────────────────────────────────────────────────── */
+        document.querySelectorAll('.scene-meta a').forEach(function (link) {
+            var name = link.textContent.trim();
+            if (!name) return;
+            var label = 'Edit ' + name;
+            link.setAttribute('data-tooltip', label);
+            link.setAttribute('aria-label', label);
+        });
 
     })();
     </script>

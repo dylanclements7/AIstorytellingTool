@@ -155,7 +155,7 @@ a:hover {
 }
 
 .prompts-grid .prompt-badge {
-    flex: 0 0 calc(50% - 0.5rem); 
+    flex: 0 0 calc(50% - 0.5rem);
     text-align: left;
     white-space: normal;
 }
@@ -316,7 +316,6 @@ a.step:hover div {
     display: block;
 }
 
-
 /* ===================================
    ANIMATIONS
    =================================== */
@@ -326,12 +325,12 @@ a.step:hover div {
 }
 
 .spin {
-    display: inline-block; 
+    display: inline-block;
     animation: spin 1s linear infinite;
 }
 
 #regeneratePrompts i.spin {
-    display: inline-block !important;  
+    display: inline-block !important;
 }
 
 @keyframes orbit {
@@ -504,13 +503,14 @@ a.step:hover div {
         flex-wrap: wrap;
         gap: 1rem;
     }
-    
+
     .nav-center {
         order: 3;
         width: 100%;
         justify-content: center;
     }
 }
+
 /* ===================================
    PERSONAS CHAT INTERFACE
    =================================== */
@@ -528,10 +528,12 @@ a.step:hover div {
     flex-shrink: 0;
 }
 
-.chat-header h5 {
+.chat-header h5,
+.chat-header h3 {
     margin: 0;
     font-weight: 600;
     font-size: 1.1rem;
+    color: var(--white);
 }
 
 .chat-messages {
@@ -563,23 +565,12 @@ a.step:hover div {
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.chat-bubble-left {
-    justify-content: flex-start;
-}
-
-.chat-bubble-right {
-    justify-content: flex-end;
-}
+.chat-bubble-left  { justify-content: flex-start; }
+.chat-bubble-right { justify-content: flex-end; }
 
 .chat-bubble-content {
     max-width: 75%;
@@ -613,6 +604,7 @@ a.step:hover div {
     padding: 1rem 0;
     max-width: 1400px;
     margin: 0 auto;
+    overflow: visible;
 }
 
 .scene-item {
@@ -653,11 +645,10 @@ a.step:hover div {
     object-fit: cover;
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.25rem var(--shadow);
-    transition: transform 0.2s;
-}
-
-.scene-item img:hover {
-    transform: scale(1.02);
+    display: block;
+    /* Removed transition + hover scale — the scale breaks the storyboard
+       hover overlay by moving the image out from under the absolute overlay.
+       No other page uses the scale effect, so it is removed globally. */
 }
 
 .scene-item .caption {
@@ -676,6 +667,7 @@ a.step:hover div {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;  /* needed to anchor the .add-tooltip absolutely */
 }
 
 .scene-add-btn {
@@ -711,7 +703,7 @@ a.step:hover div {
     .scene-item {
         flex: 0 0 100%;
     }
-    
+
     .video-grid-container {
         gap: 1.5rem;
     }

@@ -4,300 +4,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings</title>
+    <title>Settings Editor — Story Builder</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
-    <style>
-        .row.g-4.mb-3 {
-            align-items: stretch;
-        }
-
-        .row.g-4.mb-3 > .col-lg-6 {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .row.g-4.mb-3 > .col-lg-6 > .card {
-            flex: 1;
-        }
-
-        .row.g-4.mb-3 > .col-lg-6 > .card.chat-container {
-            height: 100%;
-        }
-        .loc-nav-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.4rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 2px solid #dee2e6;
-            background: #fff;
-            color: #495057;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s, color 0.15s;
-            user-select: none;
-            text-decoration: none;
-        }
-        .loc-nav-btn:hover:not(:disabled) {
-            background: #f0f4ff;
-            border-color: #6c8ebf;
-            color: #2c4a7c;
-        }
-        .loc-nav-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .loc-nav-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 1.25rem;
-            padding: 0 0.25rem;
-        }
-        .loc-counter {
-            font-size: 0.9rem;
-            color: #6c757d;
-            font-weight: 500;
-        }
-        .chat-bubble {
-            max-width: 80%;
-            padding: 0.65rem 1rem;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            line-height: 1.45;
-            margin-bottom: 0.5rem;
-            word-break: break-word;
-        }
-        .chat-bubble.user {
-            background: #0d6efd;
-            color: #fff;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .chat-bubble.assistant {
-            background: #f1f3f5;
-            color: #212529;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-        .chat-bubble.thinking {
-            opacity: 0.6;
-            font-style: italic;
-        }
-        .chat-messages {
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            gap: 0.25rem;
-            overflow-y: auto;
-            flex: 1;
-            min-height: 160px;
-            max-height: 300px;
-        }
-        .location-preview-image {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-            border-radius: 0.5rem 0.5rem 0 0;
-            display: block;
-        }
-        .location-desc-block {
-            background: #fff;
-            border-radius: 0 0 0.5rem 0.5rem;
-            padding: 1rem 1.25rem;
-            font-size: 0.9rem;
-            color: #343a40;
-            border-top: 1px solid #e9ecef;
-        }
-        .location-desc-block h5 {
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        .location-desc-block p {
-            margin-bottom: 0;
-        }
-        .done-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.4rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 2px solid #1f7e60;
-            background: #fff;
-            color: #1f7e60;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            user-select: none;
-        }
-        .done-btn:hover:not(:disabled) {
-            background: #1f7e60;
-            color: #fff;
-        }
-        .done-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .chat-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #dee2e6;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .chat-footer-actions {
-            display: flex;
-            justify-content: flex-end;
-        }
-        #locationsCarousel .carousel-control-prev,
-        #locationsCarousel .carousel-control-next,
-        #locationsCarousel .carousel-indicators {
-            display: none !important;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'main/css/locations.css' %}">
 </head>
 <body class="bg-light">
 
-    <nav class="story-nav">
+    <nav class="story-nav" aria-label="Story builder steps">
         <div class="nav-container">
             <a href="{% url 'idea' %}" class="nav-btn nav-start"
                onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
-                <i class="bi bi-arrow-counterclockwise"></i>
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                 Start Over
             </a>
-            <div class="nav-center">
-                <a href="{% url 'draft' %}" class="nav-step completed">
-                    <i class="bi bi-book"></i>
+            <div class="nav-center" role="list" aria-label="Completed steps">
+                <a href="{% url 'draft' %}" class="nav-step completed" role="listitem">
+                    <i class="bi bi-book" aria-hidden="true"></i>
                     Storyline
                 </a>
-                <a href="{% url 'personas' %}" class="nav-step completed">
-                    <i class="bi bi-person"></i>
+                <a href="{% url 'personas' %}" class="nav-step completed" role="listitem">
+                    <i class="bi bi-person" aria-hidden="true"></i>
                     Characters
                 </a>
-                <div class="nav-step active">
-                    <i class="bi bi-house"></i>
+                <div class="nav-step active" role="listitem" aria-current="page">
+                    <i class="bi bi-house" aria-hidden="true"></i>
                     Settings
                 </div>
-                <a href="{% url 'scene' %}" class="nav-step completed">
-                    <i class="bi bi-camera"></i>
+                <a href="{% url 'scene' %}" class="nav-step completed" role="listitem">
+                    <i class="bi bi-camera" aria-hidden="true"></i>
                     Scenes
                 </a>
             </div>
             <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
-                <i class="bi bi-film"></i>
+                <i class="bi bi-film" aria-hidden="true"></i>
                 Storyboard
             </a>
         </div>
     </nav>
 
-    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
+    <!-- Loading overlay -->
+    <div id="loadingOverlay"
+         role="status"
+         aria-live="assertive"
+         aria-label="Generating your story, please wait"
+         aria-hidden="true"
+         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
-            <div class="rocket-orbit">
+            <div class="rocket-orbit" aria-hidden="true">
                 <i class="bi bi-rocket-takeoff rocket-icon"></i>
             </div>
             <p class="text-white mt-5" style="font-size:1.5rem;">Generating your story...</p>
         </div>
     </div>
 
-    <div class="container-fluid mt-4 px-4">
-        <div id="locationsCarousel" class="carousel slide" data-bs-ride="false">
-            <div class="carousel-inner">
-                {% for location in setting_description %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-location-id="{{ location.id }}">
-
-                    <div class="text-center mb-3">
-                        <span class="badge bg-primary" style="font-size:1.1rem; padding:0.5rem 1.25rem;">{{ location.name }}</span>
-                    </div>
-
-                    <div class="row g-4 mb-3 editor-row">
-
-                        <!-- Left: image + description (~half screen) -->
-                        <div class="col-lg-6">
-                            <div class="card shadow-sm" style="border:none; overflow:hidden;">
-                                {% if location.preview_image %}
-                                <a href="{% url 'scene' %}?slide={{ location.preview_scene_id }}">
-                                    <img src="{% static location.preview_image %}" class="location-preview-image" alt="{{ location.name }}">
-                                </a>
-                                {% else %}
-                                <div class="d-flex align-items-center justify-content-center bg-light location-preview-image">
-                                    <i class="bi bi-image" style="font-size:6rem; color:#ced4da;"></i>
-                                </div>
-                                {% endif %}
-                                <div class="location-desc-block">
-                                    <h5>{{ location.name }}</h5>
-                                    <p><strong>Description:</strong> {{ location.description }}</p>
-                                </div>
-                            </div>
-                            <!-- {% if location.preview_image %}
-                            <p class="text-center text-muted small mt-2">
-                                From <a href="{% url 'scene' %}?slide={{ location.preview_scene_id }}">Scene {{ location.preview_scene_id }}</a>
-                            </p>
-                            {% endif %} -->
-                        </div>
-
-                        <div class="col-lg-6">
-                            <p class="text-muted mb-2" style="font-size: 0.9rem;">Edit what this location looks like for the story. Use the assistant to describe any changes — this will be used to generate images of this location in each scene.</p>
-                            <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
-                                <div class="chat-header">
-                                    <h5><i class="bi bi-geo-alt me-2"></i>Location Assistant</h5>
-                                </div>
-                                <div class="chat-messages" id="chatMessages-{{ location.id }}"></div>
-
-                                <form method="post" action="{% url 'locations' %}" class="location-submit-form" style="display:none;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="regenerate">
-                                    <input type="hidden" name="location_id" value="{{ location.id }}">
-                                    <input type="hidden" name="feedback" class="location-feedback-field">
-                                </form>
-
-                                <div class="chat-footer">
-                                    <div class="position-relative">
-                                        <textarea
-                                            class="form-control location-chat-input"
-                                            rows="2"
-                                            placeholder="Describe a change for this location…"
-                                            data-location-id="{{ location.id }}"
-                                        ></textarea>
-                                        <button type="button"
-                                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2 location-send-btn"
-                                                style="border:none; background:transparent; padding:0;"
-                                                data-location-id="{{ location.id }}">
-                                            <i class="bi bi-rocket-takeoff icon-button"></i>
-                                        </button>
-                                    </div>
-                                    <div class="chat-footer-actions">
-                                        <button type="button" class="done-btn location-done-btn" data-location-id="{{ location.id }}" disabled>
-                                            <i class="bi bi-check2-circle"></i> Done — Apply Changes
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                {% empty %}
-                <div class="carousel-item active">
-                    <div class="alert alert-info">No settings have been generated yet.</div>
-                </div>
-                {% endfor %}
+    <!-- Confirmation modal -->
+    <div class="confirm-overlay"
+         id="confirmOverlay"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="confirmTitle"
+         aria-hidden="true">
+        <div class="confirm-dialog">
+            <h2 class="confirm-dialog-title" id="confirmTitle">
+                <i class="bi bi-person me-2" aria-hidden="true"></i>Change Location?
+            </h2>
+            <p>This will change the location. Are you sure you want to?</p>
+            <div class="confirm-actions">
+                <button class="confirm-cancel-btn" id="confirmCancel">No</button>
+                <button class="confirm-ok-btn" id="confirmOk">Yes</button>
             </div>
         </div>
+    </div>
 
-        <div class="loc-nav-row">
-            <button id="btnPrev" class="loc-nav-btn" disabled>
-                <i class="bi bi-arrow-left"></i> Back
+    <div class="container-fluid mt-4 px-4">
+
+        <section aria-label="Settings editor" aria-roledescription="carousel">
+            <div id="locationsCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                    {% for location in setting_description %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}"
+                         data-location-id="{{ location.id }}"
+                         role="group"
+                         aria-roledescription="slide"
+                         aria-label="{{ location.name }}, setting {{ forloop.counter }} of {{ setting_description|length }}">
+
+                        <div class="text-center mb-3">
+                            <span class="mb-0 fw-bold fs-5">{{ location.name }}</span>
+                        </div>
+
+                        <div class="row g-4 mb-3 editor-row">
+
+                            <!-- Left: image + description -->
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm" style="border:none; overflow:hidden;">
+                                    {% if location.preview_image %}
+                                    <a href="{% url 'scene' %}?slide={{ location.preview_scene_id }}"
+                                       aria-label="View {{ location.name }} in Scene {{ location.preview_scene_id }}">
+                                        <img src="{% static location.preview_image %}"
+                                             class="location-preview-image"
+                                             alt="{{ location.name }} — scene preview">
+                                    </a>
+                                    {% else %}
+                                    <div class="location-preview-image placeholder-block" aria-hidden="true">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="location-desc-block">
+                                        <h2>{{ location.name }}</h2>
+                                        <p><strong>Description:</strong> {{ location.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: chat assistant -->
+                            <div class="col-lg-6">
+                                <p class="text-muted mb-2">
+                                    Talk with the assistant to edit this setting. When you're ready to make the changes, hit <strong>Done</strong>.
+                                </p>
+                                <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
+                                    <div class="chat-header">
+                                        <h3 class="mb-0" style="font-size:1.1rem; font-weight:600;">
+                                            <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>Location Assistant
+                                        </h3>
+                                    </div>
+
+                                    <div class="chat-messages"
+                                         id="chatMessages-{{ location.id }}"
+                                         role="log"
+                                         aria-live="polite"
+                                         aria-label="{{ location.name }} assistant conversation"
+                                         aria-relevant="additions"></div>
+
+                                    <form method="post" action="{% url 'locations' %}" class="location-submit-form" style="display:none;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="regenerate">
+                                        <input type="hidden" name="location_id" value="{{ location.id }}">
+                                        <input type="hidden" name="feedback" class="location-feedback-field">
+                                    </form>
+
+                                    <div class="chat-footer">
+                                        <div class="position-relative">
+                                            <label for="chatInput-{{ location.id }}" class="visually-hidden">
+                                                Message for {{ location.name }} assistant
+                                            </label>
+                                            <textarea
+                                                id="chatInput-{{ location.id }}"
+                                                class="form-control location-chat-input"
+                                                rows="2"
+                                                placeholder="Describe a change for this location…"
+                                                data-location-id="{{ location.id }}"
+                                                aria-describedby="chatHint-{{ location.id }}"
+                                            ></textarea>
+                                            <button type="button"
+                                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2 location-send-btn"
+                                                    style="border:none; background:transparent; padding:0;"
+                                                    data-location-id="{{ location.id }}"
+                                                    aria-label="Send message for {{ location.name }}">
+                                                <i class="bi bi-rocket-takeoff icon-button" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                        <p id="chatHint-{{ location.id }}" class="visually-hidden">
+                                            Press Enter to send, or Shift+Enter for a new line.
+                                        </p>
+                                        <div class="chat-footer-actions">
+                                            <button type="button"
+                                                    class="done-btn location-done-btn"
+                                                    data-location-id="{{ location.id }}"
+                                                    disabled
+                                                    aria-label="Done — apply changes to {{ location.name }}"
+                                                    aria-disabled="true">
+                                                <i class="bi bi-check2-circle" aria-hidden="true"></i> Done
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="carousel-item active">
+                        <div class="alert alert-info" role="alert">No settings have been generated yet.</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <nav class="loc-nav-row" aria-label="Settings navigation">
+            <button id="btnPrev" class="loc-nav-btn" disabled aria-disabled="true">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
             </button>
-            <span class="loc-counter" id="locCounter">1 / {{ setting_description|length }}</span>
+            <span class="loc-counter" id="locCounter" aria-live="polite" aria-atomic="true">
+                1 / {{ setting_description|length }}
+            </span>
             <button id="btnNext" class="loc-nav-btn">
-                Next Setting <i class="bi bi-arrow-right"></i>
+                Next Setting <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </button>
-        </div>
+        </nav>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -325,6 +231,66 @@
         var thinking      = {};
         var STORAGE_KEY   = 'location_chat_histories';
 
+        /* ── Confirmation modal ── */
+        var confirmOverlay   = document.getElementById('confirmOverlay');
+        var confirmOkBtn     = document.getElementById('confirmOk');
+        var confirmCancelBtn = document.getElementById('confirmCancel');
+        var pendingLocationId = null;
+        var modalOpener       = null;
+
+        function showConfirm(locationId, openerEl) {
+            pendingLocationId = locationId;
+            modalOpener       = openerEl || null;
+            confirmOverlay.classList.add('active');
+            confirmOverlay.setAttribute('aria-hidden', 'false');
+            confirmCancelBtn.focus();
+        }
+        function hideConfirm() {
+            confirmOverlay.classList.remove('active');
+            confirmOverlay.setAttribute('aria-hidden', 'true');
+            pendingLocationId = null;
+            if (modalOpener) { modalOpener.focus(); modalOpener = null; }
+        }
+        confirmOverlay.addEventListener('keydown', function (e) {
+            if (!confirmOverlay.classList.contains('active')) return;
+            if (e.key === 'Escape') { e.preventDefault(); hideConfirm(); }
+            if (e.key === 'Tab') {
+                var focusable = [confirmCancelBtn, confirmOkBtn];
+                var first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            }
+        });
+        confirmCancelBtn.addEventListener('click', hideConfirm);
+        confirmOverlay.addEventListener('click', function (e) {
+            if (e.target === confirmOverlay) hideConfirm();
+        });
+        confirmOkBtn.addEventListener('click', function () {
+            if (pendingLocationId === null) return;
+            var locationId = pendingLocationId;
+            hideConfirm();
+            applyChanges(locationId);
+        });
+
+        function applyChanges(locationId) {
+            var summary = getHistory(locationId).slice(1)
+                .map(function (m) { return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content; })
+                .join('\n');
+            var idInput = document.querySelector('.location-submit-form input[name="location_id"][value="' + locationId + '"]');
+            if (idInput) {
+                idInput.closest('form').querySelector('.location-feedback-field').value = summary;
+                clearLocationHistory(locationId);
+                var overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = 'block';
+                overlay.setAttribute('aria-hidden', 'false');
+                idInput.closest('form').submit();
+            }
+        }
+
+        /* ── Session storage helpers ── */
         function saveHistories() {
             try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories)); } catch (e) {}
         }
@@ -332,12 +298,18 @@
             try { var raw = sessionStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
         }
         function clearLocationHistory(locationId) {
-            try { var stored = loadHistories() || {}; delete stored[locationId]; sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored)); } catch (e) {}
+            try {
+                var stored = loadHistories() || {};
+                delete stored[locationId];
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+            } catch (e) {}
         }
         function getHistory(locationId) {
             if (!chatHistories[locationId]) chatHistories[locationId] = [];
             return chatHistories[locationId];
         }
+
+        /* ── Chat rendering ── */
         function getChatBox(locationId) {
             return document.getElementById('chatMessages-' + locationId);
         }
@@ -350,6 +322,7 @@
             var bubble = document.createElement('div');
             bubble.className   = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
             bubble.textContent = text;
+            bubble.setAttribute('aria-label', (role === 'user' ? 'You' : 'Assistant') + ': ' + text);
             wrap.appendChild(bubble);
             box.appendChild(wrap);
             box.scrollTop = box.scrollHeight;
@@ -368,10 +341,17 @@
             box.innerHTML = '';
             getHistory(loc.id).forEach(function (msg) { appendBubble(loc.id, msg.role, msg.content); });
             var hasUserMsg = getHistory(loc.id).some(function (m) { return m.role === 'user'; });
-            var doneBtn = document.querySelector('.location-done-btn[data-location-id="' + loc.id + '"]');
-            if (doneBtn) doneBtn.disabled = !hasUserMsg;
+            setDoneBtn(loc.id, hasUserMsg);
         }
 
+        function setDoneBtn(locationId, enabled) {
+            var doneBtn = document.querySelector('.location-done-btn[data-location-id="' + locationId + '"]');
+            if (!doneBtn) return;
+            doneBtn.disabled = !enabled;
+            doneBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+        }
+
+        /* ── Send message ── */
         function handleSend(locationId) {
             var input = document.querySelector('.location-chat-input[data-location-id="' + locationId + '"]');
             var msg   = input ? input.value.trim() : '';
@@ -398,8 +378,7 @@
                 appendBubble(locationId, 'assistant', reply);
                 getHistory(locationId).push({ role: 'assistant', content: reply });
                 saveHistories();
-                var doneBtn = document.querySelector('.location-done-btn[data-location-id="' + locationId + '"]');
-                if (doneBtn) doneBtn.disabled = false;
+                setDoneBtn(locationId, true);
             })
             .catch(function () {
                 removeThinking(locationId);
@@ -413,36 +392,43 @@
         });
         document.querySelectorAll('.location-chat-input').forEach(function (input) {
             input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(parseInt(input.dataset.locationId, 10)); }
-            });
-        });
-
-        document.querySelectorAll('.location-done-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var locationId = parseInt(btn.dataset.locationId, 10);
-                var summary = getHistory(locationId).slice(1)
-                    .map(function (m) { return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content; })
-                    .join('\n');
-                var idInput = document.querySelector('.location-submit-form input[name="location_id"][value="' + locationId + '"]');
-                if (idInput) {
-                    idInput.closest('form').querySelector('.location-feedback-field').value = summary;
-                    clearLocationHistory(locationId);
-                    document.getElementById('loadingOverlay').style.display = 'block';
-                    idInput.closest('form').submit();
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend(parseInt(input.dataset.locationId, 10));
                 }
             });
         });
 
+        /* ── Done button → confirmation ── */
+        document.querySelectorAll('.location-done-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (btn.disabled) return;
+                showConfirm(parseInt(btn.dataset.locationId, 10), btn);
+            });
+        });
+
+        /* ── Carousel navigation ── */
         function goTo(idx) {
             if (total === 0) return;
             if (idx < 0 || idx >= total) return;
             currentIndex = idx;
             if (carousel) carousel.to(idx);
-            btnPrev.disabled      = idx === 0;
-            btnNext.disabled      = false;
-            btnNext.innerHTML     = idx === total - 1
-                ? 'Edit Scenes <i class="bi bi-arrow-right"></i>'
-                : 'Next Setting <i class="bi bi-arrow-right"></i>';
+
+            btnPrev.disabled = idx === 0;
+            btnPrev.setAttribute('aria-disabled', idx === 0 ? 'true' : 'false');
+
+            var isLast = idx === total - 1;
+            btnNext.disabled = false;
+            btnNext.setAttribute('aria-disabled', 'false');
+
+            while (btnNext.firstChild) btnNext.removeChild(btnNext.firstChild);
+            var label = document.createTextNode(isLast ? 'Edit Scenes ' : 'Next Setting ');
+            var icon  = document.createElement('i');
+            icon.className = 'bi bi-arrow-right';
+            icon.setAttribute('aria-hidden', 'true');
+            btnNext.appendChild(label);
+            btnNext.appendChild(icon);
+
             counterEl.textContent = (idx + 1) + ' / ' + total;
             renderChat(idx);
         }
@@ -453,6 +439,7 @@
             else { goTo(currentIndex + 1); }
         });
 
+        /* ── Initialise histories ── */
         var stored = loadHistories() || {};
         for (var i = 0; i < total; i++) {
             var lid = LOCATIONS[i].id;
@@ -475,6 +462,15 @@
         }
 
         goTo(startIndex);
+
+        /* ── Entity link tooltips ── */
+        document.querySelectorAll('.location-desc-block a').forEach(function (link) {
+            var name = link.textContent.trim();
+            if (!name) return;
+            var label = 'Edit ' + name;
+            link.setAttribute('data-tooltip', label);
+            link.setAttribute('aria-label', label);
+        });
 
     })();
     </script>

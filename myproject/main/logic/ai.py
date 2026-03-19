@@ -210,24 +210,6 @@ def storyGenerate(conflict, moments="", resolution=""):
 import time
 import re
 
-# def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, max_retries=3):
-#     # Replace character names with full descriptions
-#     enhanced_prompt = image_prompt
-    
-#     for persona in story_data.get('persona_description', []):
-#         name = persona['name']
-#         description = f"{persona['name']}, {persona['age']} years old, with {persona['hair']} hair, {persona['skin']} skin, wearing {persona['clothing']}"
-#         # Replace name with full description
-#         enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
-    
-#     # Replace location names with full descriptions
-#     for location in story_data.get('setting_description', []):
-#         name = location['name']
-#         description = location['description']
-#         enhanced_prompt = re.sub(r'\b' + re.escape(name) + r'\b', description, enhanced_prompt, flags=re.IGNORECASE)
-#     tone_text = ", ".join(emotional_tones)
-#     enhanced_prompt += f". The image should reflect the emotional tones: {tone_text}."
-
 def generate_scene_image(image_prompt, emotional_tones, scene_id, story_data, max_retries=3):
     # Replace character names with full descriptions
     enhanced_prompt = image_prompt
@@ -1002,7 +984,7 @@ def sceneChat(story_data, scene_id, chat_history):
 
     system_prompt = (
         """"You are a helpful character assistant for a storyboard creation tool. 
-        The user wants to refine a scene in the storyboard, this could be editing the image prompt, narratioon, or both.
+        The user wants to refine a scene in the storyboard, this could be editing the image prompt, narration, or both.
         Have a natural, friendly conversation 
         to understand what changes they want. Ask clarifying questions if needed. 
         Keep responses short (2-4 sentences). Use simple language.

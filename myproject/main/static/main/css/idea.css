@@ -1,0 +1,195 @@
+/* ===================================
+   idea.css  –  styles for idea.html only
+   Mirrors scene/locations/personas/draft.css visually.
+   WCAG 2.1 AA compliant.
+   =================================== */
+
+/* ── Shared design tokens ── */
+:root {
+    --gray-700: #2e3a40;
+    --gray-600: #3d4f57;
+    --gray-500: #5a6a72;
+    --gray-300: #dde2e5;
+    --gray-100: #f4f6f7;
+
+    --blue-600: #1a5cbf;
+    --blue-500: #2567d4;
+
+    --white:  #ffffff;
+    --shadow: rgba(0, 0, 0, 0.14);
+
+    --focus-ring: 0 0 0 3px rgba(26, 92, 191, 0.55);
+}
+
+/* ── Base ── */
+body {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+/* ── Hide Bootstrap carousel chrome ── */
+#ideaCarousel .carousel-control-prev,
+#ideaCarousel .carousel-control-next,
+#ideaCarousel .carousel-indicators {
+    display: none !important;
+}
+.carousel-item {
+    min-height: unset;
+}
+
+/* ═══════════════════════════════════
+   SLIDE LAYOUT
+   Full-height centred column, generous
+   padding above the fixed nav bar.
+═══════════════════════════════════ */
+.idea-slide {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem 2rem 7rem;   /* extra bottom padding clears the nav bar */
+    max-width: 780px;           /* wider than before (was 700px) */
+    margin: 0 auto;
+}
+
+/* ── Step label ("1 of 2 · Required") ── */
+.step-label {
+    font-size: 0.85rem;         /* was 0.72rem — too small */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-500);     /* 5.9:1 on white ✓ */
+    margin-bottom: 1rem;
+}
+
+/* ── Slide question (main prompt) ── */
+.slide-question {
+    font-size: 2rem;            /* was 1.6rem — bumped for impact + readability */
+    font-weight: 700;
+    color: var(--gray-700);     /* 12.6:1 ✓ */
+    margin-bottom: 0.5rem;
+    line-height: 1.25;
+}
+
+/* ── Slide hint ── */
+.slide-hint {
+    font-size: 1rem;            /* was 0.9rem */
+    color: var(--gray-600);     /* 8.9:1 ✓ */
+    margin-bottom: 2rem;        /* more breathing room before textarea */
+    line-height: 1.6;
+}
+
+/* ── Idea textarea ── */
+.idea-textarea {
+    font-size: 1.1rem;          /* larger than base for comfortable entry */
+    line-height: 1.7;
+    color: var(--gray-700);
+    border: 2px solid var(--gray-600);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    resize: none;
+    min-height: 160px;          /* taller default — was just rows="5" */
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.idea-textarea::placeholder {
+    color: var(--gray-500);     /* 5.9:1 ✓ */
+    font-size: 1rem;
+}
+.idea-textarea:focus {
+    border-color: var(--blue-600);
+    box-shadow: var(--focus-ring);
+    outline: none;
+}
+.idea-textarea.is-invalid {
+    border-color: #b91c1c !important;  /* darker red — 5.5:1 on white ✓ */
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.3);
+}
+
+/* ═══════════════════════════════════
+   FIXED BOTTOM NAV BAR
+═══════════════════════════════════ */
+.idea-nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 2rem;
+    background: var(--white);
+    box-shadow: 0 -2px 0 var(--gray-300);
+    z-index: 100;
+}
+
+/* ── Back / Next buttons ── */
+.idea-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid var(--gray-600);
+    background: var(--white);
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    text-decoration: none;
+}
+.idea-nav-btn:hover:not(:disabled) {
+    background: #e8f0ff;
+    border-color: var(--blue-600);
+    color: var(--blue-600);
+}
+.idea-nav-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+.idea-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Primary (filled) variant — Next on slide 1 */
+.idea-nav-btn.primary {
+    background: var(--blue-600);
+    border-color: var(--blue-600);
+    color: var(--white);        /* white on #1a5cbf = 5.9:1 ✓ */
+}
+.idea-nav-btn.primary:hover {
+    background: var(--blue-500);
+    border-color: var(--blue-500);
+    color: var(--white);
+}
+
+/* Submit (rocket) button — last slide */
+.idea-nav-btn.submit {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-size: 1rem;
+}
+.idea-nav-btn.submit:focus-visible {
+    outline: 3px solid var(--blue-600);
+    border-radius: 50%;
+}
+
+/* ── Step dots ── */
+.step-dots {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+.step-dot {
+    width: 10px;                /* slightly larger than before (was 8px) */
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gray-300);
+    transition: background 0.2s;
+}
+.step-dot.active {
+    background: var(--blue-600);
+}

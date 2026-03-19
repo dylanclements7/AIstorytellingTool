@@ -4,306 +4,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personas</title>
+    <title>Characters Editor — Story Builder</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
-    <style>
-        .row.g-4.mb-3 {
-            align-items: stretch;
-        }
-
-        .row.g-4.mb-3 > .col-lg-6 {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .row.g-4.mb-3 > .col-lg-6 > .card {
-            flex: 1;
-        }
-
-        .row.g-4.mb-3 > .col-lg-6 > .card.chat-container {
-            height: 100%;
-        }
-        .persona-nav-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.4rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 2px solid #dee2e6;
-            background: #fff;
-            color: #495057;
-            cursor: pointer;
-            transition: background 0.15s, border-color 0.15s, color 0.15s;
-            user-select: none;
-            text-decoration: none;
-        }
-        .persona-nav-btn:hover:not(:disabled) {
-            background: #f0f4ff;
-            border-color: #6c8ebf;
-            color: #2c4a7c;
-        }
-        .persona-nav-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .persona-nav-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 1.25rem;
-            padding: 0 0.25rem;
-        }
-        .persona-counter {
-            font-size: 0.9rem;
-            color: #6c757d;
-            font-weight: 500;
-        }
-        .chat-bubble {
-            max-width: 80%;
-            padding: 0.65rem 1rem;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            line-height: 1.45;
-            margin-bottom: 0.5rem;
-            word-break: break-word;
-        }
-        .chat-bubble.user {
-            background: #0d6efd;
-            color: #fff;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .chat-bubble.assistant {
-            background: #f1f3f5;
-            color: #212529;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-        .chat-bubble.thinking {
-            opacity: 0.6;
-            font-style: italic;
-        }
-        .chat-messages {
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            gap: 0.25rem;
-            overflow-y: auto;
-            flex: 1;
-            min-height: 160px;
-            max-height: 300px;
-        }
-        .persona-preview-image {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-            border-radius: 0.5rem 0.5rem 0 0;
-            display: block;
-        }
-        .persona-desc-block {
-            background: #fff;
-            border-radius: 0 0 0.5rem 0.5rem;
-            padding: 1rem 1.25rem;
-            font-size: 0.9rem;
-            color: #343a40;
-            border-top: 1px solid #e9ecef;
-        }
-        .persona-desc-block h6 {
-            font-weight: 700;
-            margin-bottom: 0.6rem;
-            font-size: 1rem;
-        }
-        .persona-desc-block p {
-            margin-bottom: 0.3rem;
-        }
-        .done-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1.4rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 2px solid #1f7e60;
-            background: #fff;
-            color: #1f7e60;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            user-select: none;
-        }
-        .done-btn:hover:not(:disabled) {
-            background: #1f7e60;
-            color: #fff;
-        }
-        .done-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .chat-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #dee2e6;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .chat-footer-actions {
-            display: flex;
-            justify-content: flex-end;
-        }
-        #personasCarousel .carousel-control-prev,
-        #personasCarousel .carousel-control-next,
-        #personasCarousel .carousel-indicators {
-            display: none !important;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'main/css/personas.css' %}">
 </head>
 <body class="bg-light">
 
-    <nav class="story-nav">
+    <nav class="story-nav" aria-label="Story builder steps">
         <div class="nav-container">
             <a href="{% url 'idea' %}" class="nav-btn nav-start"
                onclick="return confirm('Are you sure you want to start over? All your current progress will be lost.');">
-                <i class="bi bi-arrow-counterclockwise"></i>
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                 Start Over
             </a>
-            <div class="nav-center">
-                <a href="{% url 'draft' %}" class="nav-step completed">
-                    <i class="bi bi-book"></i>
+            <div class="nav-center" role="list" aria-label="Completed steps">
+                <a href="{% url 'draft' %}" class="nav-step completed" role="listitem">
+                    <i class="bi bi-book" aria-hidden="true"></i>
                     Storyline
                 </a>
-                <div class="nav-step active">
-                    <i class="bi bi-person"></i>
+                <div class="nav-step active" role="listitem" aria-current="page">
+                    <i class="bi bi-person" aria-hidden="true"></i>
                     Characters
                 </div>
-                <a href="{% url 'locations' %}" class="nav-step completed">
-                    <i class="bi bi-house"></i>
+                <a href="{% url 'locations' %}" class="nav-step completed" role="listitem">
+                    <i class="bi bi-house" aria-hidden="true"></i>
                     Settings
                 </a>
-                <a href="{% url 'scene' %}" class="nav-step completed">
-                    <i class="bi bi-camera"></i>
+                <a href="{% url 'scene' %}" class="nav-step completed" role="listitem">
+                    <i class="bi bi-camera" aria-hidden="true"></i>
                     Scenes
                 </a>
             </div>
             <a href="{% url 'video' %}" class="nav-btn nav-storyboard">
-                <i class="bi bi-film"></i>
+                <i class="bi bi-film" aria-hidden="true"></i>
                 Storyboard
             </a>
         </div>
     </nav>
 
-    <div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
+    <!-- Loading overlay -->
+    <div id="loadingOverlay"
+         role="status"
+         aria-live="assertive"
+         aria-label="Generating your story, please wait"
+         aria-hidden="true"
+         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999;">
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center;">
-            <div class="rocket-orbit">
+            <div class="rocket-orbit" aria-hidden="true">
                 <i class="bi bi-rocket-takeoff rocket-icon"></i>
             </div>
             <p class="text-white mt-5" style="font-size:1.5rem;">Generating your story...</p>
         </div>
     </div>
 
-    <div class="container-fluid mt-4 px-4">
-        <div id="personasCarousel" class="carousel slide" data-bs-ride="false">
-            <div class="carousel-inner">
-                {% for persona in persona_description %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-persona-id="{{ persona.id }}">
-
-                    <div class="text-center mb-3">
-                        <span class="badge bg-primary" style="font-size:1.1rem; padding:0.5rem 1.25rem;">{{ persona.name }}</span>
-                    </div>
-
-                    <div class="row g-4 mb-3 editor-row">
-
-                        <!-- Left: image + description (~half screen) -->
-                        <div class="col-lg-6">
-                            <div class="card shadow-sm" style="border:none; overflow:hidden;">
-                                {% if persona.preview_image %}
-                                <a href="{% url 'scene' %}?slide={{ persona.preview_scene_id }}">
-                                    <img src="{% static persona.preview_image %}" class="persona-preview-image" alt="{{ persona.name }}">
-                                </a>
-                                {% else %}
-                                <div class="d-flex align-items-center justify-content-center bg-light persona-preview-image">
-                                    <i class="bi bi-person-fill" style="font-size:6rem; color:#ced4da;"></i>
-                                </div>
-                                {% endif %}
-                                <div class="persona-desc-block">
-                                    <h6>{{ persona.name }}</h6>
-                                    <p><strong>Age:</strong> {{ persona.age }}</p>
-                                    <p><strong>Clothing:</strong> {{ persona.clothing }}</p>
-                                    <p><strong>Disability:</strong> {{ persona.disability }}</p>
-                                    <p><strong>Skin:</strong> {{ persona.skin }}</p>
-                                    <p class="mb-0"><strong>Hair:</strong> {{ persona.hair }}</p>
-                                </div>
-                            </div>
-                            <!-- {% if persona.preview_image %}
-                            <p class="text-center text-muted small mt-2">
-                                From <a href="{% url 'scene' %}?slide={{ persona.preview_scene_id }}">Scene {{ persona.preview_scene_id }}</a>
-                            </p>
-                            {% endif %} -->
-                        </div>
-
-                        <!-- Right: instructions + chat (~half screen) -->
-                        <div class="col-lg-6">
-                            <p class="text-muted mb-2" style="font-size: 0.9rem;">Edit what this character looks like. Use the assistant to describe any changes — these will be used to generate images of the character in each scene.</p>
-                            <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
-                                <div class="chat-header">
-                                    <h5><i class="bi bi-stars me-2"></i>Character Assistant</h5>
-                                </div>
-                                <div class="chat-messages" id="chatMessages-{{ persona.id }}"></div>
-
-                                <form method="post" action="{% url 'personas' %}" class="persona-submit-form" style="display:none;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="regenerate">
-                                    <input type="hidden" name="persona_id" value="{{ persona.id }}">
-                                    <input type="hidden" name="feedback" class="persona-feedback-field">
-                                </form>
-
-                                <div class="chat-footer">
-                                    <div class="position-relative">
-                                        <textarea
-                                            class="form-control persona-chat-input"
-                                            rows="2"
-                                            placeholder="Describe a change for this character…"
-                                            data-persona-id="{{ persona.id }}"
-                                        ></textarea>
-                                        <button type="button"
-                                                class="btn btn-link position-absolute top-0 end-0 mt-2 me-2 persona-send-btn"
-                                                style="border:none; background:transparent; padding:0;"
-                                                data-persona-id="{{ persona.id }}">
-                                            <i class="bi bi-rocket-takeoff icon-button"></i>
-                                        </button>
-                                    </div>
-                                    <div class="chat-footer-actions">
-                                        <button type="button" class="done-btn persona-done-btn" data-persona-id="{{ persona.id }}" disabled>
-                                            <i class="bi bi-check2-circle"></i> Done — Apply Changes
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                {% empty %}
-                <div class="carousel-item active">
-                    <div class="alert alert-info">No characters have been generated yet.</div>
-                </div>
-                {% endfor %}
+    <!-- Confirmation modal -->
+    <div class="confirm-overlay"
+         id="confirmOverlay"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="confirmTitle"
+         aria-hidden="true">
+        <div class="confirm-dialog">
+            <h2 class="confirm-dialog-title" id="confirmTitle">
+                <i class="bi bi-person me-2" aria-hidden="true"></i>Change Character?
+            </h2>
+            <p>This will change the character. Are you sure you want to?</p>
+            <div class="confirm-actions">
+                <button class="confirm-cancel-btn" id="confirmCancel">No</button>
+                <button class="confirm-ok-btn" id="confirmOk">Yes</button>
             </div>
         </div>
+    </div>
 
-        <div class="persona-nav-row">
-            <button id="btnPrev" class="persona-nav-btn" disabled>
-                <i class="bi bi-arrow-left"></i> Back
+    <div class="container-fluid mt-4 px-4">
+
+        <section aria-label="Characters editor" aria-roledescription="carousel">
+            <div id="personasCarousel" class="carousel slide" data-bs-ride="false">
+                <div class="carousel-inner">
+                    {% for persona in persona_description %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}"
+                         data-persona-id="{{ persona.id }}"
+                         role="group"
+                         aria-roledescription="slide"
+                         aria-label="{{ persona.name }}, character {{ forloop.counter }} of {{ persona_description|length }}">
+
+                        <div class="text-center mb-3">
+                            <span class="mb-0 fw-bold fs-5">{{ persona.name }}</span>
+                        </div>
+
+                        <div class="row g-4 mb-3 editor-row">
+
+                            <!-- Left: image + description -->
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm" style="border:none; overflow:hidden;">
+                                    {% if persona.preview_image %}
+                                    <a href="{% url 'scene' %}?slide={{ persona.preview_scene_id }}"
+                                       aria-label="View {{ persona.name }} in Scene {{ persona.preview_scene_id }}">
+                                        <img src="{% static persona.preview_image %}"
+                                             class="persona-preview-image"
+                                             alt="{{ persona.name }} — character preview">
+                                    </a>
+                                    {% else %}
+                                    <div class="persona-preview-image placeholder-block" aria-hidden="true">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="persona-desc-block">
+                                        <h2>{{ persona.name }}</h2>
+                                        <p><strong>Age:</strong> {{ persona.age }}</p>
+                                        <p><strong>Clothing:</strong> {{ persona.clothing }}</p>
+                                        <p><strong>Disability:</strong> {{ persona.disability }}</p>
+                                        <p><strong>Skin:</strong> {{ persona.skin }}</p>
+                                        <p><strong>Hair:</strong> {{ persona.hair }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: chat assistant -->
+                            <div class="col-lg-6">
+                                <p class="text-muted mb-2">
+                                    Talk with the assistant to edit this character. When you're ready to make the changes, hit <strong>Done</strong>.
+                                </p>
+                                <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
+                                    <div class="chat-header">
+                                        <h3 class="mb-0" style="font-size:1.1rem; font-weight:600;">
+                                            <i class="bi bi-stars me-2" aria-hidden="true"></i>Character Assistant
+                                        </h3>
+                                    </div>
+
+                                    <div class="chat-messages"
+                                         id="chatMessages-{{ persona.id }}"
+                                         role="log"
+                                         aria-live="polite"
+                                         aria-label="{{ persona.name }} assistant conversation"
+                                         aria-relevant="additions"></div>
+
+                                    <form method="post" action="{% url 'personas' %}" class="persona-submit-form" style="display:none;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="regenerate">
+                                        <input type="hidden" name="persona_id" value="{{ persona.id }}">
+                                        <input type="hidden" name="feedback" class="persona-feedback-field">
+                                    </form>
+
+                                    <div class="chat-footer">
+                                        <div class="position-relative">
+                                            <label for="chatInput-{{ persona.id }}" class="visually-hidden">
+                                                Message for {{ persona.name }} assistant
+                                            </label>
+                                            <textarea
+                                                id="chatInput-{{ persona.id }}"
+                                                class="form-control persona-chat-input"
+                                                rows="2"
+                                                placeholder="Describe a change for this character…"
+                                                data-persona-id="{{ persona.id }}"
+                                                aria-describedby="chatHint-{{ persona.id }}"
+                                            ></textarea>
+                                            <button type="button"
+                                                    class="btn btn-link position-absolute top-0 end-0 mt-2 me-2 persona-send-btn"
+                                                    style="border:none; background:transparent; padding:0;"
+                                                    data-persona-id="{{ persona.id }}"
+                                                    aria-label="Send message for {{ persona.name }}">
+                                                <i class="bi bi-rocket-takeoff icon-button" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                        <p id="chatHint-{{ persona.id }}" class="visually-hidden">
+                                            Press Enter to send, or Shift+Enter for a new line.
+                                        </p>
+                                        <div class="chat-footer-actions">
+                                            <button type="button"
+                                                    class="done-btn persona-done-btn"
+                                                    data-persona-id="{{ persona.id }}"
+                                                    disabled
+                                                    aria-label="Done — apply changes to {{ persona.name }}"
+                                                    aria-disabled="true">
+                                                <i class="bi bi-check2-circle" aria-hidden="true"></i> Done
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="carousel-item active">
+                        <div class="alert alert-info" role="alert">No characters have been generated yet.</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <nav class="persona-nav-row" aria-label="Characters navigation">
+            <button id="btnPrev" class="persona-nav-btn" disabled aria-disabled="true">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
             </button>
-            <span class="persona-counter" id="personaCounter">1 / {{ persona_description|length }}</span>
+            <span class="persona-counter" id="personaCounter" aria-live="polite" aria-atomic="true">
+                1 / {{ persona_description|length }}
+            </span>
             <button id="btnNext" class="persona-nav-btn">
-                Next Character <i class="bi bi-arrow-right"></i>
+                Next Character <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </button>
-        </div>
+        </nav>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -331,6 +235,66 @@
         var thinking      = {};
         var STORAGE_KEY   = 'persona_chat_histories';
 
+        /* ── Confirmation modal ── */
+        var confirmOverlay   = document.getElementById('confirmOverlay');
+        var confirmOkBtn     = document.getElementById('confirmOk');
+        var confirmCancelBtn = document.getElementById('confirmCancel');
+        var pendingPersonaId = null;
+        var modalOpener      = null;
+
+        function showConfirm(personaId, openerEl) {
+            pendingPersonaId = personaId;
+            modalOpener      = openerEl || null;
+            confirmOverlay.classList.add('active');
+            confirmOverlay.setAttribute('aria-hidden', 'false');
+            confirmCancelBtn.focus();
+        }
+        function hideConfirm() {
+            confirmOverlay.classList.remove('active');
+            confirmOverlay.setAttribute('aria-hidden', 'true');
+            pendingPersonaId = null;
+            if (modalOpener) { modalOpener.focus(); modalOpener = null; }
+        }
+        confirmOverlay.addEventListener('keydown', function (e) {
+            if (!confirmOverlay.classList.contains('active')) return;
+            if (e.key === 'Escape') { e.preventDefault(); hideConfirm(); }
+            if (e.key === 'Tab') {
+                var focusable = [confirmCancelBtn, confirmOkBtn];
+                var first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            }
+        });
+        confirmCancelBtn.addEventListener('click', hideConfirm);
+        confirmOverlay.addEventListener('click', function (e) {
+            if (e.target === confirmOverlay) hideConfirm();
+        });
+        confirmOkBtn.addEventListener('click', function () {
+            if (pendingPersonaId === null) return;
+            var personaId = pendingPersonaId;
+            hideConfirm();
+            applyChanges(personaId);
+        });
+
+        function applyChanges(personaId) {
+            var summary = getHistory(personaId).slice(1)
+                .map(function (m) { return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content; })
+                .join('\n');
+            var idInput = document.querySelector('.persona-submit-form input[name="persona_id"][value="' + personaId + '"]');
+            if (idInput) {
+                idInput.closest('form').querySelector('.persona-feedback-field').value = summary;
+                clearPersonaHistory(personaId);
+                var overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = 'block';
+                overlay.setAttribute('aria-hidden', 'false');
+                idInput.closest('form').submit();
+            }
+        }
+
+        /* ── Session storage helpers ── */
         function saveHistories() {
             try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistories)); } catch (e) {}
         }
@@ -338,12 +302,18 @@
             try { var raw = sessionStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
         }
         function clearPersonaHistory(personaId) {
-            try { var stored = loadHistories() || {}; delete stored[personaId]; sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored)); } catch (e) {}
+            try {
+                var stored = loadHistories() || {};
+                delete stored[personaId];
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+            } catch (e) {}
         }
         function getHistory(personaId) {
             if (!chatHistories[personaId]) chatHistories[personaId] = [];
             return chatHistories[personaId];
         }
+
+        /* ── Chat rendering ── */
         function getChatBox(personaId) {
             return document.getElementById('chatMessages-' + personaId);
         }
@@ -356,6 +326,7 @@
             var bubble = document.createElement('div');
             bubble.className   = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
             bubble.textContent = text;
+            bubble.setAttribute('aria-label', (role === 'user' ? 'You' : 'Assistant') + ': ' + text);
             wrap.appendChild(bubble);
             box.appendChild(wrap);
             box.scrollTop = box.scrollHeight;
@@ -374,10 +345,17 @@
             box.innerHTML = '';
             getHistory(persona.id).forEach(function (msg) { appendBubble(persona.id, msg.role, msg.content); });
             var hasUserMsg = getHistory(persona.id).some(function (m) { return m.role === 'user'; });
-            var doneBtn = document.querySelector('.persona-done-btn[data-persona-id="' + persona.id + '"]');
-            if (doneBtn) doneBtn.disabled = !hasUserMsg;
+            setDoneBtn(persona.id, hasUserMsg);
         }
 
+        function setDoneBtn(personaId, enabled) {
+            var doneBtn = document.querySelector('.persona-done-btn[data-persona-id="' + personaId + '"]');
+            if (!doneBtn) return;
+            doneBtn.disabled = !enabled;
+            doneBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+        }
+
+        /* ── Send message ── */
         function handleSend(personaId) {
             var input = document.querySelector('.persona-chat-input[data-persona-id="' + personaId + '"]');
             var msg   = input ? input.value.trim() : '';
@@ -404,8 +382,7 @@
                 appendBubble(personaId, 'assistant', reply);
                 getHistory(personaId).push({ role: 'assistant', content: reply });
                 saveHistories();
-                var doneBtn = document.querySelector('.persona-done-btn[data-persona-id="' + personaId + '"]');
-                if (doneBtn) doneBtn.disabled = false;
+                setDoneBtn(personaId, true);
             })
             .catch(function () {
                 removeThinking(personaId);
@@ -419,36 +396,43 @@
         });
         document.querySelectorAll('.persona-chat-input').forEach(function (input) {
             input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(parseInt(input.dataset.personaId, 10)); }
-            });
-        });
-
-        document.querySelectorAll('.persona-done-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var personaId = parseInt(btn.dataset.personaId, 10);
-                var summary = getHistory(personaId).slice(1)
-                    .map(function (m) { return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content; })
-                    .join('\n');
-                var form = document.querySelector('.persona-submit-form input[name="persona_id"][value="' + personaId + '"]');
-                if (form) {
-                    form.closest('form').querySelector('.persona-feedback-field').value = summary;
-                    clearPersonaHistory(personaId);
-                    document.getElementById('loadingOverlay').style.display = 'block';
-                    form.closest('form').submit();
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend(parseInt(input.dataset.personaId, 10));
                 }
             });
         });
 
+        /* ── Done button → confirmation ── */
+        document.querySelectorAll('.persona-done-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (btn.disabled) return;
+                showConfirm(parseInt(btn.dataset.personaId, 10), btn);
+            });
+        });
+
+        /* ── Carousel navigation ── */
         function goTo(idx) {
             if (total === 0) return;
             if (idx < 0 || idx >= total) return;
             currentIndex = idx;
             if (carousel) carousel.to(idx);
-            btnPrev.disabled      = idx === 0;
-            btnNext.disabled      = false;
-            btnNext.innerHTML     = idx === total - 1
-                ? 'Edit Settings <i class="bi bi-arrow-right"></i>'
-                : 'Next Character <i class="bi bi-arrow-right"></i>';
+
+            btnPrev.disabled = idx === 0;
+            btnPrev.setAttribute('aria-disabled', idx === 0 ? 'true' : 'false');
+
+            var isLast = idx === total - 1;
+            btnNext.disabled = false;
+            btnNext.setAttribute('aria-disabled', 'false');
+
+            while (btnNext.firstChild) btnNext.removeChild(btnNext.firstChild);
+            var label = document.createTextNode(isLast ? 'Edit Settings ' : 'Next Character ');
+            var icon  = document.createElement('i');
+            icon.className = 'bi bi-arrow-right';
+            icon.setAttribute('aria-hidden', 'true');
+            btnNext.appendChild(label);
+            btnNext.appendChild(icon);
+
             counterEl.textContent = (idx + 1) + ' / ' + total;
             renderChat(idx);
         }
@@ -459,6 +443,7 @@
             else { goTo(currentIndex + 1); }
         });
 
+        /* ── Initialise histories ── */
         var stored = loadHistories() || {};
         for (var i = 0; i < total; i++) {
             var pid = PERSONAS[i].id;
@@ -481,6 +466,15 @@
         }
 
         goTo(startIndex);
+
+        /* ── Entity link tooltips ── */
+        document.querySelectorAll('.persona-desc-block a').forEach(function (link) {
+            var name = link.textContent.trim();
+            if (!name) return;
+            var label = 'Edit ' + name;
+            link.setAttribute('data-tooltip', label);
+            link.setAttribute('aria-label', label);
+        });
 
     })();
     </script>

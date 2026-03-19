@@ -1,67 +1,51 @@
 /* ===================================
-   scene.css  –  styles for scene.html only
-   Accessibility pass: WCAG 2.1 AA compliant
+   personas.css  –  styles for personas.html only
+   Mirrors scene.css / locations.css visually for consistent UX.
+   WCAG 2.1 AA compliant:
    - Minimum font size 1rem (16px)
    - All text contrast ratios ≥ 4.5:1 (normal), ≥ 3:1 (large/UI)
    - Visible focus indicators on all interactive elements
-   - No layout changes
    =================================== */
 
-/* ── Shared design tokens ── */
+/* ── Shared design tokens (identical to scene.css / locations.css) ── */
 :root {
-    /* Core palette — unchanged hues, contrast-verified values */
-    --gray-700: #2e3a40;   /* body text, high-contrast labels  – 12.6:1 on white */
-    --gray-600: #3d4f57;   /* secondary text                   –  8.9:1 on white */
-    --gray-500: #5a6a72;   /* muted / supporting text          –  5.9:1 on white */
-    --gray-300: #dde2e5;   /* borders, backgrounds             */
-    --gray-100: #f4f6f7;   /* very light surface               */
+    --gray-700: #2e3a40;   /* body text                         – 12.6:1 on white */
+    --gray-600: #3d4f57;   /* secondary text                    –  8.9:1 on white */
+    --gray-500: #5a6a72;   /* muted / supporting text           –  5.9:1 on white */
+    --gray-300: #dde2e5;   /* borders, backgrounds              */
+    --gray-100: #f4f6f7;   /* very light surface                */
 
-    --blue-600: #1a5cbf;   /* primary interactive blue         –  5.9:1 on white  */
-    --blue-500: #2567d4;   /* hover state                      –  5.0:1 on white  */
-    --blue-bubble: #1251a8;/* user chat bubble bg              – white text 7.3:1  */
+    --blue-600: #1a5cbf;   /* primary interactive blue          –  5.9:1 on white */
+    --blue-500: #2567d4;   /* hover state                       –  5.0:1 on white */
+    --blue-bubble: #1251a8;/* user chat bubble bg               – white text 7.3:1 */
 
-    --green-500: #1a6b50;  /* done / confirm buttons           –  5.5:1 on white  */
-    --green-700: #0d4433;  /* hover darken                     –  9.1:1 on white  */
+    --green-500: #1a6b50;  /* done / confirm buttons            –  5.5:1 on white */
+    --green-700: #0d4433;  /* hover darken                      –  9.1:1 on white */
 
     --white:  #ffffff;
     --black:  #000000;
     --shadow: rgba(0, 0, 0, 0.14);
 
-    /* Focus ring */
     --focus-ring: 0 0 0 3px rgba(26, 92, 191, 0.55);
 }
 
-/* ── Base body text ── */
+/* ── Base ── */
 body {
     font-size: 1rem;
     line-height: 1.6;
     color: var(--gray-700);
 }
 
-/* ── Page heading ── */
-h2.text-center {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray-700);
-}
-
-/* ── Scene label ("Scene N") ── */
-.carousel-item .text-center span {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--gray-700);
-}
-
 /* ── Helper / instruction text ── */
 .text-muted {
-    color: var(--gray-500) !important;  /* 5.9:1 on white — passes AA */
+    color: var(--gray-500) !important;
     font-size: 1rem;
 }
 
 /* ═══════════════════════════════════
-   SCENE NAV BUTTONS  (Prev / Next)
+   PERSONA NAV BUTTONS  (Prev / Next)
 ═══════════════════════════════════ */
-.scene-nav-btn {
+.persona-nav-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -69,40 +53,40 @@ h2.text-center {
     font-size: 1rem;
     font-weight: 700;
     border-radius: 8px;
-    border: 2px solid var(--gray-600);   /* was #dee2e6 — too low contrast */
+    border: 2px solid var(--gray-600);
     background: var(--white);
-    color: var(--gray-700);              /* 12.6:1 */
+    color: var(--gray-700);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
     user-select: none;
     text-decoration: none;
 }
-.scene-nav-btn:hover:not(:disabled) {
+.persona-nav-btn:hover:not(:disabled) {
     background: #e8f0ff;
     border-color: var(--blue-600);
     color: var(--blue-600);
 }
-.scene-nav-btn:focus-visible {
+.persona-nav-btn:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);
 }
-.scene-nav-btn:disabled {
+.persona-nav-btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
 }
 
-/* ── Scene counter ── */
-.scene-nav-row {
+/* ── Persona counter ── */
+.persona-nav-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-top: 1.25rem;
     padding: 0 0.25rem;
 }
-.scene-counter {
-    font-size: 1rem;         /* was 0.9rem */
-    color: var(--gray-600);  /* 8.9:1 */
-    font-weight: 700;        /* was 500 */
+.persona-counter {
+    font-size: 1rem;
+    color: var(--gray-600);
+    font-weight: 700;
 }
 
 /* ═══════════════════════════════════
@@ -112,19 +96,19 @@ h2.text-center {
     max-width: 80%;
     padding: 0.75rem 1.1rem;
     border-radius: 14px;
-    font-size: 1rem;         /* was 0.9rem */
+    font-size: 1rem;
     line-height: 1.55;
     margin-bottom: 0.5rem;
     word-break: break-word;
 }
 .chat-bubble.user {
-    background: var(--blue-bubble);  /* white text 7.3:1 ✓ */
+    background: var(--blue-bubble);
     color: var(--white);
     align-self: flex-end;
     border-bottom-right-radius: 4px;
 }
 .chat-bubble.assistant {
-    background: var(--gray-100);     /* #2e3a40 text 11.5:1 ✓ */
+    background: var(--gray-100);
     color: var(--gray-700);
     align-self: flex-start;
     border-bottom-left-radius: 4px;
@@ -148,32 +132,32 @@ h2.text-center {
 }
 
 /* ── Chat textarea ── */
-.scene-chat-input {
+.persona-chat-input {
     font-size: 1rem;
     color: var(--gray-700);
     border-color: var(--gray-600);
     padding-right: 3.5rem;
     resize: none;
 }
-.scene-chat-input::placeholder {
-    color: var(--gray-500);   /* 5.9:1 — passes AA */
+.persona-chat-input::placeholder {
+    color: var(--gray-500);
 }
-.scene-chat-input:focus {
+.persona-chat-input:focus {
     border-color: var(--blue-600);
     box-shadow: var(--focus-ring);
     outline: none;
 }
 
 /* ── Send (rocket) button ── */
-.scene-send-btn:focus-visible {
+.persona-send-btn:focus-visible {
     outline: 3px solid var(--blue-600);
     border-radius: 50%;
 }
 
 /* ═══════════════════════════════════
    DONE BUTTON
-   Invisible (not greyed) when disabled;
-   appears when a user message exists.
+   Invisible when disabled; visible
+   once the user has sent a message.
 ═══════════════════════════════════ */
 .done-btn {
     display: inline-flex;
@@ -185,12 +169,11 @@ h2.text-center {
     border-radius: 8px;
     border: 2px solid var(--green-500);
     background: var(--white);
-    color: var(--green-500);   /* 5.5:1 on white ✓ */
+    color: var(--green-500);
     cursor: pointer;
     transition: background 0.15s, color 0.15s, opacity 0.2s, visibility 0.2s;
     user-select: none;
 
-    /* invisible-but-present when disabled */
     visibility: hidden;
     opacity: 0;
 }
@@ -221,41 +204,10 @@ h2.text-center {
     justify-content: flex-end;
 }
 
-/* ═══════════════════════════════════
-   SCENE IMAGE + META CARD
-═══════════════════════════════════ */
-.scene-image-display {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    border-radius: 0.5rem 0.5rem 0 0;
-    display: block;
-}
-.scene-meta {
-    padding: 1rem 1.25rem;
-    background: var(--white);
-    border-radius: 0 0 0.5rem 0.5rem;
-    border-top: 2px solid var(--gray-300);
-    font-size: 1rem;           /* was 0.9rem */
-    color: var(--gray-700);    /* was #343a40 */
-    line-height: 1.6;
-}
-.scene-meta p {
-    margin-bottom: 0.4rem;
-}
-.scene-meta p:last-child {
-    margin-bottom: 0;
-}
-.scene-meta strong {
-    color: var(--gray-700);
-    font-weight: 700;
-}
-
 /* ── Hide default Bootstrap carousel controls ── */
-#scenesCarousel .carousel-control-prev,
-#scenesCarousel .carousel-control-next,
-#scenesCarousel .carousel-indicators,
-.scene-carousel-controls {
+#personasCarousel .carousel-control-prev,
+#personasCarousel .carousel-control-next,
+#personasCarousel .carousel-indicators {
     display: none !important;
 }
 
@@ -272,6 +224,66 @@ h2.text-center {
 }
 .row.g-4.mb-3 > .col-lg-6 > .card.chat-container {
     height: 100%;
+}
+
+/* ═══════════════════════════════════
+   PERSONA IMAGE + DESC CARD
+═══════════════════════════════════ */
+.persona-preview-image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 0.5rem 0.5rem 0 0;
+    display: block;
+}
+.persona-preview-image.placeholder-block {
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.persona-preview-image.placeholder-block i {
+    font-size: 6rem;
+    color: var(--gray-300);
+}
+
+.persona-desc-block {
+    background: var(--white);
+    border-radius: 0 0 0.5rem 0.5rem;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    color: var(--gray-700);
+    border-top: 2px solid var(--gray-300);
+    line-height: 1.6;
+    overflow: visible;
+}
+.persona-desc-block h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+.persona-desc-block p {
+    margin-bottom: 0.3rem;
+}
+.persona-desc-block p:last-child {
+    margin-bottom: 0;
+}
+.persona-desc-block strong {
+    color: var(--gray-700);
+    font-weight: 700;
+}
+
+/* ── Persona name badge ── */
+.persona-badge {
+    display: inline-block;
+    background: var(--blue-600);
+    color: var(--white);
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
 }
 
 /* ═══════════════════════════════════
@@ -298,15 +310,15 @@ h2.text-center {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
     text-align: center;
 }
-.confirm-dialog h5 {
+.confirm-dialog-title {
     margin-bottom: 0.6rem;
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--gray-700);  /* 12.6:1 ✓ */
+    color: var(--gray-700);
 }
 .confirm-dialog p {
     font-size: 1rem;
-    color: var(--gray-600);  /* 8.9:1 ✓ */
+    color: var(--gray-600);
     margin-bottom: 1.5rem;
     line-height: 1.6;
 }
@@ -315,13 +327,12 @@ h2.text-center {
     gap: 0.75rem;
     justify-content: center;
 }
-
 .confirm-cancel-btn {
     padding: 0.65rem 1.4rem;
     border-radius: 8px;
     border: 2px solid var(--gray-600);
     background: var(--white);
-    color: var(--gray-700);   /* 12.6:1 ✓ */
+    color: var(--gray-700);
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -334,13 +345,12 @@ h2.text-center {
     outline: none;
     box-shadow: var(--focus-ring);
 }
-
 .confirm-ok-btn {
     padding: 0.65rem 1.4rem;
     border-radius: 8px;
     border: 2px solid var(--green-500);
     background: var(--green-500);
-    color: var(--white);      /* 5.5:1 ✓ */
+    color: var(--white);
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -357,19 +367,16 @@ h2.text-center {
 
 /* ═══════════════════════════════════
    ENTITY LINK TOOLTIPS
-   Links inside .scene-meta (characters,
-   locations) show "Edit [Name]" on hover.
+   Links inside .persona-desc-block
+   show "Edit [Name]" on hover/focus.
 ═══════════════════════════════════ */
-.scene-meta a[data-tooltip] {
+.persona-desc-block a[data-tooltip] {
     position: relative;
-    /* Underline style that matches accessible link conventions */
     text-decoration: underline;
     text-decoration-style: dotted;
     text-underline-offset: 3px;
 }
-
-/* The tooltip bubble */
-.scene-meta a[data-tooltip]::after {
+.persona-desc-block a[data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
     bottom: calc(100% + 6px);
@@ -377,7 +384,6 @@ h2.text-center {
     transform: translateX(-50%);
     white-space: nowrap;
 
-    /* Visuals */
     background: var(--gray-700);
     color: var(--white);
     font-size: 0.875rem;
@@ -387,18 +393,13 @@ h2.text-center {
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
 
-    /* Hidden by default */
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.15s ease, visibility 0.15s ease;
-
-    /* Keep above other content */
     z-index: 200;
 }
-
-/* Small downward-pointing arrow */
-.scene-meta a[data-tooltip]::before {
+.persona-desc-block a[data-tooltip]::before {
     content: '';
     position: absolute;
     bottom: calc(100% + 1px);
@@ -412,17 +413,10 @@ h2.text-center {
     transition: opacity 0.15s ease, visibility 0.15s ease;
     z-index: 200;
 }
-
-/* Show on hover and keyboard focus */
-.scene-meta a[data-tooltip]:hover::after,
-.scene-meta a[data-tooltip]:focus-visible::after,
-.scene-meta a[data-tooltip]:hover::before,
-.scene-meta a[data-tooltip]:focus-visible::before {
+.persona-desc-block a[data-tooltip]:hover::after,
+.persona-desc-block a[data-tooltip]:focus-visible::after,
+.persona-desc-block a[data-tooltip]:hover::before,
+.persona-desc-block a[data-tooltip]:focus-visible::before {
     opacity: 1;
     visibility: visible;
-}
-
-/* Prevent tooltip clipping at left/right card edges */
-.scene-meta {
-    overflow: visible;
 }
