@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Storyboard</title>
+    <title>Storyboard — Story Builder</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{% static 'main/css/style.css' %}">
@@ -60,7 +60,28 @@
         </div>
     </div>
 
-    <!-- Edit Story button -->
+    <!-- Confirmation modal for Done / Reflect -->
+    <div class="confirm-overlay"
+         id="confirmOverlay"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="confirmTitle"
+         aria-hidden="true">
+        <div class="confirm-dialog">
+            <h2 class="confirm-dialog-title" id="confirmTitle">
+                <i class="bi bi-stars me-2" aria-hidden="true"></i>Reflect on your story?
+            </h2>
+            <p>
+                You'll talk to an assistant who will help you reimagine your story in a new way and change it.
+            </p>
+            <div class="confirm-actions">
+                <button class="confirm-cancel-btn" id="confirmCancel">No</button>
+                <button class="confirm-ok-btn" id="confirmOk">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top action row: Edit Story (right only) -->
     <div class="continue-row">
         <a href="{% url 'draft' %}" class="continue-btn">
             Edit Story <i class="bi bi-arrow-right" aria-hidden="true"></i>
@@ -68,6 +89,7 @@
     </div>
 
     <main class="container text-center">
+        <h1 class="mb-4" style="font-size:1.75rem;">Storyboard</h1>
 
         <div class="video-grid-container" role="list" aria-label="Story scenes">
             {% for scene in scenes %}
@@ -75,16 +97,10 @@
             <div class="scene-item" role="listitem">
                 <h2>Scene {{ scene.id }}</h2>
 
-                <!-- Image + hover overlay -->
                 <div class="scene-card">
                     <img src="{% static scene.image_path %}"
                          alt="Scene {{ scene.id }}: {{ scene.narration }}">
 
-                    <!--
-                        The overlay is visually hidden until hover/focus-within.
-                        Each button has a clear aria-label so screen readers
-                        don't need to hover to understand the action.
-                    -->
                     <div class="scene-overlay" aria-label="Scene {{ scene.id }} actions">
                         <!-- Edit -->
                         <a href="{% url 'scene' %}?slide={{ scene.id }}"
@@ -149,12 +165,20 @@
         </div>
     </main>
 
+    <!-- Done / Reflect — bottom-right of page -->
+    <div class="done-row">
+        <button type="button" class="done-btn" id="doneBtn">
+            <i class="bi bi-stars" aria-hidden="true"></i> Done — Reflect on Story
+        </button>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     (function () {
         'use strict';
-        var overlay = document.getElementById('loadingOverlay');
 
+        /* ── Loading overlay for scene actions ── */
+        var overlay = document.getElementById('loadingOverlay');
         document.querySelectorAll('form').forEach(function (form) {
             form.addEventListener('submit', function () {
                 var actionEl = form.querySelector('[name="action"]');
@@ -166,6 +190,51 @@
                 }
             });
         });
+
+        /* ── Done / Reflect confirmation modal ── */
+        var confirmOverlay   = document.getElementById('confirmOverlay');
+        var confirmOkBtn     = document.getElementById('confirmOk');
+        var confirmCancelBtn = document.getElementById('confirmCancel');
+        var doneBtn          = document.getElementById('doneBtn');
+
+        function showConfirm() {
+            confirmOverlay.classList.add('active');
+            confirmOverlay.setAttribute('aria-hidden', 'false');
+            confirmCancelBtn.focus();
+        }
+        function hideConfirm() {
+            confirmOverlay.classList.remove('active');
+            confirmOverlay.setAttribute('aria-hidden', 'true');
+            doneBtn.focus();
+        }
+
+        confirmOverlay.addEventListener('keydown', function (e) {
+            if (!confirmOverlay.classList.contains('active')) return;
+            if (e.key === 'Escape') { e.preventDefault(); hideConfirm(); }
+            if (e.key === 'Tab') {
+                var focusable = [confirmCancelBtn, confirmOkBtn];
+                var first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+                }
+            }
+        });
+
+        confirmCancelBtn.addEventListener('click', hideConfirm);
+        confirmOverlay.addEventListener('click', function (e) {
+            if (e.target === confirmOverlay) hideConfirm();
+        });
+        confirmOkBtn.addEventListener('click', function () {
+            hideConfirm();
+            /* Clear any cached reflection history so the AI always opens fresh */
+            try { sessionStorage.removeItem('reflection_chat_history'); } catch (e) {}
+            window.location.href = "{% url 'reflection' %}";
+        });
+
+        doneBtn.addEventListener('click', showConfirm);
+
     })();
     </script>
 </body>

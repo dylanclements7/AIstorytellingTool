@@ -8,4 +8,5 @@ urlpatterns = [
     path('scene/', views.scene, name='scene'),
     path('video/', views.video, name='video'),
     path('draft/', views.draft, name='draft'),
+    path('reflection/', views.reflection, name='reflection'),
 ]

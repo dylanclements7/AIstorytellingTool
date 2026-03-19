@@ -34,13 +34,22 @@ body {
 }
 
 /* ═══════════════════════════════════
-   EDIT STORY BUTTON ROW
+   TOP ACTION ROW  (Edit Story — right)
 ═══════════════════════════════════ */
 .continue-row {
     display: flex;
     justify-content: flex-end;
     max-width: 1400px;
     margin: 0.5rem auto 0.25rem;
+    padding: 0 1rem;
+}
+
+/* ── Bottom Done row ── */
+.done-row {
+    display: flex;
+    justify-content: flex-end;
+    max-width: 1400px;
+    margin: 1.5rem auto 2rem;
     padding: 0 1rem;
 }
 .continue-btn {
@@ -66,6 +75,184 @@ body {
     outline: none;
     box-shadow: var(--focus-ring);
 }
+
+/* Done / Reflect button — teal to signal it leads somewhere new */
+.done-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid #0f6b6b;
+    background: var(--white);
+    color: #0f6b6b;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+}
+.done-btn:hover {
+    background: #0f6b6b;
+    color: var(--white);
+}
+.done-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* ═══════════════════════════════════
+   CONFIRMATION MODAL
+═══════════════════════════════════ */
+.confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-dialog {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem 2.25rem;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    text-align: center;
+}
+.confirm-dialog-title {
+    margin-bottom: 0.6rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gray-700);
+}
+.confirm-dialog p {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+.confirm-actions { display: flex; gap: 0.75rem; justify-content: center; }
+.confirm-cancel-btn {
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    border: 2px solid var(--gray-600);
+    background: var(--white);
+    color: var(--gray-700);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.confirm-cancel-btn:hover { background: var(--gray-100); }
+.confirm-cancel-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.confirm-ok-btn {
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    border: 2px solid #0f6b6b;
+    background: #0f6b6b;
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.confirm-ok-btn:hover { background: #0a4f4f; border-color: #0a4f4f; }
+.confirm-ok-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ── Done button ── */
+.done-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid #1a6b50;
+    background: var(--white);
+    color: #1a6b50;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+.done-btn:hover {
+    background: #1a6b50;
+    color: var(--white);
+}
+.done-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* ── Confirmation modal ── */
+.confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+.confirm-overlay.active { display: flex; }
+
+.confirm-dialog {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem 2.25rem;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    text-align: center;
+}
+.confirm-dialog-title {
+    margin-bottom: 0.6rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gray-700);
+}
+.confirm-dialog p {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+.confirm-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+.confirm-cancel-btn {
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    border: 2px solid var(--gray-600);
+    background: var(--white);
+    color: var(--gray-700);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.confirm-cancel-btn:hover { background: #f4f6f7; }
+.confirm-cancel-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+.confirm-ok-btn {
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    border: 2px solid #1a6b50;
+    background: #1a6b50;
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.confirm-ok-btn:hover { background: #0d4433; border-color: #0d4433; }
+.confirm-ok-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* ── Scene headings ── */
 .scene-item h2 {
