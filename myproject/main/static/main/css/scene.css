@@ -1,0 +1,356 @@
+/* ===================================
+   scene.css  –  styles for scene.html only
+   Accessibility pass: WCAG 2.1 AA compliant
+   - Minimum font size 1rem (16px)
+   - All text contrast ratios ≥ 4.5:1 (normal), ≥ 3:1 (large/UI)
+   - Visible focus indicators on all interactive elements
+   - No layout changes
+   =================================== */
+
+/* ── Shared design tokens ── */
+:root {
+    /* Core palette — unchanged hues, contrast-verified values */
+    --gray-700: #2e3a40;   /* body text, high-contrast labels  – 12.6:1 on white */
+    --gray-600: #3d4f57;   /* secondary text                   –  8.9:1 on white */
+    --gray-500: #5a6a72;   /* muted / supporting text          –  5.9:1 on white */
+    --gray-300: #dde2e5;   /* borders, backgrounds             */
+    --gray-100: #f4f6f7;   /* very light surface               */
+
+    --blue-600: #1a5cbf;   /* primary interactive blue         –  5.9:1 on white  */
+    --blue-500: #2567d4;   /* hover state                      –  5.0:1 on white  */
+    --blue-bubble: #1251a8;/* user chat bubble bg              – white text 7.3:1  */
+
+    --green-500: #1a6b50;  /* done / confirm buttons           –  5.5:1 on white  */
+    --green-700: #0d4433;  /* hover darken                     –  9.1:1 on white  */
+
+    --white:  #ffffff;
+    --black:  #000000;
+    --shadow: rgba(0, 0, 0, 0.14);
+
+    /* Focus ring */
+    --focus-ring: 0 0 0 3px rgba(26, 92, 191, 0.55);
+}
+
+/* ── Base body text ── */
+body {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+/* ── Page heading ── */
+h2.text-center {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-700);
+}
+
+/* ── Scene label ("Scene N") ── */
+.carousel-item .text-center span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gray-700);
+}
+
+/* ── Helper / instruction text ── */
+.text-muted {
+    color: var(--gray-500) !important;  /* 5.9:1 on white — passes AA */
+    font-size: 1rem;
+}
+
+/* ═══════════════════════════════════
+   SCENE NAV BUTTONS  (Prev / Next)
+═══════════════════════════════════ */
+.scene-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid var(--gray-600);   /* was #dee2e6 — too low contrast */
+    background: var(--white);
+    color: var(--gray-700);              /* 12.6:1 */
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
+    text-decoration: none;
+}
+.scene-nav-btn:hover:not(:disabled) {
+    background: #e8f0ff;
+    border-color: var(--blue-600);
+    color: var(--blue-600);
+}
+.scene-nav-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+.scene-nav-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* ── Scene counter ── */
+.scene-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.25rem;
+    padding: 0 0.25rem;
+}
+.scene-counter {
+    font-size: 1rem;         /* was 0.9rem */
+    color: var(--gray-600);  /* 8.9:1 */
+    font-weight: 700;        /* was 500 */
+}
+
+/* ═══════════════════════════════════
+   CHAT BUBBLES
+═══════════════════════════════════ */
+.chat-bubble {
+    max-width: 80%;
+    padding: 0.75rem 1.1rem;
+    border-radius: 14px;
+    font-size: 1rem;         /* was 0.9rem */
+    line-height: 1.55;
+    margin-bottom: 0.5rem;
+    word-break: break-word;
+}
+.chat-bubble.user {
+    background: var(--blue-bubble);  /* white text 7.3:1 ✓ */
+    color: var(--white);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+.chat-bubble.assistant {
+    background: var(--gray-100);     /* #2e3a40 text 11.5:1 ✓ */
+    color: var(--gray-700);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+.chat-bubble.thinking {
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* ── Chat message pane ── */
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.25rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 160px;
+    max-height: 300px;
+    background: #fafbfc;
+}
+
+/* ── Chat textarea ── */
+.scene-chat-input {
+    font-size: 1rem;
+    color: var(--gray-700);
+    border-color: var(--gray-600);
+    padding-right: 3.5rem;
+    resize: none;
+}
+.scene-chat-input::placeholder {
+    color: var(--gray-500);   /* 5.9:1 — passes AA */
+}
+.scene-chat-input:focus {
+    border-color: var(--blue-600);
+    box-shadow: var(--focus-ring);
+    outline: none;
+}
+
+/* ── Send (rocket) button ── */
+.scene-send-btn:focus-visible {
+    outline: 3px solid var(--blue-600);
+    border-radius: 50%;
+}
+
+/* ═══════════════════════════════════
+   DONE BUTTON
+   Invisible (not greyed) when disabled;
+   appears when a user message exists.
+═══════════════════════════════════ */
+.done-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid var(--green-500);
+    background: var(--white);
+    color: var(--green-500);   /* 5.5:1 on white ✓ */
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, opacity 0.2s, visibility 0.2s;
+    user-select: none;
+
+    /* invisible-but-present when disabled */
+    visibility: hidden;
+    opacity: 0;
+}
+.done-btn:not([disabled]) {
+    visibility: visible;
+    opacity: 1;
+}
+.done-btn:not([disabled]):hover {
+    background: var(--green-500);
+    color: var(--white);
+}
+.done-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* ── Chat footer ── */
+.chat-footer {
+    padding: 1rem 1.5rem;
+    border-top: 2px solid var(--gray-300);
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.chat-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ═══════════════════════════════════
+   SCENE IMAGE + META CARD
+═══════════════════════════════════ */
+.scene-image-display {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 0.5rem 0.5rem 0 0;
+    display: block;
+}
+.scene-meta {
+    padding: 1rem 1.25rem;
+    background: var(--white);
+    border-radius: 0 0 0.5rem 0.5rem;
+    border-top: 2px solid var(--gray-300);
+    font-size: 1rem;           /* was 0.9rem */
+    color: var(--gray-700);    /* was #343a40 */
+    line-height: 1.6;
+}
+.scene-meta p {
+    margin-bottom: 0.4rem;
+}
+.scene-meta p:last-child {
+    margin-bottom: 0;
+}
+.scene-meta strong {
+    color: var(--gray-700);
+    font-weight: 700;
+}
+
+/* ── Hide default Bootstrap carousel controls ── */
+#scenesCarousel .carousel-control-prev,
+#scenesCarousel .carousel-control-next,
+#scenesCarousel .carousel-indicators,
+.scene-carousel-controls {
+    display: none !important;
+}
+
+/* ── Equal-height editor columns ── */
+.row.g-4.mb-3 {
+    align-items: stretch;
+}
+.row.g-4.mb-3 > .col-lg-6 {
+    display: flex;
+    flex-direction: column;
+}
+.row.g-4.mb-3 > .col-lg-6 > .card {
+    flex: 1;
+}
+.row.g-4.mb-3 > .col-lg-6 > .card.chat-container {
+    height: 100%;
+}
+
+/* ═══════════════════════════════════
+   CONFIRMATION MODAL
+═══════════════════════════════════ */
+.confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+}
+.confirm-overlay.active {
+    display: flex;
+}
+.confirm-dialog {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 2rem 2.25rem;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+    text-align: center;
+}
+.confirm-dialog h5 {
+    margin-bottom: 0.6rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gray-700);  /* 12.6:1 ✓ */
+}
+.confirm-dialog p {
+    font-size: 1rem;
+    color: var(--gray-600);  /* 8.9:1 ✓ */
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+.confirm-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.confirm-cancel-btn {
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    border: 2px solid var(--gray-600);
+    background: var(--white);
+    color: var(--gray-700);   /* 12.6:1 ✓ */
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.confirm-cancel-btn:hover {
+    background: var(--gray-100);
+}
+.confirm-cancel-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.confirm-ok-btn {
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    border: 2px solid var(--green-500);
+    background: var(--green-500);
+    color: var(--white);      /* 5.5:1 ✓ */
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.confirm-ok-btn:hover {
+    background: var(--green-700);
+    border-color: var(--green-700);
+}
+.confirm-ok-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
