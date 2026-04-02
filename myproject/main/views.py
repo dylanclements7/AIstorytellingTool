@@ -33,16 +33,16 @@ def save_interaction_log(user_input, output_data, images, action_type):
 
 def idea(request):
     if request.method == 'POST':
-        conflict   = request.POST.get('conflict', '').strip()
+        challenges   = request.POST.get('challenges', '').strip()
         moments    = request.POST.get('moments', '').strip()
-        resolution = request.POST.get('resolution', '').strip()
+        mainCharacter = request.POST.get('mainCharacter', '').strip()
 
-        full_story = storyGenerate(conflict, moments, resolution)
+        full_story = storyGenerate(challenges, moments, mainCharacter)
 
         request.session['story'] = full_story
         request.session.modified = True
         save_interaction_log(
-            user_input={'conflict': conflict, 'moments': moments, 'resolution': resolution},
+            user_input={'challenges': challenges, 'moments': moments, 'mainCharacter': mainCharacter},
             output_data=full_story,
             images=[s.get('image_path') for s in full_story.get('scenes', [])],
             action_type='idea_generate'
@@ -271,15 +271,60 @@ def video(request):
         'story_data': story_data
     })
 
+# def reflection(request):
+#     """
+#     GET:  Render the reflection chat page, showing the current story.
+#     POST action=chat:        Return a reflectionChat reply as JSON.
+#     POST action=regenerate:  Run reflectionGenerate, update session, redirect to video.
+#     """
+#     story_data = request.session.get('story', {})
+ 
+#     # Guard: if there is no story yet, redirect to the idea page
+#     if not story_data:
+#         return redirect('idea')
+ 
+#     # ── Chat ──────────────────────────────────────────────────────────────────
+#     if request.method == 'POST' and request.POST.get('action') == 'chat':
+#         try:
+#             history = json.loads(request.POST.get('history', '[]'))
+#             reply   = reflectionChat(story_data, history)
+#             return JsonResponse({'reply': reply})
+#         except Exception as e:
+#             logger.error(f'reflectionChat error: {e}')
+#             return JsonResponse({'reply': 'Something went wrong. Please try again.'}, status=500)
+ 
+#     # ── Regenerate ────────────────────────────────────────────────────────────
+#     if request.method == 'POST' and request.POST.get('action') == 'regenerate':
+#         feedback = request.POST.get('feedback', '')
+#         try:
+#             updated = reflectionGenerate(story_data, feedback)
+#             save_interaction_log(
+#                 user_input=feedback,
+#                 output_data=updated,
+#                 images=[s.get('image_path') for s in updated.get('scenes', [])],
+#                 action_type='reflection_regenerate'
+#             )
+#             story_data.update(updated)
+#             request.session['story'] = story_data
+#             request.session.modified = True
+#             return redirect('video')
+#         except Exception as e:
+#             logger.error(f'reflectionGenerate error: {e}')
+#             return render(request, 'main/reflection.html', {
+#                 'draft':      story_data,
+#                 'story_data': story_data,
+#                 'error':      'Something went wrong regenerating the story. Please try again.',
+#             })
+ 
+#     # ── GET ───────────────────────────────────────────────────────────────────
+#     return render(request, 'main/reflection.html', {
+#         'draft':      story_data,
+#         'story_data': story_data,
+#     })
+ 
 def reflection(request):
-    """
-    GET:  Render the reflection chat page, showing the current story.
-    POST action=chat:        Return a reflectionChat reply as JSON.
-    POST action=regenerate:  Run reflectionGenerate, update session, redirect to video.
-    """
     story_data = request.session.get('story', {})
  
-    # Guard: if there is no story yet, redirect to the idea page
     if not story_data:
         return redirect('idea')
  
@@ -287,11 +332,16 @@ def reflection(request):
     if request.method == 'POST' and request.POST.get('action') == 'chat':
         try:
             history = json.loads(request.POST.get('history', '[]'))
-            reply   = reflectionChat(story_data, history)
-            return JsonResponse({'reply': reply})
+            # reflectionChat returns {question, stage, complete}
+            result  = reflectionChat(story_data, history)
+            return JsonResponse(result)
         except Exception as e:
             logger.error(f'reflectionChat error: {e}')
-            return JsonResponse({'reply': 'Something went wrong. Please try again.'}, status=500)
+            return JsonResponse({
+                'question': 'Something went wrong. Please try again.',
+                'stage':    1,
+                'complete': False
+            }, status=500)
  
     # ── Regenerate ────────────────────────────────────────────────────────────
     if request.method == 'POST' and request.POST.get('action') == 'regenerate':

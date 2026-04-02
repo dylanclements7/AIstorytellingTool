@@ -142,19 +142,13 @@ def storylineGenerate(story_data, feedback):
         raise
 
 
-def storyGenerate(conflict, moments="", resolution=""):
-    """
-    Generate a full story from structured inputs.
-    `conflict` (the event/what it's about) is required.
-    `resolution` (ending/message) is optional.
-    `moments` is unused but kept for signature compatibility.
-    """
-    user_inputs = f"What the story is about / the event (required): {conflict}"
+def storyGenerate(challenges, moments="", character=""):
+    user_inputs = f"What are the challenges the main character faces / the event (required): {challenges}"
 
-    if resolution and resolution.strip():
-        user_inputs += f"\nHow it ends / the message (provided by user — must be used): {resolution}"
+    if character and character.strip():
+        user_inputs += f"\nWho is the main character/ the message (provided by user — must be used): {character}"
     else:
-        user_inputs += "\nHow it ends / the message: not specified — invent a satisfying ending and clear emotional message."
+        user_inputs += "\nWho is the main character / the message: not specified — invent a main character who would realistically face those challenges.."
 
     prompt = f"""
     You are a helpful tool to create a story for a 1-minute shortform video.
@@ -162,8 +156,9 @@ def storyGenerate(conflict, moments="", resolution=""):
     The user has provided the following story inputs:
     {user_inputs}
 
-    IMPORTANT: You MUST use the event/subject exactly as given. If an ending or message was provided,
-    you MUST incorporate it faithfully. Only invent what was left blank.
+    IMPORTANT: You MUST use the challenges/event exactly as given. If a main character description was provided,
+    you MUST incorporate it faithfully. Only invent what was left blank. Do not resolve the conflict, rather explore
+    the challenges they entered.
 
     Use chain-of-thought to build the full story:
 
@@ -1006,12 +1001,192 @@ def sceneChat(story_data, scene_id, chat_history):
         logger.error(f"Error in sceneChat: {e}")
         raise
 
+# def reflectionChat(story_data, chat_history):
+#     storyline_lines = "\n".join(
+#         f"  Scene {i + 1}: {s}"
+#         for i, s in enumerate(story_data.get("storyline", []))
+#     )
+
+#     characters_lines = "\n".join(
+#         f"  - {p['name']}, {p.get('age', '?')} years old. "
+#         f"Clothing: {p.get('clothing', 'n/a')}. "
+#         f"Disability: {p.get('disability', 'none')}. "
+#         f"Skin: {p.get('skin', 'n/a')}. Hair: {p.get('hair', 'n/a')}."
+#         for p in story_data.get("persona_description", [])
+#     )
+
+#     locations_lines = "\n".join(
+#         f"  - {l['name']}: {l.get('description', '')}"
+#         for l in story_data.get("setting_description", [])
+#     )
+
+#     scenes_lines = "\n".join(
+#         f"  Scene {s['id']}: {s.get('narration', '')}\n"
+#         f"    Emotional tones: {', '.join(s.get('emotional_tones', []))}\n"
+#         f"    Characters present: {', '.join(s.get('characters', []))}\n"
+#         f"    Location: {s.get('location', '')}"
+#         for s in story_data.get("scenes", [])
+#     )
+
+#     system_prompt = f"""You are a warm, gentle reflection assistant for a storyboard creation tool.
+#         Your role is to help the user see their story from a new, more hopeful perspective using
+#         evidence-based principles from Cognitive Behavioural Therapy (CBT) and narrative therapy.
+
+#         CORE PRINCIPLES TO WEAVE INTO THE CONVERSATION:
+#         1. Cognitive reframing: Gently invite the user to consider alternative interpretations of
+#         events in the story. ("What might a different character have been thinking in that moment?")
+#         2. Positive rendition: Explore how the story could have unfolded with better outcomes for
+#         the characters. ("If things had gone slightly differently, what might have changed?")
+#         3. Externalising: Help the user see problems as separate from the characters, not fixed traits.
+#         ("The conflict is something that happened to them, not who they are.")
+#         4. Identifying thinking patterns: If the story reflects black-and-white thinking,
+#         catastrophising, or hopelessness, gently name it and explore alternatives.
+#         5. Finding exceptions and strengths: Highlight moments of resilience, kindness, or courage
+#         already present in the story, even small ones.
+#         6. Preferred story: Guide the user toward imagining and articulating a more hopeful version
+#         of events — this will inform the story regeneration.
+
+#         CONVERSATION STYLE:
+#         - Warm, curious, and non-judgemental.
+#         - Ask one open question at a time — do not overwhelm.
+#         - Keep every response to 2–4 sentences maximum.
+#         - Never diagnose, prescribe, or give medical advice.
+#         - Use simple, accessible language.
+#         - Draw on specific details from the story — character names, scene moments, locations,
+#         emotional tones — to make the conversation feel personal and grounded.
+#         - When the conversation feels rich enough, gently suggest the user hit
+#         "Regenerate Story" to create a new version based on their insights.
+
+#         FULL STORY CONTEXT:
+
+#         Storyline:
+#         {storyline_lines}
+
+#         Characters:
+#         {characters_lines}
+
+#         Locations:
+#         {locations_lines}
+
+#         Scenes (with narration, emotional tone, and who is present):
+#         {scenes_lines}
+#         """
+
+#     prompt_parts = [system_prompt, "\n\n"]
+#     if not chat_history:
+#         # No history — this is the opening turn. Ask the model to start the conversation.
+#         prompt_parts.append(
+#             "This is the start of the conversation. Open with a warm, specific observation "
+#             "drawn from the story above — reference a particular scene, character, or emotional "
+#             "moment — then ask one open question to begin the reflection.\n\n"
+#         )
+#     else:
+#         for msg in chat_history:
+#             role_label = "User" if msg["role"] == "user" else "Assistant"
+#             prompt_parts.append(f"{role_label}: {msg['content']}\n")
+#     prompt_parts.append("Assistant:")
+
+#     try:
+#         model = genai.GenerativeModel("models/gemini-2.5-flash")
+#         response = model.generate_content("".join(prompt_parts))
+#         return response.text.strip()
+#     except Exception as e:
+#         logger.error(f"Error in reflectionChat: {e}")
+#         raise
+
+
+# def reflectionGenerate(story_data, reflection_summary):
+#     storyline_text = "\n".join(
+#         f"Scene {i + 1}: {s}"
+#         for i, s in enumerate(story_data.get("storyline", []))
+#     )
+
+#     prompt = f"""You are regenerating a story based on a therapeutic reflection conversation.
+
+#         The user has just completed a guided reflection using Cognitive Behavioural Therapy and
+#         narrative therapy principles. During the reflection they explored:
+#         - Alternative interpretations of events
+#         - How the story could have gone differently (positive rendition)
+#         - Strengths and moments of resilience in the characters
+#         - A more hopeful, preferred version of the story
+
+#         Your task is to regenerate the ENTIRE story — storyline, scenes, characters, and locations —
+#         guided by the insights from the reflection conversation below.
+
+#         REFLECTION CONVERSATION:
+#         {reflection_summary}
+
+#         ORIGINAL STORY:
+#         Storyline:
+#         {storyline_text}
+
+#         Characters:
+#         {json.dumps(story_data.get('persona_description', []), indent=2)}
+
+#         Locations:
+#         {json.dumps(story_data.get('setting_description', []), indent=2)}
+
+#         Scenes:
+#         {json.dumps(story_data.get('scenes', []), indent=2)}
+
+#         REGENERATION RULES:
+#         1. Keep the same characters and locations unless the reflection clearly called for changes.
+#         2. Maintain the same number of scenes unless there is a strong narrative reason.
+#         3. Shift the emotional tone toward the more hopeful, positive rendition discussed in the
+#         reflection — without making the story unrealistic or dismissive of difficulty.
+#         4. Apply cognitive reframes surfaced in the conversation: alternative perspectives,
+#         externalised problems, moments of strength.
+#         5. The new story should feel like a meaningful evolution of the original, not a
+#         completely different story, just seen through a gentler, more positive lens.
+#         6. Maintain story coherence and a clear arc across all scenes.
+#         """
+
+#     try:
+#         model = genai.GenerativeModel(
+#             "models/gemini-2.5-pro",
+#             generation_config={
+#                 "response_mime_type": "application/json",
+#                 "response_schema": story_schema,
+#             },
+#         )
+#         response = model.generate_content(prompt)
+#         result = json.loads(response.text)
+#         logger.info(f"reflectionGenerate result: {result}")
+
+#         result["scenes"] = generate_all_scene_images(
+#             result["scenes"], result, old_scenes=story_data.get("scenes")
+#         )
+#         return result
+
+#     except Exception as e:
+#         logger.error(f"Error in reflectionGenerate: {e}")
+#         raise
+
+reflection_response_schema = {
+    "type": "object",
+    "properties": {
+        "question": {
+            "type": "string",
+            "description": "The single Socratic question to ask the user next. Max 30 words."
+        },
+        "stage": {
+            "type": "integer",
+            "description": "Current stage number (1, 2, 3, or 4)."
+        },
+        "complete": {
+            "type": "boolean",
+            "description": "True only when stage 4 is fully complete and no more questions are needed."
+        }
+    },
+    "required": ["question", "stage", "complete"]
+}
+ 
+ 
 def reflectionChat(story_data, chat_history):
     storyline_lines = "\n".join(
         f"  Scene {i + 1}: {s}"
         for i, s in enumerate(story_data.get("storyline", []))
     )
-
     characters_lines = "\n".join(
         f"  - {p['name']}, {p.get('age', '?')} years old. "
         f"Clothing: {p.get('clothing', 'n/a')}. "
@@ -1019,12 +1194,10 @@ def reflectionChat(story_data, chat_history):
         f"Skin: {p.get('skin', 'n/a')}. Hair: {p.get('hair', 'n/a')}."
         for p in story_data.get("persona_description", [])
     )
-
     locations_lines = "\n".join(
         f"  - {l['name']}: {l.get('description', '')}"
         for l in story_data.get("setting_description", [])
     )
-
     scenes_lines = "\n".join(
         f"  Scene {s['id']}: {s.get('narration', '')}\n"
         f"    Emotional tones: {', '.join(s.get('emotional_tones', []))}\n"
@@ -1032,120 +1205,142 @@ def reflectionChat(story_data, chat_history):
         f"    Location: {s.get('location', '')}"
         for s in story_data.get("scenes", [])
     )
-
-    system_prompt = f"""You are a warm, gentle reflection assistant for a storyboard creation tool.
-        Your role is to help the user see their story from a new, more hopeful perspective using
-        evidence-based principles from Cognitive Behavioural Therapy (CBT) and narrative therapy.
-
-        CORE PRINCIPLES TO WEAVE INTO THE CONVERSATION:
-        1. Cognitive reframing: Gently invite the user to consider alternative interpretations of
-        events in the story. ("What might a different character have been thinking in that moment?")
-        2. Positive rendition: Explore how the story could have unfolded with better outcomes for
-        the characters. ("If things had gone slightly differently, what might have changed?")
-        3. Externalising: Help the user see problems as separate from the characters, not fixed traits.
-        ("The conflict is something that happened to them, not who they are.")
-        4. Identifying thinking patterns: If the story reflects black-and-white thinking,
-        catastrophising, or hopelessness, gently name it and explore alternatives.
-        5. Finding exceptions and strengths: Highlight moments of resilience, kindness, or courage
-        already present in the story, even small ones.
-        6. Preferred story: Guide the user toward imagining and articulating a more hopeful version
-        of events — this will inform the story regeneration.
-
-        CONVERSATION STYLE:
-        - Warm, curious, and non-judgemental.
-        - Ask one open question at a time — do not overwhelm.
-        - Keep every response to 2–4 sentences maximum.
-        - Never diagnose, prescribe, or give medical advice.
-        - Use simple, accessible language.
-        - Draw on specific details from the story — character names, scene moments, locations,
-        emotional tones — to make the conversation feel personal and grounded.
-        - When the conversation feels rich enough, gently suggest the user hit
-        "Regenerate Story" to create a new version based on their insights.
-
-        FULL STORY CONTEXT:
-
-        Storyline:
-        {storyline_lines}
-
-        Characters:
-        {characters_lines}
-
-        Locations:
-        {locations_lines}
-
-        Scenes (with narration, emotional tone, and who is present):
-        {scenes_lines}
-        """
-
+ 
+    system_prompt = f"""You are a warm, respectful cognitive behavioural therapist helping a user
+    reflect on a story that represents a real neurodivergent-related challenge they face.
+    
+    You will guide the user through exactly FOUR stages. Ask ONE question at a time.
+    Every question must be 30 words or fewer. Be Socratic — do not give answers, draw them out.
+    Never diagnose, prescribe, or give medical advice.
+    Only analyse challenges through the social model of disability.
+    Always be respectful, curious, and non-judgemental.
+    Use simple, accessible language.
+    Keep questions short and understandable.
+    
+    THE FOUR STAGES:
+    
+    STAGE 1 — Information gathering:
+    - Analyse the story below.
+    - Create a brief summary of key information (characters, conflict, outcome).
+    - Ask the user to confirm whether the summary is accurate.
+    - Move to stage 2 once confirmed.
+    
+    STAGE 2 — Emotions and feelings:
+    - Ask Socratic questions to explore the user's emotions about the story.
+    - Pay attention to idiosyncratic words and emotional reactions in their answers.
+    - Help the user discover unexpected or unacknowledged feelings.
+    - Follow-up questions must relate to their previous answers.
+    - Move to stage 3 when emotions are sufficiently explored (typically 3–5 exchanges).
+    
+    STAGE 3 — Patterns:
+    - Summarise what you have learned from stages 1 and 2.
+    - Highlight how the experience leads to negative thoughts or emotions.
+    - Ask the user Socratic questions to confirm or correct this summary.
+    - Move to stage 4 once confirmed.
+    
+    STAGE 4 — Guided discovery:
+    - Ask Socratic questions to help the user discover new coping strategies.
+    - Help them find new ways to think, behave, or respond to their challenges.
+    - After sufficient discovery (typically 3–5 exchanges), set complete=true.
+    - In the final question field, write a warm closing message acknowledging their insight
+        and encouraging them to regenerate their story.
+    
+    RESPONSE FORMAT:
+    Return JSON with exactly these fields:
+    - question (string): the single question or message to show. Max 30 words.
+    - stage (integer): current stage number 1–4.
+    - complete (boolean): true only when stage 4 is fully done.
+    
+    THE STORY:
+    
+    Storyline:
+    {storyline_lines}
+    
+    Characters:
+    {characters_lines}
+    
+    Locations:
+    {locations_lines}
+    
+    Scenes:
+    {scenes_lines}
+    """
+    
     prompt_parts = [system_prompt, "\n\n"]
+ 
     if not chat_history:
-        # No history — this is the opening turn. Ask the model to start the conversation.
         prompt_parts.append(
-            "This is the start of the conversation. Open with a warm, specific observation "
-            "drawn from the story above — reference a particular scene, character, or emotional "
-            "moment — then ask one open question to begin the reflection.\n\n"
+            "This is the opening of the conversation (stage 1). "
+            "Begin with a warm one-sentence welcome, then offer your brief summary of the story "
+            "and ask the user to confirm it. Keep it under 30 words total.\n\n"
         )
     else:
         for msg in chat_history:
             role_label = "User" if msg["role"] == "user" else "Assistant"
             prompt_parts.append(f"{role_label}: {msg['content']}\n")
-    prompt_parts.append("Assistant:")
-
+ 
+    prompt_parts.append("Assistant (respond in JSON only):")
+ 
     try:
-        model = genai.GenerativeModel("models/gemini-2.5-flash")
+        model = genai.GenerativeModel(
+            "models/gemini-2.5-flash",
+            generation_config={
+                "response_mime_type": "application/json",
+                "response_schema": reflection_response_schema,
+            }
+        )
         response = model.generate_content("".join(prompt_parts))
-        return response.text.strip()
+        result = json.loads(response.text)
+        logger.info(f"reflectionChat stage={result.get('stage')} complete={result.get('complete')}")
+        return result
     except Exception as e:
         logger.error(f"Error in reflectionChat: {e}")
         raise
-
-
+ 
+ 
 def reflectionGenerate(story_data, reflection_summary):
     storyline_text = "\n".join(
         f"Scene {i + 1}: {s}"
         for i, s in enumerate(story_data.get("storyline", []))
     )
-
-    prompt = f"""You are regenerating a story based on a therapeutic reflection conversation.
-
-        The user has just completed a guided reflection using Cognitive Behavioural Therapy and
-        narrative therapy principles. During the reflection they explored:
-        - Alternative interpretations of events
-        - How the story could have gone differently (positive rendition)
-        - Strengths and moments of resilience in the characters
-        - A more hopeful, preferred version of the story
-
-        Your task is to regenerate the ENTIRE story — storyline, scenes, characters, and locations —
-        guided by the insights from the reflection conversation below.
-
-        REFLECTION CONVERSATION:
-        {reflection_summary}
-
-        ORIGINAL STORY:
-        Storyline:
-        {storyline_text}
-
-        Characters:
-        {json.dumps(story_data.get('persona_description', []), indent=2)}
-
-        Locations:
-        {json.dumps(story_data.get('setting_description', []), indent=2)}
-
-        Scenes:
-        {json.dumps(story_data.get('scenes', []), indent=2)}
-
-        REGENERATION RULES:
-        1. Keep the same characters and locations unless the reflection clearly called for changes.
-        2. Maintain the same number of scenes unless there is a strong narrative reason.
-        3. Shift the emotional tone toward the more hopeful, positive rendition discussed in the
-        reflection — without making the story unrealistic or dismissive of difficulty.
-        4. Apply cognitive reframes surfaced in the conversation: alternative perspectives,
-        externalised problems, moments of strength.
-        5. The new story should feel like a meaningful evolution of the original, not a
-        completely different story, just seen through a gentler, more positive lens.
-        6. Maintain story coherence and a clear arc across all scenes.
-        """
-
+ 
+    prompt = f"""You are regenerating a story based on a 4-stage CBT reflection conversation.
+ 
+    The user has worked through:
+    1. Understanding the story and confirming key facts
+    2. Exploring their emotions and feelings
+    3. Recognising negative thought patterns
+    4. Discovering new coping strategies and ways of thinking
+    
+    Your task is to regenerate the ENTIRE story — storyline, scenes, characters, and locations —
+    guided by the coping strategies and insights from the reflection transcript below.
+    
+    REFLECTION TRANSCRIPT:
+    {reflection_summary}
+    
+    ORIGINAL STORY:
+    Storyline:
+    {storyline_text}
+    
+    Characters:
+    {json.dumps(story_data.get('persona_description', []), indent=2)}
+    
+    Locations:
+    {json.dumps(story_data.get('setting_description', []), indent=2)}
+    
+    Scenes:
+    {json.dumps(story_data.get('scenes', []), indent=2)}
+    
+    REGENERATION RULES:
+    1. Keep the same characters and locations unless the reflection clearly called for changes.
+    2. Maintain the same number of scenes unless there is a strong narrative reason.
+    3. Apply the coping strategies and new perspectives discovered in stage 4 to reshape the story.
+    4. Shift the emotional tone toward a more hopeful, positive outcome — without dismissing difficulty.
+    5. The new story should feel like a meaningful evolution, not a completely different story.
+    6. Show the characters actively using the coping strategies to find a better outcome.
+    7. Maintain story coherence and a clear arc across all scenes.
+    """
+ 
     try:
         model = genai.GenerativeModel(
             "models/gemini-2.5-pro",
@@ -1157,12 +1352,13 @@ def reflectionGenerate(story_data, reflection_summary):
         response = model.generate_content(prompt)
         result = json.loads(response.text)
         logger.info(f"reflectionGenerate result: {result}")
-
+ 
         result["scenes"] = generate_all_scene_images(
             result["scenes"], result, old_scenes=story_data.get("scenes")
         )
         return result
-
+ 
     except Exception as e:
         logger.error(f"Error in reflectionGenerate: {e}")
         raise
+ 

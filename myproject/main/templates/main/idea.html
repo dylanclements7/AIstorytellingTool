@@ -25,7 +25,6 @@
         </div>
     </nav>
 
-    <!-- Loading overlay -->
     <div id="loadingOverlay"
          role="status"
          aria-live="assertive"
@@ -51,7 +50,6 @@
              aria-label="Story setup steps">
             <div class="carousel-inner">
 
-                <!-- Slide 1 -->
                 <div class="carousel-item active"
                      role="group"
                      aria-roledescription="slide"
@@ -59,23 +57,22 @@
                     <div class="idea-slide">
                         <div class="card shadow-sm p-4">
                             <p class="step-label" aria-hidden="true">1 of 2 &nbsp;·&nbsp; Required</p>
-                            <h1 class="slide-question">What is the story about?</h1>
-                            <label for="conflictInput" class="visually-hidden">What is the story about?</label>
+                            <h1 class="slide-question">What challenges have you been experiencing lately?</h1>
+                            <label for="challengesInput" class="visually-hidden">What challenges have you been experiencing lately?</label>
                             <textarea
                                 class="form-control idea-textarea"
-                                name="conflict"
-                                id="conflictInput"
+                                name="challenges"
+                                id="challengesInput"
                                 rows="6"
                                 placeholder="Enter as much or as little as you'd like."
                                 aria-required="true"
-                                aria-describedby="conflictError"
+                                aria-describedby="challengesError"
                             ></textarea>
-                            <p id="conflictError" class="visually-hidden" role="alert" aria-live="assertive"></p>
+                            <p id="challengesError" class="visually-hidden" role="alert" aria-live="assertive"></p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Slide 2 -->
                 <div class="carousel-item"
                      role="group"
                      aria-roledescription="slide"
@@ -83,12 +80,12 @@
                     <div class="idea-slide">
                         <div class="card shadow-sm p-4">
                             <p class="step-label" aria-hidden="true">2 of 2 &nbsp;·&nbsp; Optional</p>
-                            <h1 class="slide-question">How does it end?</h1>
-                            <label for="resolutionInput" class="visually-hidden">How does the story end?</label>
+                            <h1 class="slide-question">Who is experiencing these challenges?</h1>
+                            <label for="mainCharacterInput" class="visually-hidden">Who is experiencing these challenges?</label>
                             <textarea
                                 class="form-control idea-textarea"
-                                name="resolution"
-                                id="resolutionInput"
+                                name="mainCharacter"
+                                id="mainCharacterInput"
                                 rows="6"
                                 placeholder="Enter as much or as little as you'd like."
                             ></textarea>
@@ -100,7 +97,6 @@
         </div>
     </form>
 
-    <!-- Fixed bottom nav -->
     <nav class="idea-nav-bar" aria-label="Slide navigation">
         <button type="button" id="btnBack" class="idea-nav-btn" disabled aria-disabled="true">
             <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
@@ -124,10 +120,10 @@
         var current    = 0;
         var total      = 2;
 
-        var btnBack      = document.getElementById('btnBack');
-        var btnNext      = document.getElementById('btnNext');
-        var conflictEl   = document.getElementById('conflictInput');
-        var conflictErr  = document.getElementById('conflictError');
+        var btnBack         = document.getElementById('btnBack');
+        var btnNext         = document.getElementById('btnNext');
+        var challengesEl    = document.getElementById('challengesInput');
+        var challengesErr   = document.getElementById('challengesError');
 
         function updateUI() {
             /* Back button */
@@ -164,17 +160,19 @@
             }
         }
 
-        function showConflictError(msg) {
-            conflictEl.classList.add('is-invalid');
-            conflictErr.textContent = msg;
-            conflictEl.setAttribute('aria-invalid', 'true');
-            conflictEl.focus();
+        function showChallengesError(msg) {
+            challengesEl.classList.add('is-invalid');
+            challengesErr.textContent = msg;
+            challengesErr.classList.remove('visually-hidden');
+            challengesEl.setAttribute('aria-invalid', 'true');
+            challengesEl.focus();
         }
 
-        function clearConflictError() {
-            conflictEl.classList.remove('is-invalid');
-            conflictErr.textContent = '';
-            conflictEl.setAttribute('aria-invalid', 'false');
+        function clearChallengesError() {
+            challengesEl.classList.remove('is-invalid');
+            challengesErr.textContent = '';
+            challengesErr.classList.add('visually-hidden');
+            challengesEl.setAttribute('aria-invalid', 'false');
         }
 
         btnBack.addEventListener('click', function () {
@@ -188,21 +186,21 @@
         btnNext.addEventListener('click', function () {
             if (current < total - 1) {
                 /* Validate before advancing */
-                if (current === 0 && !conflictEl.value.trim()) {
-                    showConflictError('Please describe what your story is about before continuing.');
+                if (current === 0 && !challengesEl.value.trim()) {
+                    showChallengesError('Please describe what your story is about before continuing.');
                     return;
                 }
-                clearConflictError();
+                clearChallengesError();
                 current++;
                 carousel.to(current);
                 updateUI();
             } else {
                 /* Submit */
-                if (!conflictEl.value.trim()) {
+                if (!challengesEl.value.trim()) {
                     current = 0;
                     carousel.to(0);
                     updateUI();
-                    showConflictError('Please describe what your story is about before generating.');
+                    showChallengesError('Please describe what your story is about before generating.');
                     return;
                 }
                 /* Clear all chat histories before generating a new story */
@@ -218,7 +216,7 @@
             }
         });
 
-        conflictEl.addEventListener('input', clearConflictError);
+        challengesEl.addEventListener('input', clearChallengesError);
 
     })();
     </script>

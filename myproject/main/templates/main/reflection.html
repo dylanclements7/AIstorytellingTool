@@ -70,7 +70,7 @@
             <h2 class="confirm-dialog-title" id="confirmTitle">
                 <i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>Regenerate story?
             </h2>
-            <p>This will create a new version of your story based on the insights from your reflection. Your original story will be replaced.</p>
+            <p>This will create a new version of your story using the coping strategies and insights from your reflection. Your original story will be replaced.</p>
             <div class="confirm-actions">
                 <button class="confirm-cancel-btn" id="confirmCancel">Cancel</button>
                 <button class="confirm-ok-btn" id="confirmOk">Yes, regenerate</button>
@@ -78,7 +78,7 @@
         </div>
     </div>
 
-    <!-- Hidden form — submits the reflection summary to regenerate the story -->
+    <!-- Hidden regenerate form -->
     <form method="post" action="{% url 'reflection' %}" id="reflectionForm" style="display:none;">
         {% csrf_token %}
         <input type="hidden" name="action" value="regenerate">
@@ -87,83 +87,220 @@
 
     <div class="reflection-container">
 
-        <!-- Current story summary -->
-        <div class="story-summary-card" aria-label="Your current story">
-            <h2><i class="bi bi-book me-2" aria-hidden="true"></i>Your Story So Far</h2>
-            <div class="story-summary-scenes">
-                {% for scene_text in draft.storyline %}
-                <div class="story-summary-scene">
-                    <strong>Scene {{ forloop.counter }}:</strong>{{ scene_text }}
+        <div class="reflection-intro">
+            <h1><i class="bi bi-heart-pulse me-2" aria-hidden="true"></i>Reflect</h1>
+            <p>Work through your story with a guided reflection. Take your time — there are no right or wrong answers.</p>
+        </div>
+
+        <!-- Stage progress pills -->
+        <div class="stage-progress" role="list" aria-label="Reflection stages">
+            <div class="stage-pill" id="pill-1" role="listitem">1. Understand</div>
+            <div class="stage-pill" id="pill-2" role="listitem">2. Feelings</div>
+            <div class="stage-pill" id="pill-3" role="listitem">3. Patterns</div>
+            <div class="stage-pill" id="pill-4" role="listitem">4. New paths</div>
+        </div>
+
+        <!-- Previous Q&A log (built by JS) -->
+        <div class="reflection-log" id="reflectionLog" aria-label="Previous questions and answers" aria-live="polite"></div>
+
+        <!-- Current question card -->
+        <div class="reflection-question-card" id="questionCard">
+            <div class="reflection-question-header">
+                <i class="bi bi-chat-heart" aria-hidden="true"></i>
+                <span class="stage-label" id="stageLabel">Loading…</span>
+            </div>
+            <div class="reflection-question-body">
+                <p class="reflection-question-text" id="questionText" aria-live="polite"></p>
+
+                <div id="thinkingIndicator" class="thinking-indicator" style="display:none;" aria-live="polite" aria-label="Thinking">
+                    <i class="bi bi-hourglass-split" aria-hidden="true"></i> Thinking…
                 </div>
-                {% endfor %}
+
+                <label for="answerInput" class="visually-hidden">Your answer</label>
+                <textarea
+                    id="answerInput"
+                    class="reflection-answer-input"
+                    rows="4"
+                    placeholder="Type your answer here…"
+                    aria-describedby="answerHint"
+                ></textarea>
+                <p id="answerHint" class="visually-hidden">Press Ctrl+Enter or click Continue to submit your answer.</p>
+
+                <div>
+                    <button type="button" id="submitBtn" class="reflection-submit-btn">
+                        Continue <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Reflection chat -->
-        <div class="reflection-chat-card" role="region" aria-label="Reflection assistant">
-
-            <div class="reflection-chat-header">
-                <h2><i class="bi bi-chat-heart me-2" aria-hidden="true"></i>Reflection Assistant</h2>
-                <p>Share your thoughts. There are no right or wrong answers.</p>
-            </div>
-
-            <div class="reflection-chat-messages"
-                 id="chatMessages"
-                 role="log"
-                 aria-live="polite"
-                 aria-label="Reflection conversation"
-                 aria-relevant="additions"></div>
-
-            <div class="reflection-chat-footer">
-                <div class="position-relative">
-                    <label for="chatInput" class="visually-hidden">
-                        Message for Reflection assistant
-                    </label>
-                    <textarea
-                        id="chatInput"
-                        class="form-control reflection-chat-input"
-                        rows="2"
-                        placeholder="Share a thought, ask a question, or explore an idea…"
-                        aria-describedby="chatHint"
-                    ></textarea>
-                    <button id="sendBtn" type="button"
-                            class="btn btn-link reflection-send-btn position-absolute top-0 end-0 mt-2 me-2"
-                            style="border:none; background:transparent; padding:0;"
-                            aria-label="Send message">
-                        <i class="bi bi-rocket-takeoff icon-button" aria-hidden="true"></i>
-                    </button>
-                </div>
-                <p id="chatHint" class="visually-hidden">
-                    Press Enter to send, or Shift+Enter for a new line.
-                </p>
-                <div class="reflection-chat-footer-actions">
-                    <button id="doneBtn" type="button" class="done-btn" disabled
-                            aria-label="Done — regenerate story with reflection insights"
-                            aria-disabled="true">
-                        <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Regenerate Story
-                    </button>
-                </div>
-            </div>
+        <!-- Regenerate row — visible only after stage 4 completes -->
+        <div class="regenerate-row">
+            <button type="button" id="regenerateBtn" class="regenerate-btn" aria-disabled="true">
+                <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Regenerate Story
+            </button>
         </div>
 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
     (function () {
         'use strict';
 
         var STORAGE_KEY = 'reflection_chat_history';
         var CSRF_TOKEN  = '{{ csrf_token }}';
-        var chatHistory = [];
-        var isThinking  = false;
 
-        var messagesBox   = document.getElementById('chatMessages');
-        var chatInput     = document.getElementById('chatInput');
-        var sendBtn       = document.getElementById('sendBtn');
-        var doneBtn       = document.getElementById('doneBtn');
+        /* State */
+        var history     = [];   /* [{role, content, stage}] */
+        var currentStage = 1;
+        var isThinking   = false;
+        var complete     = false;
+
+        /* Elements */
+        var logEl         = document.getElementById('reflectionLog');
+        var stageLabelEl  = document.getElementById('stageLabel');
+        var questionEl    = document.getElementById('questionText');
+        var answerEl      = document.getElementById('answerInput');
+        var submitBtn     = document.getElementById('submitBtn');
+        var thinkingEl    = document.getElementById('thinkingIndicator');
+        var regenerateBtn = document.getElementById('regenerateBtn');
         var feedbackField = document.getElementById('feedbackField');
+
+        /* Stage labels */
+        var STAGE_LABELS = {
+            1: 'Stage 1 — Understanding your story',
+            2: 'Stage 2 — Exploring your feelings',
+            3: 'Stage 3 — Recognising patterns',
+            4: 'Stage 4 — Discovering new paths'
+        };
+
+        /* ── Storage ── */
+        function save() {
+            try {
+                sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    history:      history,
+                    currentStage: currentStage,
+                    complete:     complete
+                }));
+            } catch (e) {}
+        }
+        function load() {
+            try {
+                var raw = sessionStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (e) { return null; }
+        }
+
+        /* ── Stage pills ── */
+        function updatePills(stage, done) {
+            for (var i = 1; i <= 4; i++) {
+                var pill = document.getElementById('pill-' + i);
+                pill.classList.remove('active', 'done');
+                if (done || i < stage)  pill.classList.add('done');
+                else if (i === stage)   pill.classList.add('active');
+            }
+        }
+
+        /* ── Render a previous Q&A into the log ── */
+        function appendToLog(question, answer, stage) {
+            var item = document.createElement('div');
+            item.className = 'reflection-log-item';
+            item.setAttribute('aria-label', 'Previous question and answer');
+
+            var q = document.createElement('div');
+            q.className   = 'log-q';
+            q.textContent = question;
+
+            var a = document.createElement('div');
+            a.className   = 'log-a';
+            a.textContent = answer;
+
+            item.appendChild(q);
+            item.appendChild(a);
+            logEl.appendChild(item);
+        }
+
+        /* ── Show a new question ── */
+        function showQuestion(text, stage) {
+            currentStage = stage || currentStage;
+            stageLabelEl.textContent = STAGE_LABELS[currentStage] || 'Reflection';
+            questionEl.textContent   = text;
+            answerEl.value           = '';
+            answerEl.focus();
+            updatePills(currentStage, false);
+
+            /* Scroll to top of question card */
+            document.getElementById('questionCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        /* ── Show thinking state ── */
+        function setThinking(on) {
+            isThinking              = on;
+            submitBtn.disabled      = on;
+            answerEl.disabled       = on;
+            thinkingEl.style.display = on ? 'flex' : 'none';
+        }
+
+        /* ── Mark complete — hide question card, show regenerate ── */
+        function markComplete() {
+            complete = true;
+            document.getElementById('questionCard').style.display = 'none';
+            regenerateBtn.classList.add('visible');
+            regenerateBtn.setAttribute('aria-disabled', 'false');
+            updatePills(4, true);
+            save();
+        }
+
+        /* ── Submit an answer, get next question ── */
+        function submitAnswer() {
+            var answer = answerEl.value.trim();
+            if (!answer || isThinking) return;
+
+            /* Move current question + answer to log */
+            var currentQ = questionEl.textContent;
+            // Log(currentappendToQ, answer, currentStage);
+
+            /* Add to history */
+            history.push({ role: 'assistant', content: currentQ,  stage: currentStage });
+            history.push({ role: 'user',      content: answer,     stage: currentStage });
+            save();
+
+            setThinking(true);
+
+            var formData = new FormData();
+            formData.append('action', 'chat');
+            formData.append('history', JSON.stringify(history));
+            formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+            fetch('{% url "reflection" %}', { method: 'POST', body: formData })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                setThinking(false);
+
+                if (data.complete) {
+                    /* AI has finished stage 4 — add final message to log then end */
+                    if (data.question) {
+                        appendToLog(data.question, '', currentStage);
+                        history.push({ role: 'assistant', content: data.question, stage: currentStage });
+                    }
+                    markComplete();
+                } else {
+                    var nextStage = data.stage || currentStage;
+                    showQuestion(data.question, nextStage);
+                    save();
+                }
+            })
+            .catch(function () {
+                setThinking(false);
+                questionEl.textContent = 'Something went wrong. Please try again.';
+            });
+        }
+
+        submitBtn.addEventListener('click', submitAnswer);
+        answerEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); submitAnswer(); }
+        });
 
         /* ── Confirmation modal ── */
         var confirmOverlay   = document.getElementById('confirmOverlay');
@@ -178,7 +315,7 @@
         function hideConfirm() {
             confirmOverlay.classList.remove('active');
             confirmOverlay.setAttribute('aria-hidden', 'true');
-            doneBtn.focus();
+            regenerateBtn.focus();
         }
         confirmOverlay.addEventListener('keydown', function (e) {
             if (!confirmOverlay.classList.contains('active')) return;
@@ -199,143 +336,94 @@
         });
         confirmOkBtn.addEventListener('click', function () {
             hideConfirm();
-            applyChanges();
-        });
-
-        function applyChanges() {
-            /* Summarise the full conversation as the feedback for regeneration */
-            var summary = chatHistory
-                .map(function (m) {
-                    return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content;
-                })
-                .join('\n');
+            /* Build full transcript as feedback for regeneration */
+            var summary = history.map(function (m) {
+                return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content;
+            }).join('\n');
             feedbackField.value = summary;
             try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
             var overlay = document.getElementById('loadingOverlay');
             overlay.style.display = 'block';
             overlay.setAttribute('aria-hidden', 'false');
             document.getElementById('reflectionForm').submit();
-        }
-
-        /* ── Session storage ── */
-        function saveHistory() {
-            try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory)); } catch (e) {}
-        }
-        function loadHistory() {
-            try { var raw = sessionStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
-        }
-
-        /* ── Chat rendering ── */
-        function appendBubble(role, text, extraClass) {
-            var wrap = document.createElement('div');
-            wrap.style.display        = 'flex';
-            wrap.style.justifyContent = role === 'user' ? 'flex-end' : 'flex-start';
-            var bubble = document.createElement('div');
-            bubble.className   = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
-            bubble.textContent = text;
-            bubble.setAttribute('aria-label', (role === 'user' ? 'You' : 'Assistant') + ': ' + text);
-            wrap.appendChild(bubble);
-            messagesBox.appendChild(wrap);
-            messagesBox.scrollTop = messagesBox.scrollHeight;
-        }
-
-        function removeThinking() {
-            var el = messagesBox.querySelector('.thinking');
-            if (el && el.parentNode) el.parentNode.remove();
-        }
-
-        function setDoneBtn(enabled) {
-            doneBtn.disabled = !enabled;
-            doneBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
-        }
-
-        /* ── Send message ── */
-        function handleSend() {
-            var msg = chatInput.value.trim();
-            if (!msg || isThinking) return;
-            chatInput.value  = '';
-            isThinking       = true;
-            sendBtn.disabled = true;
-
-            chatHistory.push({ role: 'user', content: msg });
-            saveHistory();
-            appendBubble('user', msg);
-            appendBubble('assistant', 'Thinking…', 'thinking');
-
-            var formData = new FormData();
-            formData.append('action', 'chat');
-            formData.append('history', JSON.stringify(chatHistory));
-            formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
-
-            fetch('{% url "reflection" %}', { method: 'POST', body: formData })
-            .then(function (res) { return res.json(); })
-            .then(function (data) {
-                removeThinking();
-                var reply = data.reply || 'Sorry, something went wrong. Please try again.';
-                appendBubble('assistant', reply);
-                chatHistory.push({ role: 'assistant', content: reply });
-                saveHistory();
-                setDoneBtn(true);
-            })
-            .catch(function () {
-                removeThinking();
-                appendBubble('assistant', 'Something went wrong. Please try again.');
-            })
-            .finally(function () {
-                isThinking       = false;
-                sendBtn.disabled = false;
-                chatInput.focus();
-            });
-        }
-
-        sendBtn.addEventListener('click', handleSend);
-        chatInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
         });
 
-        doneBtn.addEventListener('click', function () {
-            if (doneBtn.disabled) return;
+        regenerateBtn.addEventListener('click', function () {
+            if (!complete) return;
             showConfirm();
         });
 
         /* ── Initialise ── */
-        var saved = loadHistory();
-        if (saved && saved.length > 0) {
-            chatHistory = saved;
-            chatHistory.forEach(function (msg) { appendBubble(msg.role, msg.content); });
-            var hasUserMsg = chatHistory.some(function (m) { return m.role === 'user'; });
-            setDoneBtn(hasUserMsg);
+        var saved = load();
+        if (saved && saved.history && saved.history.length > 0) {
+            /* Restore session */
+            history      = saved.history;
+            currentStage = saved.currentStage || 1;
+            complete     = saved.complete     || false;
+
+            /* Rebuild log from history pairs */
+            var i = 0;
+            while (i < history.length - 1) {
+                if (history[i].role === 'assistant' && history[i + 1].role === 'user') {
+                    // appendToLog(history[i].content, history[i + 1].content, history[i].stage);
+                    i += 2;
+                } else {
+                    i++;
+                }
+            }
+
+            if (complete) {
+                /* Last item is a closing assistant message with no user reply */
+                var last = history[history.length - 1];
+                if (last.role === 'assistant') {
+                    appendToLog(last.content, '', last.stage);
+                }
+                markComplete();
+            } else {
+                /* Resume — fetch the next question from the AI */
+                setThinking(true);
+                stageLabelEl.textContent = STAGE_LABELS[currentStage] || 'Reflection';
+                updatePills(currentStage, false);
+
+                var formData = new FormData();
+                formData.append('action', 'chat');
+                formData.append('history', JSON.stringify(history));
+                formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+                fetch('{% url "reflection" %}', { method: 'POST', body: formData })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    setThinking(false);
+                    if (data.complete) { markComplete(); }
+                    else               { showQuestion(data.question, data.stage || currentStage); save(); }
+                })
+                .catch(function () {
+                    setThinking(false);
+                    questionEl.textContent = 'Something went wrong loading your session. Please refresh.';
+                });
+            }
+
         } else {
-            /* Ask the AI to open the conversation — no hardcoded greeting */
-            appendBubble('assistant', 'Thinking…', 'thinking');
-            isThinking       = true;
-            sendBtn.disabled = true;
+            /* Fresh start — get opening question from AI */
+            setThinking(true);
+            stageLabelEl.textContent = STAGE_LABELS[1];
+            updatePills(1, false);
 
             var formData = new FormData();
             formData.append('action', 'chat');
-            formData.append('history', JSON.stringify([]));   /* empty history = opening turn */
+            formData.append('history', JSON.stringify([]));
             formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
 
             fetch('{% url "reflection" %}', { method: 'POST', body: formData })
             .then(function (res) { return res.json(); })
             .then(function (data) {
-                removeThinking();
-                var opening = data.reply || 'What part of your story feels most significant to you?';
-                appendBubble('assistant', opening);
-                chatHistory = [{ role: 'assistant', content: opening }];
-                saveHistory();
+                setThinking(false);
+                showQuestion(data.question, data.stage || 1);
+                save();
             })
             .catch(function () {
-                removeThinking();
-                var fallback = 'What part of your story feels most significant to you?';
-                appendBubble('assistant', fallback);
-                chatHistory = [{ role: 'assistant', content: fallback }];
-                saveHistory();
-            })
-            .finally(function () {
-                isThinking       = false;
-                sendBtn.disabled = false;
-                chatInput.focus();
+                setThinking(false);
+                showQuestion('What part of your story feels most significant to you?', 1);
             });
         }
 
