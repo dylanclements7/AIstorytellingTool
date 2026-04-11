@@ -70,7 +70,7 @@
             <h2 class="confirm-dialog-title" id="confirmTitle">
                 <i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>Regenerate story?
             </h2>
-            <p>This will create a new version of your story using the coping strategies and insights from your reflection. Your original story will be replaced.</p>
+            <p>This will create a new version of your story using the coping strategies from your reflection. Your original story will be replaced.</p>
             <div class="confirm-actions">
                 <button class="confirm-cancel-btn" id="confirmCancel">Cancel</button>
                 <button class="confirm-ok-btn" id="confirmOk">Yes, regenerate</button>
@@ -85,62 +85,91 @@
         <input type="hidden" name="feedback" id="feedbackField">
     </form>
 
-    <div class="reflection-container">
-
-        <div class="reflection-intro">
-            <h1><i class="bi bi-heart-pulse me-2" aria-hidden="true"></i>Reflect</h1>
-            <p>Work through your story with a guided reflection. Take your time — there are no right or wrong answers.</p>
-        </div>
+    <div class="container-fluid mt-4 px-4">
+        <h1 class="mb-3 text-center" style="font-size:1.75rem;">
+            <i class="bi bi-heart-pulse me-2" aria-hidden="true"></i>Reflect on Your Story
+        </h1>
 
         <!-- Stage progress pills -->
         <div class="stage-progress" role="list" aria-label="Reflection stages">
             <div class="stage-pill" id="pill-1" role="listitem">1. Understand</div>
             <div class="stage-pill" id="pill-2" role="listitem">2. Feelings</div>
             <div class="stage-pill" id="pill-3" role="listitem">3. Patterns</div>
-            <div class="stage-pill" id="pill-4" role="listitem">4. New paths</div>
+            <div class="stage-pill" id="pill-4" role="listitem">4. Coping</div>
+            <div class="stage-pill" id="pill-5" role="listitem">5. Regenerate</div>
         </div>
 
-        <!-- Previous Q&A log (built by JS) -->
-        <div class="reflection-log" id="reflectionLog" aria-label="Previous questions and answers" aria-live="polite"></div>
+        <div class="row g-4 mb-3">
 
-        <!-- Current question card -->
-        <div class="reflection-question-card" id="questionCard">
-            <div class="reflection-question-header">
-                <i class="bi bi-chat-heart" aria-hidden="true"></i>
-                <span class="stage-label" id="stageLabel">Loading…</span>
-            </div>
-            <div class="reflection-question-body">
-                <p class="reflection-question-text" id="questionText" aria-live="polite"></p>
-
-                <div id="thinkingIndicator" class="thinking-indicator" style="display:none;" aria-live="polite" aria-label="Thinking">
-                    <i class="bi bi-hourglass-split" aria-hidden="true"></i> Thinking…
-                </div>
-
-                <label for="answerInput" class="visually-hidden">Your answer</label>
-                <textarea
-                    id="answerInput"
-                    class="reflection-answer-input"
-                    rows="4"
-                    placeholder="Type your answer here…"
-                    aria-describedby="answerHint"
-                ></textarea>
-                <p id="answerHint" class="visually-hidden">Press Ctrl+Enter or click Continue to submit your answer.</p>
-
-                <div>
-                    <button type="button" id="submitBtn" class="reflection-submit-btn">
-                        Continue <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
-                    </button>
+            <!-- Left: story summary -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm story-summary-card" style="border:none;">
+                    <div class="story-summary-header">
+                        <h2><i class="bi bi-book me-2" aria-hidden="true"></i>Your Story</h2>
+                    </div>
+                    <div class="story-summary-body">
+                        {% for scene_text in draft.storyline %}
+                        <div class="story-summary-scene">
+                            <strong>Scene {{ forloop.counter }}:</strong>{{ scene_text }}
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Regenerate row — visible only after stage 4 completes -->
-        <div class="regenerate-row">
-            <button type="button" id="regenerateBtn" class="regenerate-btn" aria-disabled="true">
-                <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Regenerate Story
-            </button>
-        </div>
+            <!-- Right: reflection chat -->
+            <div class="col-lg-6">
+                <p class="text-muted mb-2">
+                    Work through your story with a guided CBT reflection. In Stage 4, tap an option or type your own. When you reach Stage 5, hit <strong>Regenerate</strong>.
+                </p>
+                <div class="card shadow-sm chat-container" style="display:flex; flex-direction:column; height:100%;">
+                    <div class="chat-header">
+                        <h3 class="mb-0">
+                            <i class="bi bi-chat-heart me-2" aria-hidden="true"></i>Reflection Assistant
+                        </h3>
+                    </div>
 
+                    <div class="chat-messages"
+                         id="chatMessages"
+                         role="log"
+                         aria-live="polite"
+                         aria-label="Reflection conversation"
+                         aria-relevant="additions"></div>
+
+                    <div class="chat-footer">
+                        <div class="position-relative">
+                            <label for="chatInput" class="visually-hidden">Your response</label>
+                            <textarea
+                                id="chatInput"
+                                class="form-control reflection-chat-input"
+                                rows="2"
+                                placeholder="Share your thoughts, or choose an option above…"
+                                aria-describedby="chatHint"
+                            ></textarea>
+                            <button type="button"
+                                    id="sendBtn"
+                                    class="btn btn-link reflection-send-btn position-absolute top-0 end-0 mt-2 me-2"
+                                    style="border:none; background:transparent; padding:0;"
+                                    aria-label="Send message">
+                                <i class="bi bi-rocket-takeoff icon-button" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <p id="chatHint" class="visually-hidden">Press Enter to send, or Shift+Enter for a new line.</p>
+                        <div class="chat-footer-actions">
+                            <button type="button"
+                                    id="doneBtn"
+                                    class="done-btn"
+                                    disabled
+                                    aria-label="Regenerate story based on reflection"
+                                    aria-disabled="true">
+                                <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Regenerate Story
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -148,125 +177,113 @@
     (function () {
         'use strict';
 
-        var STORAGE_KEY = 'reflection_chat_history';
-        var CSRF_TOKEN  = '{{ csrf_token }}';
-
-        /* State */
-        var history     = [];   /* [{role, content, stage}] */
+        var STORAGE_KEY  = 'reflection_chat_history';
+        var CSRF_TOKEN   = '{{ csrf_token }}';
+        var history      = [];
         var currentStage = 1;
         var isThinking   = false;
         var complete     = false;
 
-        /* Elements */
-        var logEl         = document.getElementById('reflectionLog');
-        var stageLabelEl  = document.getElementById('stageLabel');
-        var questionEl    = document.getElementById('questionText');
-        var answerEl      = document.getElementById('answerInput');
-        var submitBtn     = document.getElementById('submitBtn');
-        var thinkingEl    = document.getElementById('thinkingIndicator');
-        var regenerateBtn = document.getElementById('regenerateBtn');
+        var messagesBox   = document.getElementById('chatMessages');
+        var chatInput     = document.getElementById('chatInput');
+        var sendBtn       = document.getElementById('sendBtn');
+        var doneBtn       = document.getElementById('doneBtn');
         var feedbackField = document.getElementById('feedbackField');
-
-        /* Stage labels */
-        var STAGE_LABELS = {
-            1: 'Stage 1 — Understanding your story',
-            2: 'Stage 2 — Exploring your feelings',
-            3: 'Stage 3 — Recognising patterns',
-            4: 'Stage 4 — Discovering new paths'
-        };
 
         /* ── Storage ── */
         function save() {
             try {
                 sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    history:      history,
-                    currentStage: currentStage,
-                    complete:     complete
+                    history: history, currentStage: currentStage, complete: complete
                 }));
             } catch (e) {}
         }
         function load() {
-            try {
-                var raw = sessionStorage.getItem(STORAGE_KEY);
-                return raw ? JSON.parse(raw) : null;
-            } catch (e) { return null; }
+            try { var r = sessionStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; }
+            catch (e) { return null; }
         }
 
-        /* ── Stage pills ── */
+        /* ── Stage pills (now 5) ── */
         function updatePills(stage, done) {
-            for (var i = 1; i <= 4; i++) {
+            for (var i = 1; i <= 5; i++) {
                 var pill = document.getElementById('pill-' + i);
+                if (!pill) continue;
                 pill.classList.remove('active', 'done');
-                if (done || i < stage)  pill.classList.add('done');
-                else if (i === stage)   pill.classList.add('active');
+                if (done || i < stage) pill.classList.add('done');
+                else if (i === stage)  pill.classList.add('active');
             }
         }
 
-        /* ── Render a previous Q&A into the log ── */
-        function appendToLog(question, answer, stage) {
-            var item = document.createElement('div');
-            item.className = 'reflection-log-item';
-            item.setAttribute('aria-label', 'Previous question and answer');
-
-            var q = document.createElement('div');
-            q.className   = 'log-q';
-            q.textContent = question;
-
-            var a = document.createElement('div');
-            a.className   = 'log-a';
-            a.textContent = answer;
-
-            item.appendChild(q);
-            item.appendChild(a);
-            logEl.appendChild(item);
+        /* ── Append a chat bubble ── */
+        function appendBubble(role, text, extraClass) {
+            var wrap = document.createElement('div');
+            wrap.style.display        = 'flex';
+            wrap.style.justifyContent = role === 'user' ? 'flex-end' : 'flex-start';
+            var bubble = document.createElement('div');
+            bubble.className   = 'chat-bubble ' + role + (extraClass ? ' ' + extraClass : '');
+            bubble.textContent = text;
+            bubble.setAttribute('aria-label', (role === 'user' ? 'You' : 'Assistant') + ': ' + text);
+            wrap.appendChild(bubble);
+            messagesBox.appendChild(wrap);
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+            return wrap;
         }
 
-        /* ── Show a new question ── */
-        function showQuestion(text, stage) {
-            currentStage = stage || currentStage;
-            stageLabelEl.textContent = STAGE_LABELS[currentStage] || 'Reflection';
-            questionEl.textContent   = text;
-            answerEl.value           = '';
-            answerEl.focus();
-            updatePills(currentStage, false);
-
-            /* Scroll to top of question card */
-            document.getElementById('questionCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        function removeThinking() {
+            var el = messagesBox.querySelector('.thinking');
+            if (el && el.parentNode) el.parentNode.remove();
         }
 
-        /* ── Show thinking state ── */
-        function setThinking(on) {
-            isThinking              = on;
-            submitBtn.disabled      = on;
-            answerEl.disabled       = on;
-            thinkingEl.style.display = on ? 'flex' : 'none';
+        /* ── Render multiple-choice option buttons ──
+           Appended directly to the messages pane below the assistant bubble.
+           Clicking one sends that text as the user's message and disables all buttons.
+        ── */
+        function appendOptions(options) {
+            if (!options || options.length === 0) return;
+
+            var wrap = document.createElement('div');
+            wrap.className = 'option-buttons-wrap';
+            wrap.setAttribute('role', 'group');
+            wrap.setAttribute('aria-label', 'Choose a response');
+
+            options.forEach(function (opt) {
+                var btn = document.createElement('button');
+                btn.type      = 'button';
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.addEventListener('click', function () {
+                    if (isThinking) return;
+                    /* Disable all option buttons immediately */
+                    wrap.querySelectorAll('.option-btn').forEach(function (b) {
+                        b.disabled = true;
+                    });
+                    /* Send the chosen option as a user message */
+                    sendMessage(opt);
+                });
+                wrap.appendChild(btn);
+            });
+
+            messagesBox.appendChild(wrap);
+            messagesBox.scrollTop = messagesBox.scrollHeight;
         }
 
-        /* ── Mark complete — hide question card, show regenerate ── */
-        function markComplete() {
-            complete = true;
-            document.getElementById('questionCard').style.display = 'none';
-            regenerateBtn.classList.add('visible');
-            regenerateBtn.setAttribute('aria-disabled', 'false');
-            updatePills(4, true);
+        /* ── Done button ── */
+        function setDoneBtn(enabled) {
+            doneBtn.disabled = !enabled;
+            doneBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+        }
+
+        /* ── Core send logic — shared by textarea and option buttons ── */
+        function sendMessage(text) {
+            if (!text || isThinking || complete) return;
+            chatInput.value  = '';
+            isThinking       = true;
+            sendBtn.disabled = true;
+
+            history.push({ role: 'user', content: text, stage: currentStage });
             save();
-        }
-
-        /* ── Submit an answer, get next question ── */
-        function submitAnswer() {
-            var answer = answerEl.value.trim();
-            if (!answer || isThinking) return;
-
-            /* Move current question + answer to log */
-            var currentQ = questionEl.textContent;
-            // Log(currentappendToQ, answer, currentStage);
-
-            /* Add to history */
-            history.push({ role: 'assistant', content: currentQ,  stage: currentStage });
-            history.push({ role: 'user',      content: answer,     stage: currentStage });
-            save();
-
-            setThinking(true);
+            appendBubble('user', text);
+            appendBubble('assistant', 'Thinking…', 'thinking');
 
             var formData = new FormData();
             formData.append('action', 'chat');
@@ -276,30 +293,50 @@
             fetch('{% url "reflection" %}', { method: 'POST', body: formData })
             .then(function (res) { return res.json(); })
             .then(function (data) {
-                setThinking(false);
+                removeThinking();
+                var reply   = data.question || 'Sorry, something went wrong.';
+                var options = Array.isArray(data.options) ? data.options : [];
+
+                appendBubble('assistant', reply);
+                if (options.length > 0) {
+                    appendOptions(options);
+                }
+
+                history.push({ role: 'assistant', content: reply, stage: data.stage || currentStage });
+                currentStage = data.stage || currentStage;
+                updatePills(currentStage, data.complete || false);
+                save();
 
                 if (data.complete) {
-                    /* AI has finished stage 4 — add final message to log then end */
-                    if (data.question) {
-                        appendToLog(data.question, '', currentStage);
-                        history.push({ role: 'assistant', content: data.question, stage: currentStage });
-                    }
-                    markComplete();
-                } else {
-                    var nextStage = data.stage || currentStage;
-                    showQuestion(data.question, nextStage);
+                    complete = true;
+                    setDoneBtn(true);
+                    chatInput.disabled = true;
+                    sendBtn.disabled   = true;
                     save();
                 }
             })
             .catch(function () {
-                setThinking(false);
-                questionEl.textContent = 'Something went wrong. Please try again.';
+                removeThinking();
+                appendBubble('assistant', 'Something went wrong. Please try again.');
+            })
+            .finally(function () {
+                isThinking = false;
+                if (!complete) {
+                    sendBtn.disabled = false;
+                    chatInput.focus();
+                }
             });
         }
 
-        submitBtn.addEventListener('click', submitAnswer);
-        answerEl.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); submitAnswer(); }
+        /* ── Textarea send ── */
+        function handleSend() {
+            var msg = chatInput.value.trim();
+            if (msg) sendMessage(msg);
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        chatInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
         });
 
         /* ── Confirmation modal ── */
@@ -315,7 +352,7 @@
         function hideConfirm() {
             confirmOverlay.classList.remove('active');
             confirmOverlay.setAttribute('aria-hidden', 'true');
-            regenerateBtn.focus();
+            doneBtn.focus();
         }
         confirmOverlay.addEventListener('keydown', function (e) {
             if (!confirmOverlay.classList.contains('active')) return;
@@ -336,7 +373,6 @@
         });
         confirmOkBtn.addEventListener('click', function () {
             hideConfirm();
-            /* Build full transcript as feedback for regeneration */
             var summary = history.map(function (m) {
                 return (m.role === 'user' ? 'User' : 'Assistant') + ': ' + m.content;
             }).join('\n');
@@ -348,65 +384,33 @@
             document.getElementById('reflectionForm').submit();
         });
 
-        regenerateBtn.addEventListener('click', function () {
-            if (!complete) return;
+        doneBtn.addEventListener('click', function () {
+            if (doneBtn.disabled) return;
             showConfirm();
         });
 
         /* ── Initialise ── */
         var saved = load();
         if (saved && saved.history && saved.history.length > 0) {
-            /* Restore session */
             history      = saved.history;
             currentStage = saved.currentStage || 1;
             complete     = saved.complete     || false;
 
-            /* Rebuild log from history pairs */
-            var i = 0;
-            while (i < history.length - 1) {
-                if (history[i].role === 'assistant' && history[i + 1].role === 'user') {
-                    // appendToLog(history[i].content, history[i + 1].content, history[i].stage);
-                    i += 2;
-                } else {
-                    i++;
-                }
-            }
+            /* Replay bubbles — options are not restored (they are one-time interactive) */
+            history.forEach(function (msg) { appendBubble(msg.role, msg.content); });
+            updatePills(currentStage, complete);
 
             if (complete) {
-                /* Last item is a closing assistant message with no user reply */
-                var last = history[history.length - 1];
-                if (last.role === 'assistant') {
-                    appendToLog(last.content, '', last.stage);
-                }
-                markComplete();
-            } else {
-                /* Resume — fetch the next question from the AI */
-                setThinking(true);
-                stageLabelEl.textContent = STAGE_LABELS[currentStage] || 'Reflection';
-                updatePills(currentStage, false);
-
-                var formData = new FormData();
-                formData.append('action', 'chat');
-                formData.append('history', JSON.stringify(history));
-                formData.append('csrfmiddlewaretoken', CSRF_TOKEN);
-
-                fetch('{% url "reflection" %}', { method: 'POST', body: formData })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    setThinking(false);
-                    if (data.complete) { markComplete(); }
-                    else               { showQuestion(data.question, data.stage || currentStage); save(); }
-                })
-                .catch(function () {
-                    setThinking(false);
-                    questionEl.textContent = 'Something went wrong loading your session. Please refresh.';
-                });
+                setDoneBtn(true);
+                chatInput.disabled = true;
+                sendBtn.disabled   = true;
             }
 
         } else {
-            /* Fresh start — get opening question from AI */
-            setThinking(true);
-            stageLabelEl.textContent = STAGE_LABELS[1];
+            /* Fresh start — get opening from AI */
+            isThinking       = true;
+            sendBtn.disabled = true;
+            appendBubble('assistant', 'Thinking…', 'thinking');
             updatePills(1, false);
 
             var formData = new FormData();
@@ -417,13 +421,25 @@
             fetch('{% url "reflection" %}', { method: 'POST', body: formData })
             .then(function (res) { return res.json(); })
             .then(function (data) {
-                setThinking(false);
-                showQuestion(data.question, data.stage || 1);
+                removeThinking();
+                var opening = data.question || 'What part of your story feels most significant to you?';
+                appendBubble('assistant', opening);
+                history = [{ role: 'assistant', content: opening, stage: data.stage || 1 }];
+                currentStage = data.stage || 1;
+                updatePills(currentStage, false);
                 save();
             })
             .catch(function () {
-                setThinking(false);
-                showQuestion('What part of your story feels most significant to you?', 1);
+                removeThinking();
+                var fallback = 'What part of your story feels most significant to you?';
+                appendBubble('assistant', fallback);
+                history = [{ role: 'assistant', content: fallback, stage: 1 }];
+                save();
+            })
+            .finally(function () {
+                isThinking       = false;
+                sendBtn.disabled = false;
+                chatInput.focus();
             });
         }
 

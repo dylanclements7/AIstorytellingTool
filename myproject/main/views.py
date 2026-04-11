@@ -8,28 +8,41 @@ logger = logging.getLogger(__name__)
 from django.urls import reverse
 from django.http import JsonResponse
 import time
+from django.views.decorators.http import require_POST
 
 from datetime import datetime
 
-def save_interaction_log(user_input, output_data, images, action_type):
-    """Save each interaction to local storage."""
+@require_POST
+def set_participant(request):
+    data = json.loads(request.body)
+    pid = data.get('participant_id')
+    if pid and isinstance(pid, int) and pid > 0:
+        request.session['participant_id'] = pid
+        return JsonResponse({'ok': True})
+    return JsonResponse({'ok': False}, status=400)
+
+def save_interaction_log(user_input, output_data, images, action_type, participant_id=None):
     log_dir = Path("user_logs")
     log_dir.mkdir(exist_ok=True)
-    
+
     timestamp = datetime.now().isoformat()
     log_entry = {
         'timestamp': timestamp,
+        'participant_id': participant_id,   # ← NEW
         'action_type': action_type,
         'user_input': user_input,
         'output_data': output_data,
         'images': images
     }
-    
+
     log_file = log_dir / f"interaction_{timestamp.replace(':', '-')}.json"
     with open(log_file, 'w') as f:
         json.dump(log_entry, f, indent=2)
-    
+
     logger.info(f"Saved interaction log: {log_file}")
+
+def participant(request):
+    return render(request, 'main/participant.html')
 
 def idea(request):
     if request.method == 'POST':
@@ -45,7 +58,8 @@ def idea(request):
             user_input={'challenges': challenges, 'moments': moments, 'mainCharacter': mainCharacter},
             output_data=full_story,
             images=[s.get('image_path') for s in full_story.get('scenes', [])],
-            action_type='idea_generate'
+            action_type='idea_generate',
+            participant_id=request.session.get('participant_id')
         )
         return redirect('video')
     
@@ -67,7 +81,8 @@ def draft(request):
                 user_input=feedback,
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='storyline_regenerate'
+                action_type='storyline_regenerate',
+                participant_id=request.session.get('participant_id')
             )
             request.session['story'] = updated_story
             request.session.modified = True
@@ -116,7 +131,8 @@ def personas(request):
                 user_input=feedback,
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='persona_regenerate'
+                action_type='persona_regenerate',
+                participant_id=request.session.get('participant_id')
             )
             request.session['story'] = updated_story
             request.session.modified = True
@@ -161,7 +177,8 @@ def locations(request):
                 user_input=feedback,
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='location_regenerate'
+                action_type='location_regenerate',
+                participant_id=request.session.get('participant_id')
             )
             request.session['story'] = updated_story
             request.session.modified = True
@@ -205,7 +222,8 @@ def scene(request):
                 user_input=feedback,
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='scene_regenerate'
+                action_type='scene_regenerate',
+                participant_id=request.session.get('participant_id')
             )
             request.session['story'] = updated_story
             request.session.modified = True
@@ -231,7 +249,8 @@ def video(request):
                 user_input=f"Delete scene {scene_id}",
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='scene_delete'
+                action_type='scene_delete',
+                participant_id=request.session.get('participant_id')
             )
             request.session['story'] = updated_story
             request.session.modified = True
@@ -245,7 +264,8 @@ def video(request):
                 user_input=f"Add scene after scene {after_scene_id}",
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='scene_add'
+                action_type='scene_add',
+                participant_id=request.session.get('participant_id')
             )
             request.session['story'] = updated_story
             request.session.modified = True
@@ -259,7 +279,8 @@ def video(request):
                 user_input=f"Split scene {scene_id}",
                 output_data=updated_story,
                 images=[s.get('image_path') for s in updated_story.get('scenes', [])],
-                action_type='scene_split'
+                action_type='scene_split',
+                participant_id=request.session.get('participant_id')
             )
             request.session['story'] = updated_story
             request.session.modified = True
@@ -271,68 +292,15 @@ def video(request):
         'story_data': story_data
     })
 
-# def reflection(request):
-#     """
-#     GET:  Render the reflection chat page, showing the current story.
-#     POST action=chat:        Return a reflectionChat reply as JSON.
-#     POST action=regenerate:  Run reflectionGenerate, update session, redirect to video.
-#     """
-#     story_data = request.session.get('story', {})
- 
-#     # Guard: if there is no story yet, redirect to the idea page
-#     if not story_data:
-#         return redirect('idea')
- 
-#     # ── Chat ──────────────────────────────────────────────────────────────────
-#     if request.method == 'POST' and request.POST.get('action') == 'chat':
-#         try:
-#             history = json.loads(request.POST.get('history', '[]'))
-#             reply   = reflectionChat(story_data, history)
-#             return JsonResponse({'reply': reply})
-#         except Exception as e:
-#             logger.error(f'reflectionChat error: {e}')
-#             return JsonResponse({'reply': 'Something went wrong. Please try again.'}, status=500)
- 
-#     # ── Regenerate ────────────────────────────────────────────────────────────
-#     if request.method == 'POST' and request.POST.get('action') == 'regenerate':
-#         feedback = request.POST.get('feedback', '')
-#         try:
-#             updated = reflectionGenerate(story_data, feedback)
-#             save_interaction_log(
-#                 user_input=feedback,
-#                 output_data=updated,
-#                 images=[s.get('image_path') for s in updated.get('scenes', [])],
-#                 action_type='reflection_regenerate'
-#             )
-#             story_data.update(updated)
-#             request.session['story'] = story_data
-#             request.session.modified = True
-#             return redirect('video')
-#         except Exception as e:
-#             logger.error(f'reflectionGenerate error: {e}')
-#             return render(request, 'main/reflection.html', {
-#                 'draft':      story_data,
-#                 'story_data': story_data,
-#                 'error':      'Something went wrong regenerating the story. Please try again.',
-#             })
- 
-#     # ── GET ───────────────────────────────────────────────────────────────────
-#     return render(request, 'main/reflection.html', {
-#         'draft':      story_data,
-#         'story_data': story_data,
-#     })
- 
 def reflection(request):
     story_data = request.session.get('story', {})
  
     if not story_data:
         return redirect('idea')
  
-    # ── Chat ──────────────────────────────────────────────────────────────────
     if request.method == 'POST' and request.POST.get('action') == 'chat':
         try:
             history = json.loads(request.POST.get('history', '[]'))
-            # reflectionChat returns {question, stage, complete}
             result  = reflectionChat(story_data, history)
             return JsonResponse(result)
         except Exception as e:
@@ -340,10 +308,10 @@ def reflection(request):
             return JsonResponse({
                 'question': 'Something went wrong. Please try again.',
                 'stage':    1,
+                'options':  [],
                 'complete': False
             }, status=500)
  
-    # ── Regenerate ────────────────────────────────────────────────────────────
     if request.method == 'POST' and request.POST.get('action') == 'regenerate':
         feedback = request.POST.get('feedback', '')
         try:
@@ -352,7 +320,8 @@ def reflection(request):
                 user_input=feedback,
                 output_data=updated,
                 images=[s.get('image_path') for s in updated.get('scenes', [])],
-                action_type='reflection_regenerate'
+                action_type='reflection_regenerate',
+                participant_id=request.session.get('participant_id')
             )
             story_data.update(updated)
             request.session['story'] = story_data
@@ -366,9 +335,7 @@ def reflection(request):
                 'error':      'Something went wrong regenerating the story. Please try again.',
             })
  
-    # ── GET ───────────────────────────────────────────────────────────────────
     return render(request, 'main/reflection.html', {
         'draft':      story_data,
         'story_data': story_data,
     })
- 

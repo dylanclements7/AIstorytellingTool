@@ -1,0 +1,32 @@
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card shadow p-4" style="max-width: 420px; width: 100%;">
+    <h2 class="mb-1">Welcome</h2>
+    <p class="text-muted mb-4">Please enter your participant number to begin.</p>
+    <label for="participantInput" class="form-label fw-semibold">Participant Number</label>
+    <input type="number" id="participantInput" class="form-control form-control-lg mb-3"
+           placeholder="e.g. 42" min="1" aria-describedby="participantHint">
+    <div id="participantHint" class="form-text mb-3">This number is used only for research logging.</div>
+    <button class="btn btn-primary w-100" onclick="startSession()">Begin</button>
+  </div>
+</div>
+<script>
+function startSession() {
+  const val = document.getElementById('participantInput').value.trim();
+  if (!val || isNaN(val) || parseInt(val) < 1) {
+    document.getElementById('participantInput').classList.add('is-invalid');
+    return;
+  }
+  fetch("{% url 'set_participant' %}", {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+    body: JSON.stringify({participant_id: parseInt(val)})
+  }).then(r => r.json()).then(d => {
+    if (d.ok) window.location.href = "{% url 'idea' %}";
+  });
+}
+document.getElementById('participantInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startSession();
+});
+</script>
+{% endblock %}
